@@ -25,6 +25,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -39,7 +40,6 @@ import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class EvertideAmulet extends ItemPE implements IProjectileShooter, IPedestalItem, ICapabilityAware {
 
@@ -93,12 +93,12 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IPedes
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(PELang.TOOLTIP_EVERTIDE_1.translate(ClientKeyHelper.getKeyName(PEKeybind.FIRE_PROJECTILE)));
-		tooltips.add(PELang.TOOLTIP_EVERTIDE_2.translate());
-		tooltips.add(PELang.TOOLTIP_EVERTIDE_3.translate());
-		tooltips.add(PELang.TOOLTIP_EVERTIDE_4.translate());
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(PELang.TOOLTIP_EVERTIDE_1.translate(ClientKeyHelper.getKeyName(PEKeybind.FIRE_PROJECTILE)));
+		tooltip.add(PELang.TOOLTIP_EVERTIDE_2.translate());
+		tooltip.add(PELang.TOOLTIP_EVERTIDE_3.translate());
+		tooltip.add(PELang.TOOLTIP_EVERTIDE_4.translate());
 	}
 
 	@Override

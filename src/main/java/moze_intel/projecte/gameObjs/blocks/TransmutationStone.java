@@ -7,7 +7,6 @@ import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -62,7 +61,7 @@ public class TransmutationStone extends DirectionalBlock implements SimpleWaterl
 
 	@Override
 	@Deprecated
-	public boolean isPathfindable(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull PathComputationType type) {
+	public boolean isPathfindable(@NotNull BlockState state, @NotNull PathComputationType pathComputationType) {
 		return false;
 	}
 
@@ -84,8 +83,7 @@ public class TransmutationStone extends DirectionalBlock implements SimpleWaterl
 	@NotNull
 	@Override
 	@Deprecated
-	public InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand,
-			@NotNull BlockHitResult rtr) {
+	protected InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult rtr) {
 		if (!level.isClientSide) {
 			player.openMenu(new ContainerProvider(), b -> b.writeBoolean(false));
 		}

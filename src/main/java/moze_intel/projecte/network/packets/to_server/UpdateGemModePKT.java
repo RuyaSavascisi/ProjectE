@@ -1,43 +1,40 @@
 package moze_intel.projecte.network.packets.to_server;
 
+import io.netty.buffer.ByteBuf;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.components.GemData;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.network.packets.IPEPacket;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
-public record UpdateGemModePKT(boolean mode) implements IPEPacket<PlayPayloadContext> {
+public record UpdateGemModePKT(boolean mode) implements IPEPacket {
 
-	public static final ResourceLocation ID = PECore.rl("update_gem_mode");
-
-	public UpdateGemModePKT(FriendlyByteBuf buffer) {
-		this(buffer.readBoolean());
-	}
+	public static final CustomPacketPayload.Type<UpdateGemModePKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("update_gem_mode"));
+	public static final StreamCodec<ByteBuf, UpdateGemModePKT> STREAM_CODEC = ByteBufCodecs.BOOL.map(UpdateGemModePKT::new, UpdateGemModePKT::mode);
 
 	@NotNull
 	@Override
-	public ResourceLocation id() {
-		return ID;
+	public CustomPacketPayload.Type<UpdateGemModePKT> type() {
+		return TYPE;
 	}
 
 	@Override
-	public void handle(PlayPayloadContext context) {
-		context.player()
-				.map(player -> {
-					ItemStack stack = player.getMainHandItem();
-					return stack.isEmpty() ? player.getOffhandItem() : stack;
-				})
-				//Note: Void Ring extends gem of eternal density, so we only need to check if it is an instance of the base class
-				.filter(stack -> !stack.isEmpty() && stack.getItem() instanceof GemEternalDensity)
-				.ifPresent(stack -> stack.setData(PEAttachmentTypes.GEM_WHITELIST, mode));
-	}
-
-	@Override
-	public void write(@NotNull FriendlyByteBuf buffer) {
-		buffer.writeBoolean(mode);
+	public void handle(IPayloadContext context) {
+		Player player = context.player();
+		ItemStack stack = player.getMainHandItem();
+		if (stack.isEmpty()) {
+			stack = player.getOffhandItem();
+		}
+		//Note: Void Ring extends gem of eternal density, so we only need to check if it is an instance of the base class
+		if (!stack.isEmpty() && stack.getItem() instanceof GemEternalDensity) {
+			stack.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, data -> data.withWhitelist(mode));
+		}
 	}
 }

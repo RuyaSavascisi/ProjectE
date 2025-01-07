@@ -7,6 +7,7 @@ import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
@@ -139,18 +140,18 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 	}
 
 	@Override
-	public void load(@NotNull CompoundTag nbt) {
-		super.load(nbt);
-		inventory.deserializeNBT(nbt);
-		setActive(nbt.getBoolean("isActive"));
-		activityCooldown = nbt.getInt("activityCooldown");
-		previousRedstoneState = nbt.getBoolean("powered");
+	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
+		inventory.deserializeNBT(registries, tag);
+		setActive(tag.getBoolean("isActive"));
+		activityCooldown = tag.getInt("activityCooldown");
+		previousRedstoneState = tag.getBoolean("powered");
 	}
 
 	@Override
-	protected void saveAdditional(@NotNull CompoundTag tag) {
-		super.saveAdditional(tag);
-		tag.merge(inventory.serializeNBT());
+	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
+		tag.merge(inventory.serializeNBT(registries));
 		tag.putBoolean("isActive", getActive());
 		tag.putInt("activityCooldown", activityCooldown);
 		tag.putBoolean("powered", previousRedstoneState);

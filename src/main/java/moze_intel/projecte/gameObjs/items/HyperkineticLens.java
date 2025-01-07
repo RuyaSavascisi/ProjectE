@@ -3,6 +3,7 @@ package moze_intel.projecte.gameObjs.items;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
 import moze_intel.projecte.gameObjs.entity.EntityLensProjectile;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.utils.Constants;
 import net.minecraft.sounds.SoundSource;
@@ -16,7 +17,9 @@ import org.jetbrains.annotations.NotNull;
 public class HyperkineticLens extends ItemPE implements IProjectileShooter, IItemCharge, IBarHelper {
 
 	public HyperkineticLens(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.CHARGE, 0)
+				.component(PEDataComponentTypes.STORED_EMC, 0L)
+		);
 	}
 
 	@NotNull

@@ -7,8 +7,10 @@ import moze_intel.projecte.gameObjs.items.PhilosophersStone;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone.PhilosophersStoneMode;
 import moze_intel.projecte.utils.WorldTransmutations;
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
@@ -24,13 +26,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.client.event.RenderHighlightEvent;
 import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions;
-import net.neoforged.neoforge.client.gui.overlay.ExtendedGui;
-import net.neoforged.neoforge.client.gui.overlay.IGuiOverlay;
 import net.neoforged.neoforge.common.NeoForge;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
-public class TransmutationRenderingOverlay implements IGuiOverlay {
+public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 
 	private final Minecraft mc = Minecraft.getInstance();
 	@Nullable
@@ -42,10 +43,10 @@ public class TransmutationRenderingOverlay implements IGuiOverlay {
 	}
 
 	@Override
-	public void render(ExtendedGui gui, GuiGraphics graphics, float partialTicks, int width, int height) {
+	public void render(@NotNull GuiGraphics graphics, @NotNull DeltaTracker delta) {
 		if (!mc.options.hideGui && transmutationResult != null) {
 			if (transmutationResult.getBlock() instanceof LiquidBlock liquidBlock) {
-				IClientFluidTypeExtensions properties = IClientFluidTypeExtensions.of(liquidBlock.getFluid());
+				IClientFluidTypeExtensions properties = IClientFluidTypeExtensions.of(liquidBlock.fluid);
 				int color = properties.getTintColor();
 				float red = (color >> 16 & 0xFF) / 255.0F;
 				float green = (color >> 8 & 0xFF) / 255.0F;
@@ -121,40 +122,40 @@ public class TransmutationRenderingOverlay implements IGuiOverlay {
 
 	private void addBox(VertexConsumer builder, Matrix4f matrix4f, float alpha, float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
 		//Top
-		builder.vertex(matrix4f, minX, maxY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, maxY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, maxY, maxZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, maxY, maxZ).color(1, 1, 1, alpha).endVertex();
+		builder.addVertex(matrix4f, minX, maxY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, maxY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, maxY, maxZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, maxY, maxZ).setColor(1, 1, 1, alpha);
 
 		//Bottom
-		builder.vertex(matrix4f, minX, minY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, minY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, minY, maxZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, minY, maxZ).color(1, 1, 1, alpha).endVertex();
+		builder.addVertex(matrix4f, minX, minY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, minY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, minY, maxZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, minY, maxZ).setColor(1, 1, 1, alpha);
 
 		//Front
-		builder.vertex(matrix4f, maxX, maxY, maxZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, maxY, maxZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, minY, maxZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, minY, maxZ).color(1, 1, 1, alpha).endVertex();
+		builder.addVertex(matrix4f, maxX, maxY, maxZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, maxY, maxZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, minY, maxZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, minY, maxZ).setColor(1, 1, 1, alpha);
 
 		//Back
-		builder.vertex(matrix4f, maxX, minY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, minY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, maxY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, maxY, minZ).color(1, 1, 1, alpha).endVertex();
+		builder.addVertex(matrix4f, maxX, minY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, minY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, maxY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, maxY, minZ).setColor(1, 1, 1, alpha);
 
 		//Left
-		builder.vertex(matrix4f, minX, maxY, maxZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, maxY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, minY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, minX, minY, maxZ).color(1, 1, 1, alpha).endVertex();
+		builder.addVertex(matrix4f, minX, maxY, maxZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, maxY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, minY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, minX, minY, maxZ).setColor(1, 1, 1, alpha);
 
 		//Right
-		builder.vertex(matrix4f, maxX, maxY, maxZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, maxY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, minY, minZ).color(1, 1, 1, alpha).endVertex();
-		builder.vertex(matrix4f, maxX, minY, maxZ).color(1, 1, 1, alpha).endVertex();
+		builder.addVertex(matrix4f, maxX, maxY, maxZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, maxY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, minY, minZ).setColor(1, 1, 1, alpha);
+		builder.addVertex(matrix4f, maxX, minY, maxZ).setColor(1, 1, 1, alpha);
 	}
 
 	private float getPulseProportion() {

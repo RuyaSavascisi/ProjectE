@@ -6,11 +6,10 @@ import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -24,11 +23,10 @@ public class RecipesCovalenceRepair extends CustomRecipe {
 	}
 
 	@Nullable
-	private RepairTargetInfo findIngredients(CraftingContainer inv) {
+	private RepairTargetInfo findIngredients(CraftingInput inv) {
 		List<ItemStack> dust = new ArrayList<>();
 		ItemStack tool = ItemStack.EMPTY;
-		for (int i = 0; i < inv.getContainerSize(); i++) {
-			ItemStack input = inv.getItem(i);
+		for (ItemStack input : inv.items()) {
 			if (!input.isEmpty()) {
 				if (input.is(PETags.Items.COVALENCE_DUST)) {
 					dust.add(input);
@@ -47,14 +45,14 @@ public class RecipesCovalenceRepair extends CustomRecipe {
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer inv, @NotNull Level level) {
+	public boolean matches(@NotNull CraftingInput inv, @NotNull Level level) {
 		RepairTargetInfo targetInfo = findIngredients(inv);
 		return targetInfo != null && targetInfo.emcPerDurability <= targetInfo.dustEmc;
 	}
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registryAccess) {
+	public ItemStack assemble(@NotNull CraftingInput inv, @NotNull HolderLookup.Provider registryAccess) {
 		RepairTargetInfo targetInfo = findIngredients(inv);
 		if (targetInfo == null) {
 			//If there isn't actually a match return no result

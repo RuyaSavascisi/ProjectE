@@ -1,22 +1,23 @@
 package moze_intel.projecte.handlers;
 
-import java.util.UUID;
+import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.IFlightProvider;
 import moze_intel.projecte.gameObjs.items.IStepAssister;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.PlayerHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.common.NeoForgeMod;
 
-//TODO - 1.20.4: Validate this works properly given we don't persist it and don't sync it (and it resets on death)
+//TODO - 1.21: Validate this works properly given we don't persist it and don't sync it (and it resets on death)
 public final class InternalAbilities {
 
-	private static final UUID STEP_ASSIST_MODIFIER_UUID = UUID.fromString("4726C09D-FD86-46D0-92DD-49ED952A12D2");
-	private static final AttributeModifier STEP_ASSIST = new AttributeModifier(STEP_ASSIST_MODIFIER_UUID, "Step Assist", 0.4, Operation.ADDITION);
+	private static final ResourceLocation STEP_ASSIST_MODIFIER_ID = PECore.rl("step_assist");
+	private static final AttributeModifier STEP_ASSIST = new AttributeModifier(STEP_ASSIST_MODIFIER_ID, 0.4, Operation.ADD_VALUE);
 
 	private boolean swrgOverride = false;
 	private boolean gemArmorReady = false;
@@ -86,9 +87,9 @@ public final class InternalAbilities {
 			wasFlying = player.getAbilities().flying;
 		}
 
-		AttributeInstance attributeInstance = player.getAttribute(NeoForgeMod.STEP_HEIGHT.value());
+		AttributeInstance attributeInstance = player.getAttribute(Attributes.STEP_HEIGHT);
 		if (attributeInstance != null) {
-			AttributeModifier existing = attributeInstance.getModifier(STEP_ASSIST_MODIFIER_UUID);
+			AttributeModifier existing = attributeInstance.getModifier(STEP_ASSIST_MODIFIER_ID);
 			if (shouldPlayerStep(player)) {
 				if (existing == null) {
 					//Should step but doesn't have the modifier yet, add it
@@ -96,13 +97,14 @@ public final class InternalAbilities {
 				}
 			} else if (existing != null) {
 				//Shouldn't step but has modifier, remove it
-				attributeInstance.removeModifier(existing.getId());
+				attributeInstance.removeModifier(existing.id());
 			}
 		}
 	}
 
 	public void onDimensionChange(Player player) {
 		// Resend everything needed on clientside (all except fire resist)
+		//TODO - 1.21: Replace with Neo's Cap
 		updateClientServerFlight(player, player.getAbilities().mayfly);
 	}
 

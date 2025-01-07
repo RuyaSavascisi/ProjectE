@@ -4,13 +4,16 @@ import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.gameObjs.EnumMatterType;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ToolHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.context.UseOnContext;
@@ -27,7 +30,10 @@ public class PEShovel extends ShovelItem implements IItemCharge, IBarHelper {
 	private final int numCharges;
 
 	public PEShovel(EnumMatterType matterType, int numCharges, Properties props) {
-		super(matterType, 2, -3, props);
+		super(matterType, props.attributes(createAttributes(matterType, 2, -3))
+				.component(PEDataComponentTypes.CHARGE, 0)
+				.component(PEDataComponentTypes.STORED_EMC, 0L)
+		);
 		this.matterType = matterType;
 		this.numCharges = numCharges;
 	}
@@ -43,12 +49,12 @@ public class PEShovel extends ShovelItem implements IItemCharge, IBarHelper {
 	}
 
 	@Override
-	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+	public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
 		return false;
 	}
 
 	@Override
-	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
+	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<Item> onBroken) {
 		return 0;
 	}
 
@@ -98,7 +104,7 @@ public class PEShovel extends ShovelItem implements IItemCharge, IBarHelper {
 		return ToolHelper.performActions(ToolHelper.flattenAOE(context, state, 0),
 				() -> ToolHelper.dowseCampfire(context, state),
 				() -> {
-					if (state.is(Tags.Blocks.GRAVEL) || state.is(Blocks.CLAY)) {
+					if (state.is(Tags.Blocks.GRAVELS) || state.is(Blocks.CLAY)) {
 						return ToolHelper.tryVeinMine(player, stack, pos, sideHit);
 					}
 					return InteractionResult.PASS;

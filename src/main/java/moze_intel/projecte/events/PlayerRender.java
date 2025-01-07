@@ -6,10 +6,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ComputeFovModifierEvent;
 
-@Mod.EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT)
 public class PlayerRender {
 
 	@SubscribeEvent

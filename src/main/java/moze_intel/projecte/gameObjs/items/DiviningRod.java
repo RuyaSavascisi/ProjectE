@@ -1,21 +1,31 @@
 package moze_intel.projecte.gameObjs.items;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongComparators;
 import it.unimi.dsi.fastutil.longs.LongList;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.IntFunction;
 import moze_intel.projecte.gameObjs.items.DiviningRod.DiviningMode;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.IHasTranslationKey;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -25,17 +35,15 @@ import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.common.util.NonNullLazy;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 
 	private final int maxModes;
 
 	public DiviningRod(Properties props, int maxModes) {
-		super(props);
+		super(props.component(PEDataComponentTypes.DIVINING_ROD_MODE, DiviningMode.LOW));
 		this.maxModes = maxModes;
 	}
 
@@ -55,7 +63,7 @@ public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 		int numBlocks = 0;
 		int depth = getDepthFromMode(ctx.getItemInHand());
 		//Lazily retrieve the values for the furnace recipes
-		NonNullLazy<List<RecipeHolder<SmeltingRecipe>>> furnaceRecipes = NonNullLazy.of(() -> level.getRecipeManager().getAllRecipesFor(RecipeType.SMELTING));
+		Lazy<List<RecipeHolder<SmeltingRecipe>>> furnaceRecipes = Lazy.of(() -> level.getRecipeManager().getAllRecipesFor(RecipeType.SMELTING));
 		for (BlockPos digPos : WorldHelper.getPositionsInBox(WorldHelper.getDeepBox(ctx.getClickedPos(), ctx.getClickedFace(), depth))) {
 			BlockState state = level.getBlockState(digPos);
 			if (state.isAir()) {
@@ -119,14 +127,19 @@ public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(getToolTip(stack));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(getToolTip(stack));
 	}
 
 	@Override
-	public AttachmentType<DiviningMode> getAttachmentType() {
-		return PEAttachmentTypes.DIVINING_ROD_MODE.get();
+	public DataComponentType<DiviningMode> getDataComponentType() {
+		return PEDataComponentTypes.DIVINING_ROD_MODE.get();
+	}
+
+	@Override
+	public DiviningMode getDefaultMode() {
+		return DiviningMode.LOW;
 	}
 
 	public enum DiviningMode implements IModeEnum<DiviningMode> {
@@ -134,12 +147,24 @@ public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 		MEDIUM(PELang.DIVINING_RANGE_16, 16),
 		HIGH(PELang.DIVINING_RANGE_64, 64);
 
+		public static final Codec<DiviningMode> CODEC = StringRepresentable.fromEnum(DiviningMode::values);
+		public static final IntFunction<DiviningMode> BY_ID = ByIdMap.continuous(DiviningMode::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, DiviningMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DiviningMode::ordinal);
+
 		private final IHasTranslationKey langEntry;
+		private final String serializedName;
 		private final int range;
 
 		DiviningMode(IHasTranslationKey langEntry, int range) {
+			this.serializedName = name().toLowerCase(Locale.ROOT);
 			this.langEntry = langEntry;
 			this.range = range;
+		}
+
+		@NotNull
+		@Override
+		public String getSerializedName() {
+			return serializedName;
 		}
 
 		@Override

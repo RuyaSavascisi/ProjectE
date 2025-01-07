@@ -7,16 +7,16 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.util.TimeUtil;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.VersionChecker;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.loading.FMLConfig;
 import net.neoforged.fml.loading.FMLConfig.ConfigValue;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforgespi.language.IModInfo;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 
-@Mod.EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT)
 public class ThreadCheckUpdate extends Thread {
 
 	private static final String curseURL = "https://www.curseforge.com/minecraft/mc-mods/projecte/files";

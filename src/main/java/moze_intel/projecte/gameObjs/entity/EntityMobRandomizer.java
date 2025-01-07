@@ -4,8 +4,7 @@ import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.EntityRandomizerHelper;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -33,7 +32,7 @@ public class EntityMobRandomizer extends NoGravityThrowableProjectile {
 	}
 
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
 	}
 
 	@Override
@@ -75,9 +74,9 @@ public class EntityMobRandomizer extends NoGravityThrowableProjectile {
 				} else {
 					data = null;
 				}
-				EventHooks.onFinalizeSpawn(randomized, level, level.getCurrentDifficultyAt(randomized.blockPosition()), MobSpawnType.CONVERSION, data, null);
+				EventHooks.finalizeMobSpawn(randomized, level, level.getCurrentDifficultyAt(randomized.blockPosition()), MobSpawnType.CONVERSION, data);
 				level.tryAddFreshEntityWithPassengers(randomized);
-				if (randomized.isAddedToWorld()) {
+				if (randomized.isAddedToLevel()) {
 					randomized.spawnAnim();
 					//Don't remove the old entity until the new one is added in case another mod is cancelling the spawning
 					ent.discard();

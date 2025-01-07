@@ -3,6 +3,7 @@ package moze_intel.projecte.gameObjs.items;
 import java.util.ArrayList;
 import java.util.List;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
@@ -23,7 +24,9 @@ import org.jetbrains.annotations.NotNull;
 public class DestructionCatalyst extends ItemPE implements IItemCharge, IBarHelper {
 
 	public DestructionCatalyst(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.CHARGE, 0)
+				.component(PEDataComponentTypes.STORED_EMC, 0L)
+		);
 	}
 
 	@NotNull

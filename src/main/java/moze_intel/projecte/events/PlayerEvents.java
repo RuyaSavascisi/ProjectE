@@ -27,19 +27,19 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.util.thread.EffectiveSide;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.EntityEvent;
-import net.neoforged.neoforge.event.entity.living.LivingAttackEvent;
-import net.neoforged.neoforge.event.entity.living.LivingHurtEvent;
-import net.neoforged.neoforge.event.entity.player.EntityItemPickupEvent;
+import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
-@Mod.EventBusSubscriber(modid = PECore.MODID)
+@EventBusSubscriber(modid = PECore.MODID)
 public class PlayerEvents {
 
 	// On death or return from end, sync to the client
@@ -112,8 +112,8 @@ public class PlayerEvents {
 	}
 
 	@SubscribeEvent(priority = EventPriority.LOW)
-	public static void pickupItem(EntityItemPickupEvent event) {
-		Player player = event.getEntity();
+	public static void pickupItem(ItemEntityPickupEvent.Pre event) {
+		Player player = event.getPlayer();
 		Level level = player.level();
 		if (level.isClientSide) {
 			return;
@@ -127,30 +127,33 @@ public class PlayerEvents {
 			return;
 		}
 		IItemHandler handler = bagProvider.getBag(((AlchemicalBag) bag.getItem()).color);
-		ItemStack remainder = ItemHandlerHelper.insertItemStacked(handler, event.getItem().getItem(), false);
+		ItemStack remainder = ItemHandlerHelper.insertItemStacked(handler, event.getItemEntity().getItem(), false);
 		if (remainder.isEmpty()) {
-			event.getItem().discard();
+			event.getItemEntity().discard();
 			level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((level.random.nextFloat() - level.random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-			((ServerPlayer) player).connection.send(new ClientboundTakeItemEntityPacket(event.getItem().getId(), player.getId(), 1));
+			((ServerPlayer) player).connection.send(new ClientboundTakeItemEntityPacket(event.getItemEntity().getId(), player.getId(), 1));
+			//TODO - 1.21: Force allow the pickup? Though that doesn't change the fact vanilla tries to add it to the player's inventory
+			//event.setCanPickup(TriState.TRUE);
 		} else {
-			event.getItem().setItem(remainder);
+			event.getItemEntity().setItem(remainder);
 		}
-		event.setCanceled(true);
+		//TODO - 1.21: Figure this out and if we should be using the pre or post event
+		//event.setCanceled(true);
 	}
 
-	//This event is called when the entity first is about to take damage, if it gets cancelled it is as if they never got hit/damaged
 	@SubscribeEvent
-	public static void onAttacked(LivingAttackEvent evt) {
+	public static void onInvulnerabilityChecked(EntityInvulnerabilityCheckEvent evt) {
 		if (evt.getEntity() instanceof ServerPlayer player && evt.getSource().is(DamageTypeTags.IS_FIRE) && TickEvents.shouldPlayerResistFire(player)) {
-			evt.setCanceled(true);
+			evt.setInvulnerable(true);
 		}
 	}
 
 	//This event gets called when calculating how much damage to do to the entity, even if it is canceled the entity will still get "hit"
 	@SubscribeEvent
-	public static void onLivingHurt(LivingHurtEvent evt) {
+	public static void onLivingDamaged(LivingIncomingDamageEvent evt) {
 		float damage = evt.getAmount();
 		if (damage > 0) {
+			//TODO - 1.21: Make use of the damage container and maybe apply this via a reduction modifier instead?
 			LivingEntity entityLiving = evt.getEntity();
 			DamageSource source = evt.getSource();
 			float totalPercentReduced = getReductionForSlot(entityLiving, source, EquipmentSlot.HEAD, damage) +

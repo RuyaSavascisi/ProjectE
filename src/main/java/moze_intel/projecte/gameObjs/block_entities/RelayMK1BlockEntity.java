@@ -11,6 +11,7 @@ import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -184,18 +185,18 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 	}
 
 	@Override
-	public void load(@NotNull CompoundTag nbt) {
-		super.load(nbt);
-		input.deserializeNBT(nbt.getCompound("Input"));
-		output.deserializeNBT(nbt.getCompound("Output"));
-		bonusEMC = nbt.getDouble("BonusEMC");
+	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
+		input.deserializeNBT(registries, tag.getCompound("Input"));
+		output.deserializeNBT(registries, tag.getCompound("Output"));
+		bonusEMC = tag.getDouble("BonusEMC");
 	}
 
 	@Override
-	protected void saveAdditional(@NotNull CompoundTag tag) {
-		super.saveAdditional(tag);
-		tag.put("Input", input.serializeNBT());
-		tag.put("Output", output.serializeNBT());
+	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
+		tag.put("Input", input.serializeNBT(registries));
+		tag.put("Output", output.serializeNBT(registries));
 		tag.putDouble("BonusEMC", bonusEMC);
 	}
 

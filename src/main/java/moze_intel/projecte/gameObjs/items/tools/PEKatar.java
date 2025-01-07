@@ -1,67 +1,71 @@
 package moze_intel.projecte.gameObjs.items.tools;
 
-import com.google.common.collect.Multimap;
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.EnumMatterType;
 import moze_intel.projecte.gameObjs.PETags;
+import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.IItemMode;
 import moze_intel.projecte.gameObjs.items.IModeEnum;
 import moze_intel.projecte.gameObjs.items.tools.PEKatar.KatarMode;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.ToolHelper;
-import moze_intel.projecte.utils.ToolHelper.ChargeAttributeCache;
 import moze_intel.projecte.utils.text.IHasTranslationKey;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.IShearable;
-import net.neoforged.neoforge.common.ToolAction;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
+import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunction {
-
-	private final ChargeAttributeCache attributeCache = new ChargeAttributeCache();
+public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunction, IHasConditionalAttributes {
 
 	public PEKatar(EnumMatterType matterType, int numCharges, Properties props) {
-		super(matterType, PETags.Blocks.MINEABLE_WITH_PE_KATAR, 19, -2.4F, numCharges, props);
+		super(matterType, PETags.Blocks.MINEABLE_WITH_PE_KATAR, numCharges, props.attributes(createAttributes(matterType, 19, -2.4F))
+				.component(PEDataComponentTypes.KATAR_MODE, KatarMode.SLAY_HOSTILE)
+		);
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(getToolTip(stack));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(getToolTip(stack));
 	}
 
 	@Override
-	public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-		return ToolActions.DEFAULT_AXE_ACTIONS.contains(toolAction) || ToolActions.DEFAULT_SHEARS_ACTIONS.contains(toolAction) ||
-			   ToolActions.DEFAULT_SWORD_ACTIONS.contains(toolAction) || ToolActions.DEFAULT_HOE_ACTIONS.contains(toolAction) ||
+	public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+		return ItemAbilities.DEFAULT_AXE_ACTIONS.contains(toolAction) || ItemAbilities.DEFAULT_SHEARS_ACTIONS.contains(toolAction) ||
+			   ItemAbilities.DEFAULT_SWORD_ACTIONS.contains(toolAction) || ItemAbilities.DEFAULT_HOE_ACTIONS.contains(toolAction) ||
 			   ToolHelper.DEFAULT_PE_KATAR_ACTIONS.contains(toolAction);
 	}
 
@@ -124,7 +128,8 @@ public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunct
 		return true;
 	}
 
-	@Override
+	//TODO - 1.21: Re-implement? Replace with LeftClickBlock event listener?
+	//@Override
 	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
 		//Shear the block instead of breaking it if it supports shearing (and has drops to give) instead of actually breaking it normally
 		return ToolHelper.shearBlock(stack, pos, player).consumesAction();
@@ -154,14 +159,13 @@ public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunct
 	}
 
 	@Override
-	public int getUseDuration(@NotNull ItemStack stack) {
+	public int getUseDuration(@NotNull ItemStack stack, @NotNull LivingEntity user) {
 		return 72_000;
 	}
 
-	@NotNull
 	@Override
-	public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot, ItemStack stack) {
-		return attributeCache.addChargeAttributeModifier(super.getAttributeModifiers(slot, stack), slot, stack);
+	public void adjustAttributes(ItemAttributeModifierEvent event) {
+		ToolHelper.applyChargeAttributes(event);
 	}
 
 	/**
@@ -173,10 +177,11 @@ public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunct
 		if (entity instanceof IShearable target) {
 			BlockPos pos = entity.blockPosition();
 			Level level = entity.level();
-			if (target.isShearable(stack, level, pos)) {
+			if (target.isShearable(player, stack, level, pos)) {
 				if (!level.isClientSide) {
-					target.onSheared(player, stack, level, pos, stack.getEnchantmentLevel(Enchantments.BLOCK_FORTUNE))
-							.forEach(drop -> target.spawnShearedDrop(level, pos, drop));
+					for (ItemStack drop : target.onSheared(player, stack, level, pos)) {
+						target.spawnShearedDrop(level, pos, drop);
+					}
 					entity.gameEvent(GameEvent.SHEAR, player);
 				}
 				return InteractionResult.sidedSuccess(level.isClientSide);
@@ -186,18 +191,35 @@ public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunct
 	}
 
 	@Override
-	public AttachmentType<KatarMode> getAttachmentType() {
-		return PEAttachmentTypes.KATAR_MODE.get();
+	public DataComponentType<KatarMode> getDataComponentType() {
+		return PEDataComponentTypes.KATAR_MODE.get();
+	}
+
+	@Override
+	public KatarMode getDefaultMode() {
+		return KatarMode.SLAY_HOSTILE;
 	}
 
 	public enum KatarMode implements IModeEnum<KatarMode> {
 		SLAY_HOSTILE(PELang.MODE_KATAR_1),
 		SLAY_ALL(PELang.MODE_KATAR_2);
 
+		public static final Codec<KatarMode> CODEC = StringRepresentable.fromEnum(KatarMode::values);
+		public static final IntFunction<KatarMode> BY_ID = ByIdMap.continuous(KatarMode::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, KatarMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, KatarMode::ordinal);
+
 		private final IHasTranslationKey langEntry;
+		private final String serializedName;
 
 		KatarMode(IHasTranslationKey langEntry) {
+			this.serializedName = name().toLowerCase(Locale.ROOT);
 			this.langEntry = langEntry;
+		}
+
+		@NotNull
+		@Override
+		public String getSerializedName() {
+			return serializedName;
 		}
 
 		@Override

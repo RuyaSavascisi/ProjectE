@@ -21,6 +21,6 @@ public final class PESounds {
 	}
 
 	private static Holder<SoundEvent> get(String name) {
-		return DeferredHolder.create(Registries.SOUND_EVENT, new ResourceLocation(ProjectEAPI.PROJECTE_MODID, name));
+		return DeferredHolder.create(Registries.SOUND_EVENT, ResourceLocation.fromNamespaceAndPath(ProjectEAPI.PROJECTE_MODID, name));
 	}
 }

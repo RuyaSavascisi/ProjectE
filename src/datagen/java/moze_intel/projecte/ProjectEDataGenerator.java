@@ -28,8 +28,8 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.loot.LootTableProvider.SubProviderEntry;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod.EventBusSubscriber;
-import net.neoforged.fml.common.Mod.EventBusSubscriber.Bus;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.neoforge.common.data.AdvancementProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -63,8 +63,8 @@ public class ProjectEDataGenerator {
 		gen.addProvider(event.includeServer(), new AdvancementProvider(output, lookupProvider, existingFileHelper, List.of(new PEAdvancementsGenerator())));
 		gen.addProvider(event.includeServer(), new LootTableProvider(output, Collections.emptySet(), List.of(
 				new SubProviderEntry(PEBlockLootTable::new, LootContextParamSets.BLOCK)
-		)));
-		gen.addProvider(event.includeServer(), new PERecipeProvider(output));
+		), lookupProvider));
+		gen.addProvider(event.includeServer(), new PERecipeProvider(output, lookupProvider));
 		gen.addProvider(event.includeServer(), new PEDataMapsProvider(output, lookupProvider));
 		gen.addProvider(event.includeServer(), new PECustomConversionProvider(output, lookupProvider));
 	}

@@ -32,10 +32,10 @@ public class EntitySpriteRenderer<ENTITY extends Entity> extends EntityRenderer<
 		matrix.scale(0.5F, 0.5F, 0.5F);
 		VertexConsumer builder = renderer.getBuffer(PERenderType.SPRITE_RENDERER.apply(getTextureLocation(entity)));
 		Matrix4f matrix4f = matrix.last().pose();
-		builder.vertex(matrix4f, -1, -1, 0).uv(1, 1).endVertex();
-		builder.vertex(matrix4f, -1, 1, 0).uv(1, 0).endVertex();
-		builder.vertex(matrix4f, 1, 1, 0).uv(0, 0).endVertex();
-		builder.vertex(matrix4f, 1, -1, 0).uv(0, 1).endVertex();
+		builder.addVertex(matrix4f, -1, -1, 0).setUv(1, 1);
+		builder.addVertex(matrix4f, -1, 1, 0).setUv(1, 0);
+		builder.addVertex(matrix4f, 1, 1, 0).setUv(0, 0);
+		builder.addVertex(matrix4f, 1, -1, 0).setUv(0, 1);
 		matrix.popPose();
 	}
 }

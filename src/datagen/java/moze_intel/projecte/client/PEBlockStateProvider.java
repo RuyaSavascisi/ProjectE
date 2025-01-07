@@ -4,7 +4,6 @@ import java.util.function.Function;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.registration.impl.BlockRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
-import moze_intel.projecte.utils.RegistryUtils;
 import net.minecraft.core.Direction;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
@@ -157,9 +156,9 @@ public class PEBlockStateProvider extends BlockStateProvider {
 
 	private void registerInterdictionTorch() {
 		simpleBlock(PEBlocks.INTERDICTION_TORCH.getBlock(), models().torch(PEBlocks.INTERDICTION_TORCH.getName(), modLoc("block/interdiction_torch"))
-				.renderType(new ResourceLocation("cutout")));
+				.renderType(ResourceLocation.withDefaultNamespace("cutout")));
 		horizontalBlock(PEBlocks.INTERDICTION_TORCH.getWallBlock(), models().torchWall(PEBlocks.INTERDICTION_TORCH.getWallName(),
-				modLoc("block/interdiction_torch")).renderType(new ResourceLocation("cutout")), 90);
+				modLoc("block/interdiction_torch")).renderType(ResourceLocation.withDefaultNamespace("cutout")), 90);
 	}
 
 	private void registerFurnace(BlockRegistryObject<?, ?> furnace, String prefix, String sideTexture) {

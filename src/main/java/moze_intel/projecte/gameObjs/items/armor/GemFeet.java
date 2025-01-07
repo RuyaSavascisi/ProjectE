@@ -1,13 +1,12 @@
 package moze_intel.projecte.gameObjs.items.armor;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.common.collect.Multimap;
+import com.google.common.base.Suppliers;
 import java.util.List;
-import java.util.UUID;
+import java.util.function.Supplier;
+import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.items.IFlightProvider;
 import moze_intel.projecte.gameObjs.items.IStepAssister;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.text.PELang;
@@ -16,38 +15,47 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssister {
 
-	private static final UUID MODIFIER = UUID.fromString("A4334312-DFF8-4582-9F4F-62AD0C070475");
 	private static final Vec3 VERTICAL_MOVEMENT = new Vec3(0, 0.1, 0);
+	private static final boolean STEP_ASSIST_DEFAULT = false;
 
-	private final Multimap<Attribute, AttributeModifier> attributes;
+	private final Supplier<ItemAttributeModifiers> defaultModifiers;
 
 	public GemFeet(Properties props) {
-		super(ArmorItem.Type.BOOTS, props);
-		Builder<Attribute, AttributeModifier> attributesBuilder = ImmutableMultimap.builder();
-		attributesBuilder.putAll(getDefaultAttributeModifiers(EquipmentSlot.FEET));
-		attributesBuilder.put(Attributes.MOVEMENT_SPEED, new AttributeModifier(MODIFIER, "Armor modifier", 1.0, Operation.MULTIPLY_TOTAL));
-		this.attributes = attributesBuilder.build();
+		super(ArmorItem.Type.BOOTS, props.component(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT));
+		this.defaultModifiers = Suppliers.memoize(() -> super.getDefaultAttributeModifiers().withModifierAdded(
+				Attributes.MOVEMENT_SPEED,
+				new AttributeModifier(PECore.rl("armor"), 1.0, Operation.ADD_MULTIPLIED_TOTAL),
+				EquipmentSlotGroup.FEET
+		));
+	}
+
+	@NotNull
+	@Override
+	public ItemAttributeModifiers getDefaultAttributeModifiers() {
+		return this.defaultModifiers.get();
 	}
 
 	public void toggleStepAssist(ItemStack boots, Player player) {
-		boolean oldValue = boots.getData(PEAttachmentTypes.STEP_ASSIST);
-		boots.setData(PEAttachmentTypes.STEP_ASSIST, oldValue);
+		//TODO - 1.21: Re-evaluate this, it seems wrong
+		boolean oldValue = boots.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT);
+		boots.set(PEDataComponentTypes.STEP_ASSIST, oldValue);
 		if (oldValue) {
 			player.sendSystemMessage(PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
 		} else {
@@ -90,21 +98,15 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(PELang.GEM_LORE_FEET.translate());
-		tooltips.add(PELang.STEP_ASSIST_PROMPT.translate(ClientKeyHelper.getKeyName(PEKeybind.BOOTS_TOGGLE)));
-		if (stack.getData(PEAttachmentTypes.STEP_ASSIST)) {
-			tooltips.add(PELang.STEP_ASSIST.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(PELang.GEM_LORE_FEET.translate());
+		tooltip.add(PELang.STEP_ASSIST_PROMPT.translate(ClientKeyHelper.getKeyName(PEKeybind.BOOTS_TOGGLE)));
+		if (stack.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT)) {
+			tooltip.add(PELang.STEP_ASSIST.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
 		} else {
-			tooltips.add(PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
+			tooltip.add(PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
 		}
-	}
-
-	@NotNull
-	@Override
-	public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot, ItemStack stack) {
-		return slot == EquipmentSlot.FEET ? attributes : super.getAttributeModifiers(slot, stack);
 	}
 
 	@Override
@@ -114,6 +116,6 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 
 	@Override
 	public boolean canAssistStep(ItemStack stack, Player player) {
-		return player.getItemBySlot(EquipmentSlot.FEET) == stack && stack.getData(PEAttachmentTypes.STEP_ASSIST);
+		return player.getItemBySlot(EquipmentSlot.FEET) == stack && stack.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT);
 	}
 }

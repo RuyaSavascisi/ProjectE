@@ -1,9 +1,10 @@
 package moze_intel.projecte.gameObjs.block_entities;
 
+import java.util.Optional;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.event.PlayerAttemptCondenserSetEvent;
 import moze_intel.projecte.emc.EMCMappingHandler;
-import moze_intel.projecte.emc.nbt.NBTManager;
+import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.container.CondenserContainer;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
@@ -13,7 +14,10 @@ import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -178,7 +182,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 			return false;
 		}
 		//Compare our lock to the persistent item that the stack would have
-		return lockInfo.equals(NBTManager.getPersistentInfo(ItemInfo.fromStack(stack)));
+		return lockInfo.equals(DataComponentManager.getPersistentInfo(ItemInfo.fromStack(stack)));
 	}
 
 	public void setLockInfoFromPacket(@Nullable ItemInfo lockInfo) {
@@ -193,7 +197,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 			ItemStack stack = player.containerMenu.getCarried();
 			if (!stack.isEmpty()) {
 				ItemInfo sourceInfo = ItemInfo.fromStack(stack);
-				ItemInfo reducedInfo = NBTManager.getPersistentInfo(sourceInfo);
+				ItemInfo reducedInfo = DataComponentManager.getPersistentInfo(sourceInfo);
 				if (!NeoForge.EVENT_BUS.post(new PlayerAttemptCondenserSetEvent(player, sourceInfo, reducedInfo)).isCanceled()) {
 					lockInfo = reducedInfo;
 					checkLockAndUpdate(true);
@@ -215,18 +219,26 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 	}
 
 	@Override
-	public void load(@NotNull CompoundTag nbt) {
-		super.load(nbt);
-		inputInventory.deserializeNBT(nbt.getCompound("Input"));
-		lockInfo = ItemInfo.read(nbt.getCompound("LockInfo"));
+	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
+		inputInventory.deserializeNBT(registries, tag.getCompound("Input"));
+		if (tag.contains("LockInfo")) {
+			lockInfo = ItemInfo.EXPLICIT_CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("LockInfo")).result().orElse(null);
+		} else {
+			lockInfo = null;
+		}
 	}
 
 	@Override
-	protected void saveAdditional(@NotNull CompoundTag tag) {
-		super.saveAdditional(tag);
-		tag.put("Input", inputInventory.serializeNBT());
+	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
+		tag.put("Input", inputInventory.serializeNBT(registries));
 		if (lockInfo != null) {
-			tag.put("LockInfo", lockInfo.write(new CompoundTag()));
+			Optional<Tag> result = ItemInfo.EXPLICIT_CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), lockInfo).result();
+			//noinspection OptionalIsPresent - Capturing lambda
+			if (result.isPresent()) {
+				tag.put("LockInfo", result.get());
+			}
 		}
 	}
 

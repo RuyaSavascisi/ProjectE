@@ -69,7 +69,7 @@ public class TransmutationOffline {
 				if (playerDat.contains(AttachmentHolder.ATTACHMENTS_NBT_KEY, Tag.TAG_COMPOUND)) {
 					CompoundTag attachmentData = playerDat.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
 					KnowledgeAttachment attachment = new KnowledgeAttachment();
-					attachment.deserializeNBT(attachmentData.getCompound(PEAttachmentTypes.KNOWLEDGE.getId().toString()));
+					attachment.deserializeNBT(server.registryAccess(), attachmentData.getCompound(PEAttachmentTypes.KNOWLEDGE.getId().toString()));
 
 					cachedKnowledgeProviders.put(playerUUID, immutableView(attachment));
 

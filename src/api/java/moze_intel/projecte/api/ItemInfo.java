@@ -2,29 +2,28 @@ package moze_intel.projecte.api;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Objects;
 import java.util.Optional;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSItem;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.neoforge.attachment.AttachmentHolder;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Class used for keeping track of a combined {@link Item} and {@link CompoundTag}. Unlike {@link ItemStack} this class does not keep track of count, and overrides
+ * Class used for keeping track of a combined {@link Item} and {@link DataComponentPatch}. Unlike {@link ItemStack} this class does not keep track of count, and overrides
  * {@link #equals(Object)} and {@link #hashCode()} so that it can be used properly in a {@link java.util.Set}.
  *
- * @implNote If the {@link CompoundTag} this {@link ItemInfo} is given is empty, then it converts it to being null.
+ * @implNote If the {@link DataComponentPatch} this {@link ItemInfo} is given is empty, then it converts it to being null.
  * @apiNote {@link ItemInfo} and the data it stores is Immutable
  */
 public final class ItemInfo {
@@ -33,41 +32,72 @@ public final class ItemInfo {
 	 * Codec for encoding ItemInfo to and from strings.
 	 */
 	public static final Codec<ItemInfo> LEGACY_CODEC = IPECodecHelper.INSTANCE.validatePresent(
-			NSSItem.LEGACY_CODEC.xmap(ItemInfo::fromNSS, itemInfo -> NSSItem.createItem(itemInfo.getItem(), itemInfo.getNBT())),
+			NSSItem.LEGACY_CODEC.xmap(ItemInfo::fromNSS, itemInfo -> NSSItem.createItem(itemInfo.getItem(), itemInfo.getComponentsPatch())),
 			() -> "ItemInfo does not support tags or missing items"
 	);
 
 	public static final Codec<ItemInfo> EXPLICIT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(ItemInfo::getItem),
-			CraftingHelper.TAG_CODEC.optionalFieldOf("nbt").forGetter(itemInfo -> Optional.ofNullable(itemInfo.getNBT()))
-	).apply(instance, (item, nbt) -> new ItemInfo(item, nbt.orElse(null))));
+			BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(ItemInfo::getItem),
+			DataComponentPatch.CODEC.optionalFieldOf("data", DataComponentPatch.EMPTY).forGetter(ItemInfo::getComponentsPatch)
+	).apply(instance, ItemInfo::new));
+
+	/**
+	 * Stream codec for encoding ItemInfo across the network.
+	 */
+	public static final StreamCodec<RegistryFriendlyByteBuf, ItemInfo> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.holderRegistry(Registries.ITEM), ItemInfo::getItem,
+			DataComponentPatch.STREAM_CODEC, ItemInfo::getComponentsPatch,
+			ItemInfo::new
+	);
 
 	@NotNull
-	private final Item item;
-	@Nullable
-	private final CompoundTag nbt;
+	private final Holder<Item> item;
+	@NotNull
+	private final DataComponentPatch componentsPatch;
 
-	private ItemInfo(@NotNull ItemLike item, @Nullable CompoundTag nbt) {
-		this.item = item.asItem();
-		this.nbt = nbt != null && nbt.isEmpty() ? null : nbt;
+	//TODO - 1.21: Should this use the components patch or the components map of the stack???
+	private ItemInfo(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
+		//TODO - 1.21: Do we want to throw if holder instanceof Holder.Direct as is(ResourceKey) and stuff returns bad values for that
+		this.item = item;
+		this.componentsPatch = componentsPatch;
 	}
 
 	/**
-	 * Creates an {@link ItemInfo} object from a given {@link Item} with an optional {@link CompoundTag} attached.
+	 * Creates an {@link ItemInfo} object from a given {@link Item} with an optional {@link DataComponentPatch} attached.
 	 *
 	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
 	 */
-	public static ItemInfo fromItem(@NotNull ItemLike item, @Nullable CompoundTag nbt) {
-		return new ItemInfo(item, nbt == null ? null : nbt.copy());
+	public static ItemInfo fromItem(@NotNull ItemLike itemLike, @NotNull DataComponentPatch componentsPatch) {
+		return new ItemInfo(itemLike.asItem().builtInRegistryHolder(), componentsPatch);
 	}
 
 	/**
-	 * Creates an {@link ItemInfo} object from a given {@link Item} with no {@link CompoundTag} attached.
+	 * Creates an {@link ItemInfo} object from a given {@link Item} with an optional {@link DataComponentPatch} attached.
 	 *
 	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
 	 */
-	public static ItemInfo fromItem(@NotNull ItemLike item) {
-		return fromItem(item, null);
+	public static ItemInfo fromItem(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
+		//TODO - 1.21: Update Docs
+		return new ItemInfo(item, componentsPatch);
+	}
+
+	/**
+	 * Creates an {@link ItemInfo} object from a given {@link Item} with no {@link DataComponentPatch} attached.
+	 *
+	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
+	 */
+	public static ItemInfo fromItem(@NotNull ItemLike itemLike) {
+		return fromItem(itemLike.asItem().builtInRegistryHolder(), DataComponentPatch.EMPTY);
+	}
+
+	/**
+	 * Creates an {@link ItemInfo} object from a given {@link Item} with no {@link DataComponentPatch} attached.
+	 *
+	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
+	 */
+	public static ItemInfo fromItem(@NotNull Holder<Item> item) {
+		//TODO - 1.21: Update Docs
+		return fromItem(item, DataComponentPatch.EMPTY);
 	}
 
 	/**
@@ -76,7 +106,7 @@ public final class ItemInfo {
 	 * @apiNote While it is not required that the stack is not empty, it is expected to check yourself to make sure it is not empty.
 	 */
 	public static ItemInfo fromStack(@NotNull ItemStack stack) {
-		return new ItemInfo(stack.getItem(), PEAttachments.addAttachmentsToNbt(stack.getTag(), stack.serializeAttachments()));
+		return new ItemInfo(stack.getItemHolder(), stack.getComponentsPatch());
 	}
 
 	/**
@@ -89,134 +119,54 @@ public final class ItemInfo {
 		if (stack.representsTag()) {
 			return null;
 		}
-		return BuiltInRegistries.ITEM.getOptional(stack.getResourceLocation())
-				.map(item -> fromItem(item, stack.getNBT()))
-				.orElse(null);
-	}
-
-	/**
-	 * Reads an {@link ItemInfo} from the given {@link CompoundTag}.
-	 *
-	 * @param nbt {@link CompoundTag} representing an {@link ItemInfo}
-	 *
-	 * @return An {@link ItemInfo} that is represented by the given {@link CompoundTag}, or null if no {@link ItemInfo} is stored or the item is not registered.
-	 */
-	@Nullable
-	public static ItemInfo read(@NotNull CompoundTag nbt) {
-		if (nbt.contains("item", Tag.TAG_STRING)) {
-			ResourceLocation registryName = ResourceLocation.tryParse(nbt.getString("item"));
-			if (registryName == null) {
-				return null;
-			}
-			return BuiltInRegistries.ITEM.getOptional(registryName).map(item -> {
-				if (nbt.contains("nbt", Tag.TAG_COMPOUND)) {
-					return fromItem(item, nbt.getCompound("nbt"));
-				}
-				return fromItem(item);
-			}).orElse(null);
+		Optional<Holder.Reference<Item>> holder = BuiltInRegistries.ITEM.getHolder(stack.getResourceLocation());
+		//noinspection OptionalIsPresent - Capturing lambda
+		if (holder.isEmpty()) {
+			return null;
 		}
-		return null;
-	}
-
-	/**
-	 * Reads an {@link ItemInfo} from the given {@link FriendlyByteBuf}.
-	 *
-	 * @param buffer {@link FriendlyByteBuf} containing an {@link ItemInfo}
-	 *
-	 * @return An {@link ItemInfo} that is contained by the given {@link FriendlyByteBuf}.
-	 */
-	public static ItemInfo read(@NotNull FriendlyByteBuf buffer) {
-		return new ItemInfo(buffer.readById(BuiltInRegistries.ITEM), buffer.readNbt());
-	}
-
-	/**
-	 * Writes the item and nbt to a {@link FriendlyByteBuf}.
-	 */
-	public void write(@NotNull FriendlyByteBuf buffer) {
-		buffer.writeId(BuiltInRegistries.ITEM, getItem());
-		buffer.writeNbt(this.nbt);
+		return fromItem(holder.get(), stack.getComponentsPatch());
 	}
 
 	/**
 	 * @return The {@link Item} stored in this {@link ItemInfo}.
 	 */
 	@NotNull
-	public Item getItem() {
+	public Holder<Item> getItem() {
+		//TODO - 1.21: Docs for this and all other methods we added that are undocumented
 		return item;
 	}
 
 	/**
-	 * @return The {@link CompoundTag} stored in this {@link ItemInfo}, or null if there is no nbt data stored.
-	 *
-	 * @apiNote The returned {@link CompoundTag} is a copy so as to ensure that this {@link ItemInfo} is not accidentally modified via modifying the returned
-	 * {@link CompoundTag}. This means it is safe to modify the returned {@link CompoundTag}
+	 * @return The {@link DataComponentPatch} stored in this {@link ItemInfo}, or {@link DataComponentPatch#EMPTY} if there is no nbt data stored.
 	 */
-	@Nullable
-	public CompoundTag getNBT() {
-		return nbt == null ? null : nbt.copy();
+	@NotNull
+	public DataComponentPatch getComponentsPatch() {
+		//TODO - 1.21: Re-evaluate callers, should the component processors allow persisting and using default components?
+		// The damage processor semi gets around this by creating the fake stack to see if it is damageable
+		return componentsPatch;
 	}
 
 	/**
-	 * Checks if this {@link ItemInfo} has an associated {@link CompoundTag}.
+	 * Checks if this {@link ItemInfo} has an associated {@link DataComponentPatch}.
 	 *
-	 * @return True if this {@link ItemInfo} has an associated {@link CompoundTag}, false otherwise.
+	 * @return True if this {@link ItemInfo} has an associated {@link DataComponentPatch}, false otherwise.
 	 */
-	public boolean hasNBT() {
-		return nbt != null;
+	public boolean hasModifiedData() {//TODO - 1.21: Re-evaluate if this method is useful
+		return !componentsPatch.isEmpty();
 	}
 
 	/**
-	 * Checks if the item backing this {@link ItemInfo} is contained in the given tag.
-	 *
-	 * @param tag Tag to check.
-	 *
-	 * @return True if it is contained.
-	 */
-	@SuppressWarnings("deprecation")
-	public boolean is(TagKey<Item> tag) {
-		return getItem().builtInRegistryHolder().is(tag);
-	}
-
-	/**
-	 * @return A new {@link ItemStack} created from the stored {@link Item} and {@link CompoundTag}
+	 * @return A new {@link ItemStack} created from the stored {@link Item} and {@link DataComponentPatch}
 	 */
 	public ItemStack createStack() {
-		CompoundTag nbt = getNBT();
-		CompoundTag attachmentNbt = null;
-		if (nbt != null && nbt.contains(AttachmentHolder.ATTACHMENTS_NBT_KEY, Tag.TAG_COMPOUND)) {
-			//Note: getNBT returns a copy of the stored nbt, so we don't have to copy it or the attachment sub-compound
-			attachmentNbt = nbt.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
-			if (nbt.size() > 1) {
-				nbt.remove(AttachmentHolder.ATTACHMENTS_NBT_KEY);
-			} else {
-				nbt = null;
-			}
-		}
-		ItemStack stack = new ItemStack(item, 1, attachmentNbt);
-		if (nbt != null) {
-			//Only set the NBT if we have some, other than allowing the item to use its default NBT
-			stack.setTag(nbt);
-		}
-		return stack;
-	}
-
-	/**
-	 * Writes the item and nbt fields to a NBT object.
-	 */
-	public CompoundTag write(@NotNull CompoundTag nbt) {
-		nbt.putString("item", getRegistryName().toString());
-		if (this.nbt != null) {
-			nbt.put("nbt", this.nbt.copy());
-		}
-		return nbt;
+		return new ItemStack(getItem(), 1, getComponentsPatch());
 	}
 
 	@Override
 	public int hashCode() {
-		int code = item.hashCode();
-		if (nbt != null) {
-			code = 31 * code + nbt.hashCode();
-		}
+		ResourceKey<Item> resourceKey = item.getKey();
+		int code = resourceKey == null ? 0 : resourceKey.hashCode();
+		code = 31 * code + componentsPatch.hashCode();
 		return code;
 	}
 
@@ -225,20 +175,18 @@ public final class ItemInfo {
 		if (o == this) {
 			return true;
 		} else if (o instanceof ItemInfo other) {
-			return item == other.item && Objects.equals(nbt, other.nbt);
+			return item.is(other.item) && componentsPatch.equals(other.componentsPatch);
 		}
 		return false;
 	}
 
 	@Override
 	public String toString() {
-		if (nbt != null) {
-			return getRegistryName() + " " + nbt;
+		//TODO: If getRegisteredName ends up being a hotspot, replace it with a variant that acts upon Holder#getKey
+		if (componentsPatch.isEmpty()) {
+			return item.getRegisteredName();
 		}
-		return getRegistryName().toString();
-	}
-
-	private ResourceLocation getRegistryName() {
-		return BuiltInRegistries.ITEM.getKey(item);
+		//TODO - 1.21: Do we want to change this? It isn't in the same format as the command does it
+		return item.getRegisteredName() + " " + componentsPatch;
 	}
 }

@@ -1,14 +1,19 @@
 package moze_intel.projecte.gameObjs.items;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.IntFunction;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.capabilities.item.IAlchBagItem;
 import moze_intel.projecte.api.capabilities.item.IAlchChestItem;
+import moze_intel.projecte.components.GemData;
 import moze_intel.projecte.gameObjs.container.EternalDensityContainer;
 import moze_intel.projecte.gameObjs.container.inventory.EternalDensityInventory;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity.GemMode;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.ClientKeyHelper;
@@ -20,7 +25,12 @@ import moze_intel.projecte.utils.text.ILangEntry;
 import moze_intel.projecte.utils.text.PELang;
 import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.MenuProvider;
@@ -34,7 +44,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.util.Lazy;
@@ -42,12 +51,15 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChestItem, IItemMode<GemMode>, ICapabilityAware {
 
 	public GemEternalDensity(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.ACTIVE, false)
+				.component(PEDataComponentTypes.GEM_MODE, GemMode.IRON)
+				.component(PEDataComponentTypes.GEM_DATA, GemData.EMPTY)
+				.component(PEDataComponentTypes.STORED_EMC, 0L)
+		);
 	}
 
 	@Override
@@ -62,9 +74,7 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 	 * @return Whether the inventory was changed
 	 */
 	private static boolean condense(ItemStack gem, IItemHandler inv) {
-		boolean isActive = gem.getExistingData(PEAttachmentTypes.ACTIVE)
-				.filter(active -> active)
-				.orElse(false);
+		boolean isActive = gem.getOrDefault(PEDataComponentTypes.ACTIVE, false);
 		if (!isActive || ItemPE.getEmc(gem) == Constants.BLOCK_ENTITY_MAX_EMC) {
 			return false;
 		}
@@ -75,17 +85,17 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			return false;
 		}
 		boolean hasChanged = false;
-		boolean isWhitelist = gem.getData(PEAttachmentTypes.GEM_WHITELIST);
-		List<ItemStack> whitelist = gem.getData(PEAttachmentTypes.GEM_TARGETS);
+		GemData gemData = gem.getOrDefault(PEDataComponentTypes.GEM_DATA, GemData.EMPTY);
 		for (int i = 0; i < inv.getSlots(); i++) {
 			ItemStack stack = inv.getStackInSlot(i);
 			if (stack.isEmpty()) {
 				continue;
 			}
-			Lazy<Boolean> filtered = Lazy.of(() -> whitelist.stream().anyMatch(s -> ItemHandlerHelper.canItemStacksStack(s, stack)));
+			GemData finalGemData = gemData;
+			Lazy<Boolean> filtered = Lazy.of(() -> finalGemData.whitelistMatches(s -> ItemStack.isSameItemSameComponents(s, stack)));
 			if (!stack.isStackable()) {
 				//Only skip unstackable items if they are not explicitly whitelisted
-				if (!isWhitelist || !filtered.get()) {
+				if (!gemData.isWhitelist() || !filtered.get()) {
 					continue;
 				}
 			}
@@ -95,10 +105,12 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 				continue;
 			}
 
-			if (isWhitelist == filtered.get()) {
+			if (gemData.isWhitelist() == filtered.get()) {
 				ItemStack copy = inv.extractItem(i, stack.getCount() == 1 ? 1 : stack.getCount() / 2, false);
-				addToList(gem, copy);
-				ItemPE.addEmcToStack(gem, EMCHelper.getEmcValue(copy) * copy.getCount());
+				gemData = gemData.addToList(copy);
+				gem.set(PEDataComponentTypes.GEM_DATA, gemData);
+
+				addEmcToStack(gem, EMCHelper.getEmcValue(copy) * copy.getCount());
 				hasChanged = true;
 				break;
 			}
@@ -114,8 +126,12 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			if (!remain.isEmpty()) {
 				return false;
 			}
-			ItemPE.removeEmc(gem, value);
-			gem.removeData(PEAttachmentTypes.GEM_CONSUMED);
+			removeEmc(gem, value);
+			//TODO - 1.21: Re-evaluate what this is meant to be doing
+			gemData = gemData.clearConsumed();
+			gem.set(PEDataComponentTypes.GEM_DATA, gemData);
+
+			//gem.removeData(PEDataComponentTypes.GEM_CONSUMED);
 			hasChanged = true;
 		}
 		return hasChanged;
@@ -127,15 +143,15 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 		ItemStack stack = player.getItemInHand(hand);
 		if (!level.isClientSide) {
 			if (player.isSecondaryUseActive()) {
-				if (stack.getData(PEAttachmentTypes.ACTIVE)) {
-					List<ItemStack> items = stack.removeData(PEAttachmentTypes.GEM_CONSUMED);
-					if (items != null && !items.isEmpty()) {
-						WorldHelper.createLootDrop(items, level, player.position());
-						ItemPE.setEmc(stack, 0);
+				if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
+					GemData oldData = stack.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, GemData::clearConsumed);
+					if (oldData != null && !oldData.consumed().isEmpty()) {
+						WorldHelper.createLootDrop(oldData.modifiableConsumed(), level, player.position());
+						setEmc(stack, 0);
 					}
-					stack.removeData(PEAttachmentTypes.ACTIVE);
+					stack.set(PEDataComponentTypes.ACTIVE, false);
 				} else {
-					stack.setData(PEAttachmentTypes.ACTIVE, true);
+					stack.set(PEDataComponentTypes.ACTIVE, true);
 				}
 			} else {
 				player.openMenu(new ContainerProvider(hand, stack), buf -> {
@@ -156,30 +172,14 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 		return gem.getMode(stack).getTarget();
 	}
 
-	private static void addToList(ItemStack gem, ItemStack stack) {
-		List<ItemStack> list = gem.getData(PEAttachmentTypes.GEM_CONSUMED);
-		boolean hasFound = false;
-		for (ItemStack s : list) {
-			if (s.getCount() < s.getMaxStackSize() && ItemHandlerHelper.canItemStacksStack(s, stack)) {
-				int remain = s.getMaxStackSize() - s.getCount();
-				if (stack.getCount() <= remain) {
-					s.grow(stack.getCount());
-					hasFound = true;
-					break;
-				} else {
-					s.grow(remain);
-					stack.shrink(remain);
-				}
-			}
-		}
-		if (!hasFound) {
-			list.add(stack);
-		}
+	@Override
+	public DataComponentType<GemMode> getDataComponentType() {
+		return PEDataComponentTypes.GEM_MODE.get();
 	}
 
 	@Override
-	public AttachmentType<GemMode> getAttachmentType() {
-		return PEAttachmentTypes.GEM_MODE.get();
+	public GemMode getDefaultMode() {
+		return GemMode.IRON;
 	}
 
 	@Override
@@ -188,18 +188,18 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(PELang.TOOLTIP_GEM_DENSITY_1.translate());
-		tooltips.add(PELang.TOOLTIP_GEM_DENSITY_2.translate(getMode(stack)));
-		tooltips.add(PELang.TOOLTIP_GEM_DENSITY_3.translate(ClientKeyHelper.getKeyName(PEKeybind.MODE)));
-		tooltips.add(PELang.TOOLTIP_GEM_DENSITY_4.translate());
-		tooltips.add(PELang.TOOLTIP_GEM_DENSITY_5.translate());
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(PELang.TOOLTIP_GEM_DENSITY_1.translate());
+		tooltip.add(PELang.TOOLTIP_GEM_DENSITY_2.translate(getMode(stack)));
+		tooltip.add(PELang.TOOLTIP_GEM_DENSITY_3.translate(ClientKeyHelper.getKeyName(PEKeybind.MODE)));
+		tooltip.add(PELang.TOOLTIP_GEM_DENSITY_4.translate());
+		tooltip.add(PELang.TOOLTIP_GEM_DENSITY_5.translate());
 	}
 
 	@Override
 	public boolean updateInAlchChest(@NotNull Level level, @NotNull BlockPos pos, @NotNull ItemStack stack) {
-		if (!level.isClientSide && stack.getData(PEAttachmentTypes.ACTIVE)) {
+		if (!level.isClientSide && stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			IItemHandler handler = WorldHelper.getCapability(level, ItemHandler.BLOCK, pos, null);
 			return handler != null && condense(stack, handler);
 		}
@@ -238,10 +238,22 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 		DARK_MATTER(PEItems.DARK_MATTER),
 		RED_MATTER(PEItems.RED_MATTER);
 
+		public static final Codec<GemMode> CODEC = StringRepresentable.fromEnum(GemMode::values);
+		public static final IntFunction<GemMode> BY_ID = ByIdMap.continuous(GemMode::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, GemMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, GemMode::ordinal);
+
+		private final String serializedName;
 		private final ItemLike target;
 
 		GemMode(ItemLike target) {
+			this.serializedName = name().toLowerCase(Locale.ROOT);
 			this.target = target;
+		}
+
+		@NotNull
+		@Override
+		public String getSerializedName() {
+			return serializedName;
 		}
 
 		@Override

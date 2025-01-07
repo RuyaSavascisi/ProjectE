@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
@@ -22,7 +23,6 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 
 public class DumpMissingEmc {
 
@@ -33,28 +33,27 @@ public class DumpMissingEmc {
 
 	private static int execute(CommandContext<CommandSourceStack> ctx) {
 		CommandSourceStack source = ctx.getSource();
-		Set<Item> allItems = BuiltInRegistries.ITEM.stream().collect(Collectors.toSet());
-		allItems.remove(Items.AIR);//Ignore air
+		//TODO - 1.21: Test this
+		Set<Holder<Item>> allItems = BuiltInRegistries.ITEM.holders().collect(Collectors.toSet());
+		allItems.remove(Items.AIR.builtInRegistryHolder());//Ignore air
 		Set<ItemInfo> missing = new HashSet<>();
-		CreativeModeTab tab = CreativeModeTabRegistry.getTab(CreativeModeTabs.SEARCH.location());
-		if (tab != null) {
-			if (tab.getSearchTabDisplayItems().isEmpty()) {
-				//If the search tab hasn't been initialized yet initialize it
-				initTab(tab);
-			}
-			//Check all items in the search tab to see if they have an EMC value (as they may have nbt variants declared)
-			for (ItemStack stack : tab.getSearchTabDisplayItems()) {
-				if (!stack.isEmpty()) {
-					ItemInfo itemInfo = ItemInfo.fromStack(stack);
-					if (EMCHelper.getEmcValue(itemInfo) == 0) {
-						missing.add(itemInfo);
-					} else {
-						allItems.remove(stack.getItem());
-					}
+		CreativeModeTab tab = CreativeModeTabs.searchTab();
+		if (tab.getSearchTabDisplayItems().isEmpty()) {
+			//If the search tab hasn't been initialized yet initialize it
+			initTab(tab);
+		}
+		//Check all items in the search tab to see if they have an EMC value (as they may have nbt variants declared)
+		for (ItemStack stack : tab.getSearchTabDisplayItems()) {
+			if (!stack.isEmpty()) {
+				ItemInfo itemInfo = ItemInfo.fromStack(stack);
+				if (EMCHelper.getEmcValue(itemInfo) == 0) {
+					missing.add(itemInfo);
+				} else {
+					allItems.remove(stack.getItemHolder());
 				}
 			}
 		}
-		for (Item item : allItems) {
+		for (Holder<Item> item : allItems) {
 			//Try any items that we didn't have a variant with NBT for that had one
 			//Note: This is intentionally not using Item#getDefaultInstance as nbt based variants should be based on the creative mode tabs
 			ItemInfo itemInfo = ItemInfo.fromItem(item);

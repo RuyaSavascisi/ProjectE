@@ -8,7 +8,6 @@ import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
@@ -77,7 +76,7 @@ public class PECodecHelper implements IPECodecHelper {
 		}
 	};
 
-	private final Codec<NormalizedSimpleStack> EXPLICIT_NSS_CODEC = ExtraCodecs.lazyInitializedCodec(() -> nssSerializerCodec.dispatch(NormalizedSimpleStack::codecs, NSSCodecHolder::explicit));
+	private final Codec<NormalizedSimpleStack> EXPLICIT_NSS_CODEC = Codec.lazyInitialized(() -> nssSerializerCodec.dispatch(NormalizedSimpleStack::codecs, NSSCodecHolder::explicit));
 
 	private final Codec<NormalizedSimpleStack> NSS_CODEC = NeoForgeExtraCodecs.withAlternative(LEGACY_NSS_CODEC, EXPLICIT_NSS_CODEC);
 
@@ -148,8 +147,7 @@ public class PECodecHelper implements IPECodecHelper {
 
 	@Override
 	public Codec<Long> longRangeWithMessage(long min, long max, Function<Long, String> errorMessage) {
-		return ExtraCodecs.validate(
-				Codec.LONG,
+		return Codec.LONG.validate(
 				value -> value.compareTo(min) >= 0 && value.compareTo(max) <= 0
 						 ? DataResult.success(value)
 						 : DataResult.error(() -> errorMessage.apply(value))
@@ -199,8 +197,9 @@ public class PECodecHelper implements IPECodecHelper {
 	}
 
 	public static <TYPE> void writeToFile(Path path, Codec<TYPE> codec, TYPE value, String fileDescription) {
+		//TODO - 1.21: Do we need to create a serialization context?
 		DataResult<JsonElement> result = codec.encodeStart(JsonOps.INSTANCE, value);
-		Optional<PartialResult<JsonElement>> error = result.error();
+		Optional<DataResult.Error<JsonElement>> error = result.error();
 		if (error.isPresent()) {
 			PECore.LOGGER.error("Failed to convert {} to json: {}", fileDescription, error.get().message());
 			return;
@@ -232,6 +231,7 @@ public class PECodecHelper implements IPECodecHelper {
 			PECore.LOGGER.error("Couldn't parse {}", description, e);
 			return Optional.empty();
 		}
+		//TODO - 1.21: Do we need to create a serialization context?
 		DataResult<TYPE> result = codec.parse(JsonOps.INSTANCE, json);
 		if (result.error().isPresent()) {
 			PECore.LOGGER.error("Couldn't parse {}: {}", description, result.error().get().message());

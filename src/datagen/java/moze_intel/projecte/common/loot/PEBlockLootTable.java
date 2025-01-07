@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.ItemLike;
@@ -20,7 +21,7 @@ public class PEBlockLootTable extends BlockLootSubProvider {
 
 	private final Set<Block> knownBlocks = new HashSet<>();
 
-	public PEBlockLootTable() {
+	public PEBlockLootTable(HolderLookup.Provider registries) {
 		super(Set.of(
 				PEBlocks.COLLECTOR.getSecondary(),
 				PEBlocks.COLLECTOR_MK2.getSecondary(),
@@ -35,7 +36,7 @@ public class PEBlockLootTable extends BlockLootSubProvider {
 				PEBlocks.RELAY.getSecondary(),
 				PEBlocks.RELAY_MK2.getSecondary(),
 				PEBlocks.RELAY_MK3.getSecondary()
-		), FeatureFlags.VANILLA_SET);
+		), FeatureFlags.VANILLA_SET, registries);
 	}
 
 	@Override

@@ -1,15 +1,19 @@
 package moze_intel.projecte.gameObjs.items;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Set;
+import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.gameObjs.container.MercurialEyeContainer;
 import moze_intel.projecte.gameObjs.items.MercurialEye.MercurialEyeMode;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
@@ -20,8 +24,13 @@ import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -38,9 +47,9 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.items.ComponentItemHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,7 +57,7 @@ import org.jetbrains.annotations.Nullable;
 public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFunction, ICapabilityAware {
 
 	public MercurialEye(Properties props) {
-		super(props, 4);
+		super(props.component(PEDataComponentTypes.MERCURIAL_EYE_MODE, MercurialEyeMode.CREATION), 4);
 	}
 
 	@Override
@@ -309,12 +318,18 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 
 	@Override
 	public void attachCapabilities(RegisterCapabilitiesEvent event) {
-		event.registerItem(ItemHandler.ITEM, (stack, context) -> stack.getData(PEAttachmentTypes.EYE_INVENTORY), this);
+		//TODO - 1.21: Test this
+		event.registerItem(ItemHandler.ITEM, (stack, context) -> new ComponentItemHandler(stack, PEDataComponentTypes.EYE_INVENTORY.get(), 2), this);
 	}
 
 	@Override
-	public AttachmentType<MercurialEyeMode> getAttachmentType() {
-		return PEAttachmentTypes.MERCURIAL_EYE_MODE.get();
+	public DataComponentType<MercurialEyeMode> getDataComponentType() {
+		return PEDataComponentTypes.MERCURIAL_EYE_MODE.get();
+	}
+
+	@Override
+	public MercurialEyeMode getDefaultMode() {
+		return MercurialEyeMode.CREATION;
 	}
 
 	public enum MercurialEyeMode implements IModeEnum<MercurialEyeMode> {
@@ -325,10 +340,22 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 		TRANSMUTATION_CLASSIC(PELang.MODE_MERCURIAL_EYE_5),
 		PILLAR(PELang.MODE_MERCURIAL_EYE_6);
 
+		public static final Codec<MercurialEyeMode> CODEC = StringRepresentable.fromEnum(MercurialEyeMode::values);
+		public static final IntFunction<MercurialEyeMode> BY_ID = ByIdMap.continuous(MercurialEyeMode::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, MercurialEyeMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, MercurialEyeMode::ordinal);
+
 		private final IHasTranslationKey langEntry;
+		private final String serializedName;
 
 		MercurialEyeMode(IHasTranslationKey langEntry) {
+			this.serializedName = name().toLowerCase(Locale.ROOT);
 			this.langEntry = langEntry;
+		}
+
+		@NotNull
+		@Override
+		public String getSerializedName() {
+			return serializedName;
 		}
 
 		@Override

@@ -54,6 +54,7 @@ public class ShowBagCMD {
 	public static LiteralArgumentBuilder<CommandSourceStack> register(CommandBuildContext context) {
 		return Commands.literal("showbag")
 				.requires(PEPermissions.COMMAND_SHOW_BAG)
+				//TODO - 1.21: Evaluate replacing this with EnumArgument.enumArgument(DyeColor.class)
 				.then(Commands.argument("color", ColorArgument.color())
 						.then(Commands.argument("target", EntityArgument.player())
 								.executes(ctx -> showBag(ctx, ColorArgument.getColor(ctx, "color"), EntityArgument.getPlayer(ctx, "target"))))
@@ -130,7 +131,7 @@ public class ShowBagCMD {
 				if (playerDat.contains(AttachmentHolder.ATTACHMENTS_NBT_KEY, Tag.TAG_COMPOUND)) {
 					CompoundTag attachmentData = playerDat.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
 					AlchemicalBagAttachment attachment = new AlchemicalBagAttachment();
-					attachment.deserializeNBT(attachmentData.getCompound(PEAttachmentTypes.ALCHEMICAL_BAGS.getId().toString()));
+					attachment.deserializeNBT(server.registryAccess(), attachmentData.getCompound(PEAttachmentTypes.ALCHEMICAL_BAGS.getId().toString()));
 
 					return attachment.getBag(color);
 				}

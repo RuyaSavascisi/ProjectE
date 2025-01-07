@@ -12,6 +12,7 @@ import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.state.BlockState;
@@ -75,9 +76,9 @@ public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 
 	@NotNull
 	@Override
-	public final CompoundTag getUpdateTag() {
+	public final CompoundTag getUpdateTag(@NotNull HolderLookup.Provider registries) {
 		//TODO: Eventually it would be nice to try and minimize how much data we send in the update tags
-		return saveWithoutMetadata();
+		return saveWithoutMetadata(registries);
 	}
 
 	@Override

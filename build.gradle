@@ -4,10 +4,12 @@ import groovy.json.JsonSlurper
 import java.util.function.Consumer
 
 plugins {
-    id "com.gradleup.shadow" version "8.3.5"
-    id 'idea'
+    id('java')
+    id('eclipse')
+    id('idea')
+    id('com.gradleup.shadow') version('8.3.5')
     // https://projects.neoforged.net/neoforged/ModDevGradle
-    id 'net.neoforged.moddev' version '2.0.73'
+    id('net.neoforged.moddev') version('2.0.73')
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -70,17 +72,14 @@ static void extendConfigurations(Configuration base, Configuration... configurat
 }
 
 ext {
-    versionProperties = ["version": projecte_version, "mc_version": minecraft_version_range, "forge_version": forge_version_range, "loader_version": loader_version_range]
-    jsonPatterns = ["**/*.json", "**/*.mcmeta"]
-    //Setup the UPDATE_SOURCESET property in case we are doing any remappings
-    UPDATE_SOURCESETS = project.sourceSets.collect { it.name }.join(';')
+    versionProperties = ["version": projecte_version, "mc_version": minecraft_version_range, "neo_version": neo_version_range, "loader_version": loader_version_range]
 }
 
 def replaceResources = tasks.register("replaceResources", Copy) {
     it.outputs.upToDateWhen { false }
     def modsToml = copySpec {
         from(sourceSets.main.resources) {
-            include "META-INF/mods.toml"
+            include "META-INF/neoforge.mods.toml"
             expand versionProperties
         }
     }
@@ -105,36 +104,47 @@ def replaceResources = tasks.register("replaceResources", Copy) {
 
 version = "${projecte_version}"
 group = "java.moze_intel"
-archivesBaseName = "projecte"
+project.base.archivesName = "projecte"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.JETBRAINS)
     }
 }
 
 neoForge {
-    version = forge_version
+    version = neo_version
     addModdingDependenciesTo(sourceSets.api)
     addModdingDependenciesTo(sourceSets.datagen)
     addModdingDependenciesTo(sourceSets.test)
 
-    accessTransformers.from(file('src/main/resources/META-INF/accesstransformer.cfg'))
+    accessTransformers.from(
+            file('src/main/resources/META-INF/accesstransformer.cfg'),
+            //Dev time only ATs so the file name doesn't have to match accesstransformer.cfg
+            file('src/datagen/resources/META-INF/datagen_ats.cfg')
+    )
 
-    //Dev time only ATs so the file name doesn't have to match accesstransformer.cfg
-    accessTransformers.from(file('src/datagen/resources/META-INF/datagen_ats.cfg'))
-}
-
-neoForge.mods {
-    projecte {
-        sourceSet sourceSets.main
-        sourceSet sourceSets.api
+    mods {
+        projecte {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.api
+        }
+        projecte_datagen {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.api
+            sourceSet sourceSets.datagen
+        }
+        projecte_test {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.api
+        }
     }
-    projecte_datagen {
-        sourceSet sourceSets.main
-        sourceSet sourceSets.api
-        sourceSet sourceSets.datagen
+
+    unitTest {
+        enable()
+        testedMod = mods.projecte_test
+        loadedMods = [mods.projecte_test]
     }
 }
 
@@ -197,7 +207,7 @@ neoForge.runs {
     }
 }
 
-void exclusiveRepo(RepositoryHandler handler, String url, String... groups) {
+static void exclusiveRepo(RepositoryHandler handler, String url, String... groups) {
     exclusiveRepo(handler, url, filter -> {
         for (def group : groups) {
             filter.includeGroup(group)
@@ -205,9 +215,7 @@ void exclusiveRepo(RepositoryHandler handler, String url, String... groups) {
     })
 }
 
-//Note: This cannot be static so that fg.repository can be properly accessed
-@SuppressWarnings('GrMethodMayBeStatic')
-void exclusiveRepo(RepositoryHandler handler, String url, Consumer<InclusiveRepositoryContentDescriptor> filterSetup) {
+static void exclusiveRepo(RepositoryHandler handler, String url, Consumer<InclusiveRepositoryContentDescriptor> filterSetup) {
     handler.exclusiveContent {
         it.forRepositories(handler.maven {
             setUrl(url)
@@ -218,11 +226,11 @@ void exclusiveRepo(RepositoryHandler handler, String url, Consumer<InclusiveRepo
 
 repositories { RepositoryHandler handler ->
     exclusiveRepo(handler, 'https://maven.blamejared.com', filter -> {
-        filter.includeGroupByRegex 'com\\.blamejared.*'
-        filter.includeGroup 'mezz.jei'
-        filter.includeGroup 'org.openzen.zencode'
+        filter.includeGroupByRegex('com\\.blamejared.*')
+        filter.includeGroup('mezz.jei')
+        filter.includeGroup('org.openzen.zencode')
     })
-    exclusiveRepo(handler, 'https://maven.theillusivec4.top/', 'top.theillusivec4.curios')
+    exclusiveRepo(handler, 'https://maven.octo-studios.com/releases/', 'top.theillusivec4.curios')
     exclusiveRepo(handler, 'https://maven2.bai.lol', 'lol.bai', 'mcp.mobius.waila')//WTHIT
     exclusiveRepo(handler, 'https://modmaven.dev/', 'mcjty.theoneprobe')
     exclusiveRepo(handler, 'https://www.cursemaven.com', 'curse.maven')
@@ -256,23 +264,24 @@ dependencies {
 
     implementation("com.blamejared.crafttweaker:CraftTweaker-neoforge-${minecraft_version}:${crafttweaker_version}")
 
-    additionalRuntimeClasspath(implementation(shadow(group: "org.apache.commons", name: "commons-math3", version: "3.6.1")))
+    additionalRuntimeClasspath(implementation(shadow(group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1')))
 }
 
 //Set the various variables/settings for the different process resources tasks
-processResources {
-    duplicatesStrategy(DuplicatesStrategy.FAIL)
-    exclude('META-INF/mods.toml')
-    configure { finalizedBy(replaceResources) }
-    doLast {
-        fileTree(dir: getOutputs().getFiles().getAsPath(), includes: jsonPatterns).each {
-            File file -> file.setText(JsonOutput.toJson(new JsonSlurper().parse(file)))
+tasks.named('processResources', ProcessResources).configure { ProcessResources process ->
+    process.duplicatesStrategy = DuplicatesStrategy.FAIL
+    process.exclude('META-INF/neoforge.mods.toml')
+    process.finalizedBy(replaceResources)
+    def files = fileTree(dir: outputs.files.asPath, includes: ['**/*.json', '**/*.mcmeta'])
+    process.doLast {
+        for (def file : files) {
+            file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
         }
     }
 }
 
 //Make the various classes tasks depend on the corresponding replaceResources tasks in addition to the default processResources tasks they depend on
-classes.configure { dependsOn(replaceResources) }
+tasks.named('classes').configure { dependsOn(replaceResources) }
 
 def getManifestAttributes() {
     return [
@@ -288,14 +297,14 @@ def getManifestAttributes() {
 }
 
 tasks.named('jar', Jar).configure {
-    duplicatesStrategy(DuplicatesStrategy.FAIL)
+    duplicatesStrategy = DuplicatesStrategy.FAIL
     from([sourceSets.api.output, sourceSets.main.output])
     manifest.attributes(getManifestAttributes())
     finalizedBy shadowJar
 }
 
 tasks.register('apiJar', Jar) {
-    duplicatesStrategy(DuplicatesStrategy.FAIL)
+    duplicatesStrategy = DuplicatesStrategy.FAIL
     archiveClassifier.set("api")
     from sourceSets.api.output
     manifest.attributes(getManifestAttributes())
@@ -305,7 +314,7 @@ shadowJar {
     //Note: We use the include duplicate strategy instead of FAIL as minimize causes
     // the things to get "added" twice but it is filtered separately by the shadow
     // plugin anyways
-    duplicatesStrategy(DuplicatesStrategy.INCLUDE)
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     archiveClassifier.set("universal") // Replace the default JAR
 
     configurations = [project.configurations.shadow]
@@ -334,8 +343,8 @@ tasks.register('updateJSON') {
 }
 
 tasks.withType(JavaCompile).configureEach({
-    it.options.encoding = 'UTF-8'
-    it.options.compilerArgs.addAll(["-Xmaxerrs", "100000"])
+    options.encoding = 'UTF-8'
+    options.compilerArgs.addAll(['-Xmaxerrs', '100000'])
 })
 
 artifacts {

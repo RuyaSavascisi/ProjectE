@@ -1,11 +1,16 @@
 package moze_intel.projecte.api.capabilities;
 
+import io.netty.buffer.ByteBuf;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.IntFunction;
 import moze_intel.projecte.api.ItemInfo;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.EntityCapability;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -163,6 +168,9 @@ public interface IKnowledgeProvider {
 		/**
 		 * Update targets.
 		 */
-		ALL
+		ALL;
+
+		public static final IntFunction<TargetUpdateType> BY_ID = ByIdMap.continuous(TargetUpdateType::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, TargetUpdateType> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, TargetUpdateType::ordinal);
 	}
 }

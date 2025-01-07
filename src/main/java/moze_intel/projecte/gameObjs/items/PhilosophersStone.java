@@ -1,16 +1,20 @@
 package moze_intel.projecte.gameObjs.items;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
 import moze_intel.projecte.gameObjs.container.PhilosStoneContainer;
 import moze_intel.projecte.gameObjs.entity.EntityMobRandomizer;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone.PhilosophersStoneMode;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
@@ -21,11 +25,16 @@ import moze_intel.projecte.utils.text.IHasTranslationKey;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -33,6 +42,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
@@ -42,14 +52,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implements IProjectileShooter, IExtraFunction {
 
 	public PhilosophersStone(Properties props) {
-		super(props, 4);
+		super(props.component(PEDataComponentTypes.PHILOSOPHERS_STONE_MODE, PhilosophersStoneMode.CUBE), 4);
 	}
 
 	@Override
@@ -120,9 +128,9 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(PELang.TOOLTIP_PHILOSTONE.translate(ClientKeyHelper.getKeyName(PEKeybind.EXTRA_FUNCTION)));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(PELang.TOOLTIP_PHILOSTONE.translate(ClientKeyHelper.getKeyName(PEKeybind.EXTRA_FUNCTION)));
 	}
 
 	public static Map<BlockPos, BlockState> getChanges(Level level, BlockPos pos, Player player, Direction sideHit, PhilosophersStoneMode mode, int charge) {
@@ -173,8 +181,13 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 	}
 
 	@Override
-	public AttachmentType<PhilosophersStoneMode> getAttachmentType() {
-		return PEAttachmentTypes.PHILOSOPHERS_STONE_MODE.get();
+	public DataComponentType<PhilosophersStoneMode> getDataComponentType() {
+		return PEDataComponentTypes.PHILOSOPHERS_STONE_MODE.get();
+	}
+
+	@Override
+	public PhilosophersStoneMode getDefaultMode() {
+		return PhilosophersStoneMode.CUBE;
 	}
 
 	private record ContainerProvider(ItemStack stack) implements MenuProvider {
@@ -197,10 +210,22 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		PANEL(PELang.MODE_PHILOSOPHER_2),
 		LINE(PELang.MODE_PHILOSOPHER_3);
 
+		public static final Codec<PhilosophersStoneMode> CODEC = StringRepresentable.fromEnum(PhilosophersStoneMode::values);
+		public static final IntFunction<PhilosophersStoneMode> BY_ID = ByIdMap.continuous(PhilosophersStoneMode::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, PhilosophersStoneMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, PhilosophersStoneMode::ordinal);
+
 		private final IHasTranslationKey langEntry;
+		private final String serializedName;
 
 		PhilosophersStoneMode(IHasTranslationKey langEntry) {
+			this.serializedName = name().toLowerCase(Locale.ROOT);
 			this.langEntry = langEntry;
+		}
+
+		@NotNull
+		@Override
+		public String getSerializedName() {
+			return serializedName;
 		}
 
 		@Override

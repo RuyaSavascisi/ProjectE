@@ -1,20 +1,14 @@
 package moze_intel.projecte.gameObjs.items.armor;
 
-import moze_intel.projecte.PECore;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
+import moze_intel.projecte.gameObjs.registries.PEArmorMaterials;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.world.item.crafting.Ingredient;
-import org.jetbrains.annotations.NotNull;
 
 public class DMArmor extends PEArmor {
 
 	public DMArmor(ArmorItem.Type armorPiece, Properties props) {
-		super(DMArmorMaterial.INSTANCE, armorPiece, props);
+		super(PEArmorMaterials.DARK_MATTER, armorPiece, props);
 	}
 
 	@Override
@@ -40,59 +34,5 @@ public class DMArmor extends PEArmor {
 			return 100;
 		}
 		return 150;
-	}
-
-	private static class DMArmorMaterial implements ArmorMaterial {
-
-		private static final DMArmorMaterial INSTANCE = new DMArmorMaterial();
-
-		@Override
-		public int getDurabilityForType(@NotNull ArmorItem.Type type) {
-			return 0;
-		}
-
-		@Override
-		public int getDefenseForType(@NotNull ArmorItem.Type type) {
-			return switch (type) {
-				case BOOTS -> 3;
-				case LEGGINGS -> 6;
-				case CHESTPLATE -> 8;
-				case HELMET -> 3;
-			};
-		}
-
-		@Override
-		public int getEnchantmentValue() {
-			return 0;
-		}
-
-		@NotNull
-		@Override
-		public SoundEvent getEquipSound() {
-			return SoundEvents.ARMOR_EQUIP_DIAMOND;
-		}
-
-		@NotNull
-		@Override
-		public Ingredient getRepairIngredient() {
-			return Ingredient.EMPTY;
-		}
-
-		@NotNull
-		@Override
-		public String getName() {
-			//Only used on the client
-			return PECore.rl("dark_matter").toString();
-		}
-
-		@Override
-		public float getToughness() {
-			return 2;
-		}
-
-		@Override
-		public float getKnockbackResistance() {
-			return 0.1F;
-		}
 	}
 }

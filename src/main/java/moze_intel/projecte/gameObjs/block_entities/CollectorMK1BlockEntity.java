@@ -7,7 +7,6 @@ import moze_intel.projecte.gameObjs.EnumCollectorTier;
 import moze_intel.projecte.gameObjs.container.CollectorMK1Container;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.utils.EMCHelper;
@@ -16,6 +15,7 @@ import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -74,6 +74,7 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 
 	private final long emcGen;
 
+	private double unprocessedEMC;
 	private boolean hasChargeableItem;
 	private boolean hasFuel;
 	//Start as needing to check for compacting when loaded
@@ -186,13 +187,11 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 
 	private void updateEmc() {
 		if (!this.hasMaxedEmc()) {
-			double unprocessedEMC = getData(PEAttachmentTypes.UNPROCESSED_EMC);
 			unprocessedEMC += emcGen * (getSunLevel() / 320.0f);
 			if (unprocessedEMC >= 1) {
 				//Force add the EMC regardless of if we can receive EMC from external sources
 				unprocessedEMC -= forceInsertEmc((long) unprocessedEMC, EmcAction.EXECUTE);
 			}
-			setData(PEAttachmentTypes.UNPROCESSED_EMC, unprocessedEMC);
 			//Note: We don't need to recheck comparators because it doesn't take the unprocessed emc into account
 			markDirty(false);
 		}
@@ -313,17 +312,19 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 	}
 
 	@Override
-	public void load(@NotNull CompoundTag nbt) {
-		super.load(nbt);
-		input.deserializeNBT(nbt.getCompound("Input"));
-		auxSlots.deserializeNBT(nbt.getCompound("AuxSlots"));
+	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
+		unprocessedEMC = tag.getDouble("unprocessed_emc");
+		input.deserializeNBT(registries, tag.getCompound("Input"));
+		auxSlots.deserializeNBT(registries, tag.getCompound("AuxSlots"));
 	}
 
 	@Override
-	protected void saveAdditional(@NotNull CompoundTag tag) {
-		super.saveAdditional(tag);
-		tag.put("Input", input.serializeNBT());
-		tag.put("AuxSlots", auxSlots.serializeNBT());
+	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
+		tag.putDouble("unprocessed_emc", unprocessedEMC);
+		tag.put("Input", input.serializeNBT(registries));
+		tag.put("AuxSlots", auxSlots.serializeNBT(registries));
 	}
 
 	private void sendRelayBonus() {

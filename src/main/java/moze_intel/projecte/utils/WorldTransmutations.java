@@ -1,11 +1,10 @@
 package moze_intel.projecte.utils;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.stream.Stream;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.imc.IMCMethods;
@@ -161,14 +160,14 @@ public final class WorldTransmutations {
 	}
 
 	private static BlockState copyProperties(BlockState source, BlockState target) {
-		ImmutableMap<Property<?>, Comparable<?>> values = source.getValues();
-		for (Entry<Property<?>, Comparable<?>> entry : values.entrySet()) {
+		for (Map.Entry<Property<?>, Comparable<?>> entry : source.getValues().entrySet()) {
 			target = applyProperty(target, entry.getKey(), entry.getValue());
 		}
 		return target;
 	}
 
 	private static <T extends Comparable<T>, V extends T> BlockState applyProperty(BlockState target, Property<T> property, Comparable<?> value) {
+		//TODO - 1.21: Evaluate callers to setValue and see if we should instead use about trySetValue
 		return target.setValue(property, (V) value);
 	}
 

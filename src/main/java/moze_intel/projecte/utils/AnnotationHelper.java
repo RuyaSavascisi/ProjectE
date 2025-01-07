@@ -18,8 +18,8 @@ import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.recipe.IRecipeTypeMapper;
 import moze_intel.projecte.api.mapper.recipe.RecipeTypeMapper;
-import moze_intel.projecte.api.nbt.INBTProcessor;
-import moze_intel.projecte.api.nbt.NBTProcessor;
+import moze_intel.projecte.api.components.IDataComponentProcessor;
+import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.ModFileScanData;
@@ -31,22 +31,22 @@ public class AnnotationHelper {
 
 	private static final Type MAPPER_TYPE = Type.getType(EMCMapper.class);
 	private static final Type RECIPE_TYPE_MAPPER_TYPE = Type.getType(RecipeTypeMapper.class);
-	private static final Type NBT_PROCESSOR_TYPE = Type.getType(NBTProcessor.class);
+	private static final Type NBT_PROCESSOR_TYPE = Type.getType(DataComponentProcessor.class);
 
-	public static List<INBTProcessor> getNBTProcessors() {
+	public static List<IDataComponentProcessor> getDataComponentProcessors() {
 		ModList modList = ModList.get();
-		List<INBTProcessor> nbtProcessors = new ArrayList<>();
-		Object2IntMap<INBTProcessor> priorities = new Object2IntOpenHashMap<>();
+		List<IDataComponentProcessor> nbtProcessors = new ArrayList<>();
+		Object2IntMap<IDataComponentProcessor> priorities = new Object2IntOpenHashMap<>();
 		for (ModFileScanData scanData : modList.getAllScanData()) {
 			for (AnnotationData data : scanData.getAnnotations()) {
 				if (NBT_PROCESSOR_TYPE.equals(data.annotationType()) && checkRequiredMods(data)) {
 					//If all the mods were loaded then attempt to get the processor
-					INBTProcessor processor = getNBTProcessor(data.memberName());
+					IDataComponentProcessor processor = getNBTProcessor(data.memberName());
 					if (processor != null) {
 						int priority = getPriority(data);
 						nbtProcessors.add(processor);
 						priorities.put(processor, priority);
-						PECore.LOGGER.info("Found and loaded NBT Processor: {}, with priority {}", processor.getName(), priority);
+						PECore.LOGGER.info("Found and loaded Data Component Processor: {}, with priority {}", processor.getName(), priority);
 					}
 				}
 			}
@@ -116,8 +116,8 @@ public class AnnotationHelper {
 	}
 
 	@Nullable
-	private static INBTProcessor getNBTProcessor(String className) {
-		return createOrGetInstance(className, INBTProcessor.class, NBTProcessor.Instance.class, INBTProcessor::getName);
+	private static IDataComponentProcessor getNBTProcessor(String className) {
+		return createOrGetInstance(className, IDataComponentProcessor.class, DataComponentProcessor.Instance.class, IDataComponentProcessor::getName);
 	}
 
 	@Nullable

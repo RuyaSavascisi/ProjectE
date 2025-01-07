@@ -8,8 +8,21 @@ import com.mojang.serialization.JsonOps;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.function.Function;
+import net.minecraft.Util;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.component.CustomData;
 
 public class CodecTestHelper {
+
+	public static final DataComponentPatch MY_TAG_PATCH = Util.make(() -> {
+		CompoundTag nbt = new CompoundTag();
+		nbt.putString("my", "tag");
+		return DataComponentPatch.builder()
+				.set(DataComponents.CUSTOM_DATA, CustomData.of(nbt))
+				.build();
+	});
 
 	public static void initBuiltinNSS() {
 		PECodecHelper.initBuiltinNSS();
@@ -23,8 +36,7 @@ public class CodecTestHelper {
 		//Similar to PECodecHelper#read except without any extra logging
 		JsonElement json = JsonParser.parseReader(reader);
 		return codec.parse(JsonOps.INSTANCE, json)
-				.get()
-				.map(Function.identity(), error -> {
+				.mapOrElse(Function.identity(), error -> {
 					throw new JsonParseException("Failed to deserialize json (" + description + "): " + error.message());
 				});
 	}

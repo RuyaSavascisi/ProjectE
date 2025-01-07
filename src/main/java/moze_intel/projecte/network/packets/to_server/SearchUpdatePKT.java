@@ -2,26 +2,28 @@ package moze_intel.projecte.network.packets.to_server;
 
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
-import moze_intel.projecte.network.PacketUtils;
 import moze_intel.projecte.network.packets.IPEPacket;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
-public record SearchUpdatePKT(int slot, ItemStack itemStack) implements IPEPacket<PlayPayloadContext> {
+public record SearchUpdatePKT(int slot, ItemStack itemStack) implements IPEPacket {
 
-	public static final ResourceLocation ID = PECore.rl("search_update");
-
-	public SearchUpdatePKT(FriendlyByteBuf buffer) {
-		this(buffer.readVarInt(), buffer.readItem());
-	}
+	public static final CustomPacketPayload.Type<SearchUpdatePKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("search_update"));
+	public static final StreamCodec<RegistryFriendlyByteBuf, SearchUpdatePKT> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.VAR_INT, SearchUpdatePKT::slot,
+			ItemStack.OPTIONAL_STREAM_CODEC, SearchUpdatePKT::itemStack,
+			SearchUpdatePKT::new
+	);
 
 	@NotNull
 	@Override
-	public ResourceLocation id() {
-		return ID;
+	public CustomPacketPayload.Type<SearchUpdatePKT> type() {
+		return TYPE;
 	}
 
 	public SearchUpdatePKT {
@@ -29,14 +31,9 @@ public record SearchUpdatePKT(int slot, ItemStack itemStack) implements IPEPacke
 	}
 
 	@Override
-	public void handle(PlayPayloadContext context) {
-		PacketUtils.container(context, TransmutationContainer.class)
-				.ifPresent(container -> container.transmutationInventory.writeIntoOutputSlot(slot, itemStack));
-	}
-
-	@Override
-	public void write(@NotNull FriendlyByteBuf buffer) {
-		buffer.writeVarInt(slot);
-		buffer.writeItem(itemStack);
+	public void handle(IPayloadContext context) {
+		if (context.player().containerMenu instanceof TransmutationContainer container) {
+			container.transmutationInventory.writeIntoOutputSlot(slot, itemStack);
+		}
 	}
 }

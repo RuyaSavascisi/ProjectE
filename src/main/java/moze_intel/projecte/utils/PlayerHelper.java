@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -51,7 +52,8 @@ public final class PlayerHelper {
 		NeoForge.EVENT_BUS.post(evt);
 		if (evt.isCanceled()) {
 			level.restoringBlockSnapshots = true;
-			before.restore(true, false);
+			//TODO - 1.21: Look at CommonHooks#onPlaceItemIntoWorld. Do we need to handle multiple snapshots instead of just latest?
+			before.restore(before.getFlags() | Block.UPDATE_CLIENTS);
 			level.restoringBlockSnapshots = false;
 			//PELogger.logInfo("Checked place block got canceled, restoring snapshot.");
 			return false;
@@ -109,7 +111,10 @@ public final class PlayerHelper {
 	}
 
 	static boolean checkBreakPermission(ServerPlayer player, BlockPos pos) {
-		return CommonHooks.onBlockBreakEvent(player.level(), player.gameMode.getGameModeForPlayer(), player, pos) != -1;
+		Level level = player.level();
+		//TODO - 1.21: Test this
+		BlockEvent.BreakEvent event = CommonHooks.fireBlockBreak(level, player.gameMode.getGameModeForPlayer(), player, pos, level.getBlockState(pos));
+		return !event.isCanceled();
 	}
 
 	public static boolean hasEditPermission(Player player, BlockPos pos) {

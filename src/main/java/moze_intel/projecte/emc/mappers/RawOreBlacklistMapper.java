@@ -34,6 +34,6 @@ public class RawOreBlacklistMapper implements IEMCMapper<NormalizedSimpleStack, 
 
 	@Override
 	public String getDescription() {
-		return "Set EMC=0 for everything in the forge:raw_materials tag";
+		return "Set EMC=0 for everything in the c:raw_materials tag";
 	}
 }

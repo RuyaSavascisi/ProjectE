@@ -34,6 +34,6 @@ public class OreBlacklistMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 
 	@Override
 	public String getDescription() {
-		return "Set EMC=0 for everything in the forge:ores tag";
+		return "Set EMC=0 for everything in the c:ores tag";
 	}
 }

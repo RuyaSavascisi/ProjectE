@@ -9,7 +9,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Player;
@@ -51,7 +50,7 @@ public class AlchemicalChest extends BlockDirection implements SimpleWaterlogged
 
 	@Override
 	@Deprecated
-	public boolean isPathfindable(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull PathComputationType type) {
+	public boolean isPathfindable(@NotNull BlockState state, @NotNull PathComputationType pathComputationType) {
 		return false;
 	}
 
@@ -72,8 +71,7 @@ public class AlchemicalChest extends BlockDirection implements SimpleWaterlogged
 	@NotNull
 	@Override
 	@Deprecated
-	public InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand,
-			@NotNull BlockHitResult rtr) {
+	protected InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult rtr) {
 		if (level.isClientSide) {
 			return InteractionResult.SUCCESS;
 		}

@@ -1,5 +1,6 @@
 package moze_intel.projecte.common.recipe;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import moze_intel.projecte.PECore;
@@ -12,7 +13,7 @@ import moze_intel.projecte.gameObjs.customRecipes.TomeEnabledCondition;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
 import moze_intel.projecte.gameObjs.registration.impl.ItemRegistryObject;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import net.minecraft.advancements.Advancement;
@@ -20,6 +21,7 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -42,14 +44,14 @@ import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.NotCondition;
-import net.neoforged.neoforge.common.crafting.NBTIngredient;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PERecipeProvider extends RecipeProvider {
 
-	public PERecipeProvider(PackOutput output) {
-		super(output);
+	public PERecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+		super(output, registries);
 	}
 
 	@Override
@@ -86,7 +88,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.define('L', PEItems.LOW_COVALENCE_DUST)
 				.define('M', PEItems.MEDIUM_COVALENCE_DUST)
 				.define('H', PEItems.HIGH_COVALENCE_DUST)
-				.define('S', Tags.Items.STONE)
+				.define('S', Tags.Items.STONES)
 				.define('I', Tags.Items.INGOTS_IRON)
 				.define('C', Tags.Items.CHESTS_WOODEN)
 				.define('D', Tags.Items.GEMS_DIAMOND)
@@ -441,8 +443,8 @@ public class PERecipeProvider extends RecipeProvider {
 
 	private static Ingredient getFullKleinStarIngredient(EnumKleinTier tier) {
 		ItemStack star = PEItems.getStar(tier).asStack(1);
-		star.setData(PEAttachmentTypes.STORED_EMC, tier.maxEmc);
-		return NBTIngredient.of(false, star);
+		star.set(PEDataComponentTypes.STORED_EMC, tier.maxEmc);
+		return DataComponentIngredient.of(false, star);
 	}
 
 	private static void gemArmorRecipe(RecipeOutput recipeOutput, Supplier<ShapelessRecipeBuilder> builder, ItemRegistryObject<?> result) {
@@ -530,7 +532,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("ODO")
 				.pattern("OOO")
 				.define('S', Items.GLASS)
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('O', Tags.Items.OBSIDIANS_NORMAL)
 				.define('D', Tags.Items.STORAGE_BLOCKS_DIAMOND)
 				.unlockedBy("has_diamond", has(Tags.Items.STORAGE_BLOCKS_DIAMOND))
 				.save(recipeOutput);
@@ -543,7 +545,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("OUO")
 				.pattern("OPO")
 				.pattern("OOO")
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('O', Tags.Items.OBSIDIANS_NORMAL)
 				.define('P', previous)
 				.define('U', upgradeItem)
 				.unlockedBy("has_previous", has(previous))
@@ -556,7 +558,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("DCD")
 				.pattern("ODO")
 				.define('C', PEBlocks.ALCHEMICAL_CHEST)
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('O', Tags.Items.OBSIDIANS_NORMAL)
 				.define('D', Tags.Items.GEMS_DIAMOND)
 				.unlockedBy("has_alchemical_chest", has(PEBlocks.ALCHEMICAL_CHEST))
 				.save(recipeOutput);
@@ -645,7 +647,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("SSS")
 				.pattern("DID")
 				.pattern("SSS")
-				.define('S', Tags.Items.STRING)
+				.define('S', Tags.Items.STRINGS)
 				.define('D', PEItems.DARK_MATTER)
 				.define('I', PEItems.IRON_BAND)
 				.unlockedBy("has_matter", has(PEItems.DARK_MATTER))
@@ -746,7 +748,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.define('C', Items.CLOCK)
 				.define('D', PEItems.DARK_MATTER)
 				.define('G', Items.GLOWSTONE)
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('O', Tags.Items.OBSIDIANS_NORMAL)
 				.unlockedBy("has_matter", hasItems(PEItems.DARK_MATTER, Items.CLOCK))
 				.save(recipeOutput);
 		//Zero
@@ -765,9 +767,9 @@ public class PERecipeProvider extends RecipeProvider {
 	private static void addCovalenceDustRecipes(RecipeOutput recipeOutput) {
 		ShapelessRecipeBuilder lowCovalenceDust = ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, PEItems.LOW_COVALENCE_DUST, 40)
 				.requires(Items.CHARCOAL)
-				.unlockedBy("has_cobble", has(Tags.Items.COBBLESTONE_NORMAL));
+				.unlockedBy("has_cobble", has(Tags.Items.COBBLESTONES_NORMAL));
 		for (int i = 0; i < 8; i++) {
-			lowCovalenceDust.requires(Tags.Items.COBBLESTONE_NORMAL);
+			lowCovalenceDust.requires(Tags.Items.COBBLESTONES_NORMAL);
 		}
 		lowCovalenceDust.save(recipeOutput);
 		ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, PEItems.MEDIUM_COVALENCE_DUST, 40)
@@ -836,7 +838,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("DOD")
 				.define('D', Tags.Items.GEMS_DIAMOND)
 				.define('M', PEItems.DARK_MATTER)
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('O', Tags.Items.OBSIDIANS_NORMAL)
 				.unlockedBy("has_matter", has(PEItems.DARK_MATTER))
 				.save(recipeOutput);
 		//Hyperkinetic Lens
@@ -857,7 +859,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.define('B', Items.BRICKS)
 				.define('R', PEItems.RED_MATTER)
 				.define('D', Tags.Items.GEMS_DIAMOND)
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('O', Tags.Items.OBSIDIANS_NORMAL)
 				.unlockedBy("has_matter", has(PEBlocks.RED_MATTER))
 				.save(recipeOutput);
 		//Philosopher's Stone
@@ -925,7 +927,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("SPS")
 				.pattern(alternate ? lowToHigh : highToLow)
 				.define('P', Items.PAPER)
-				.define('S', Tags.Items.STRING)
+				.define('S', Tags.Items.STRINGS)
 				.define('L', PEItems.LOW_COVALENCE_DUST)
 				.define('M', PEItems.MEDIUM_COVALENCE_DUST)
 				.define('H', PEItems.HIGH_COVALENCE_DUST)
@@ -943,8 +945,8 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("OSO")
 				.pattern("SPS")
 				.pattern("OSO")
-				.define('S', Tags.Items.STONE)
-				.define('O', Tags.Items.OBSIDIAN)
+				.define('S', Tags.Items.STONES)
+				.define('O', Tags.Items.OBSIDIANS_NORMAL)
 				.define('P', PEItems.PHILOSOPHERS_STONE)
 				.unlockedBy("has_philo_stone", has(PEItems.PHILOSOPHERS_STONE))
 				.save(recipeOutput);
@@ -952,7 +954,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.pattern("DSD")
 				.pattern("STS")
 				.pattern("DSD")
-				.define('S', Tags.Items.STONE)
+				.define('S', Tags.Items.STONES)
 				.define('D', PEBlocks.DARK_MATTER)
 				.define('T', PEBlocks.TRANSMUTATION_TABLE)
 				.unlockedBy("has_table", has(PEBlocks.TRANSMUTATION_TABLE))

@@ -1,7 +1,11 @@
 package moze_intel.projecte.gameObjs.items.tools;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.EnumMatterType;
@@ -9,13 +13,19 @@ import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.items.IItemMode;
 import moze_intel.projecte.gameObjs.items.IModeEnum;
 import moze_intel.projecte.gameObjs.items.tools.PEPickaxe.PickaxeMode;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.ToolHelper;
 import moze_intel.projecte.utils.text.IHasTranslationKey;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -29,9 +39,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<PickaxeMode>, IBarHelper {
 
@@ -39,7 +47,10 @@ public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<Pic
 	private final int numCharges;
 
 	public PEPickaxe(EnumMatterType matterType, int numCharges, Properties props) {
-		super(matterType, 4, -2.8F, props);
+		super(matterType, props.attributes(createAttributes(matterType, 4, -2.8F))
+				.component(PEDataComponentTypes.PICKAXE_MODE, PickaxeMode.STANDARD)
+				.component(PEDataComponentTypes.CHARGE, 0)
+		);
 		this.matterType = matterType;
 		this.numCharges = numCharges;
 	}
@@ -55,12 +66,12 @@ public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<Pic
 	}
 
 	@Override
-	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+	public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
 		return false;
 	}
 
 	@Override
-	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
+	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<Item> onBroken) {
 		return 0;
 	}
 
@@ -98,9 +109,9 @@ public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<Pic
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(getToolTip(stack));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(getToolTip(stack));
 	}
 
 	@NotNull
@@ -137,8 +148,13 @@ public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<Pic
 	}
 
 	@Override
-	public AttachmentType<PickaxeMode> getAttachmentType() {
-		return PEAttachmentTypes.PICKAXE_MODE.get();
+	public DataComponentType<PickaxeMode> getDataComponentType() {
+		return PEDataComponentTypes.PICKAXE_MODE.get();
+	}
+
+	@Override
+	public PickaxeMode getDefaultMode() {
+		return PickaxeMode.STANDARD;
 	}
 
 	public enum PickaxeMode implements IModeEnum<PickaxeMode> {
@@ -147,10 +163,22 @@ public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<Pic
 		WIDESHOT(PELang.MODE_PICK_3),
 		LONGSHOT(PELang.MODE_PICK_4);
 
+		public static final Codec<PickaxeMode> CODEC = StringRepresentable.fromEnum(PickaxeMode::values);
+		public static final IntFunction<PickaxeMode> BY_ID = ByIdMap.continuous(PickaxeMode::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, PickaxeMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, PickaxeMode::ordinal);
+
 		private final IHasTranslationKey langEntry;
+		private final String serializedName;
 
 		PickaxeMode(IHasTranslationKey langEntry) {
+			this.serializedName = name().toLowerCase(Locale.ROOT);
 			this.langEntry = langEntry;
+		}
+
+		@NotNull
+		@Override
+		public String getSerializedName() {
+			return serializedName;
 		}
 
 		@Override

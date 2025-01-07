@@ -9,14 +9,14 @@ import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 
 @EMCMapper
 public class TippedArrowMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
@@ -26,11 +26,11 @@ public class TippedArrowMapper implements IEMCMapper<NormalizedSimpleStack, Long
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		int recipeCount = 0;
 		NSSItem nssArrow = NSSItem.createItem(Items.ARROW);
-		for (Potion potionType : BuiltInRegistries.POTION) {
+		for (Holder<Potion> potionType : BuiltInRegistries.POTION.holders().toList()) {
 			Map<NormalizedSimpleStack, Integer> ingredientsWithAmount = new HashMap<>();
 			ingredientsWithAmount.put(nssArrow, 8);
-			ingredientsWithAmount.put(NSSItem.createItem(PotionUtils.setPotion(new ItemStack(Items.LINGERING_POTION), potionType)), 1);
-			mapper.addConversion(8, NSSItem.createItem(PotionUtils.setPotion(new ItemStack(Items.TIPPED_ARROW), potionType)), ingredientsWithAmount);
+			ingredientsWithAmount.put(NSSItem.createItem(PotionContents.createItemStack(Items.LINGERING_POTION, potionType)), 1);
+			mapper.addConversion(8, NSSItem.createItem(PotionContents.createItemStack(Items.TIPPED_ARROW, potionType)), ingredientsWithAmount);
 			recipeCount++;
 		}
 		PECore.debugLog("TippedArrowMapper Statistics:");

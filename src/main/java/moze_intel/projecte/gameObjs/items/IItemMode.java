@@ -4,20 +4,22 @@ import moze_intel.projecte.api.capabilities.item.IModeChanger;
 import moze_intel.projecte.utils.text.ILangEntry;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import org.jetbrains.annotations.NotNull;
 
 public interface IItemMode<MODE extends Enum<MODE> & IModeEnum<MODE>> extends IModeChanger<MODE> {
 
-	AttachmentType<MODE> getAttachmentType();
+	DataComponentType<MODE> getDataComponentType();
+
+	MODE getDefaultMode();
 
 	@Override
 	default MODE getMode(@NotNull ItemStack stack) {
-		return stack.getData(getAttachmentType());
+		return stack.getOrDefault(getDataComponentType(), getDefaultMode());
 	}
 
 	@Override
@@ -26,7 +28,7 @@ public interface IItemMode<MODE extends Enum<MODE> & IModeEnum<MODE>> extends IM
 		MODE mode = getMode(stack);
 		MODE newMode = mode.next(stack);
 		if (mode != newMode) {
-			stack.setData(getAttachmentType(), newMode);
+			stack.set(getDataComponentType(), newMode);
 			player.sendSystemMessage(getModeSwitchEntry().translate(newMode));
 			return true;
 		}

@@ -42,46 +42,46 @@ public class PETags {
 		public static final TagKey<Item> CURIOS_RING = curiosTag("ring");
 		//Forge tools/armor tags
 
-		public static final TagKey<Item> TOOLS_HAMMERS = forgeTag("tools/hammers");
-		public static final TagKey<Item> TOOLS_KATARS = forgeTag("tools/katars");
-		public static final TagKey<Item> TOOLS_MORNING_STARS = forgeTag("tools/morning_stars");
+		public static final TagKey<Item> TOOLS_HAMMERS = commonTag("tools/hammers");
+		public static final TagKey<Item> TOOLS_KATARS = commonTag("tools/katars");
+		public static final TagKey<Item> TOOLS_MORNING_STARS = commonTag("tools/morning_stars");
 
-		public static final TagKey<Item> ARMORS_HELMETS_DARK_MATTER = forgeTag("armors/armors/dark_matter");
-		public static final TagKey<Item> ARMORS_CHESTPLATES_DARK_MATTER = forgeTag("armors/chestplates/dark_matter");
-		public static final TagKey<Item> ARMORS_LEGGINGS_DARK_MATTER = forgeTag("armors/leggings/dark_matter");
-		public static final TagKey<Item> ARMORS_BOOTS_DARK_MATTER = forgeTag("armors/boots/dark_matter");
+		public static final TagKey<Item> ARMORS_HELMETS_DARK_MATTER = commonTag("armors/armors/dark_matter");
+		public static final TagKey<Item> ARMORS_CHESTPLATES_DARK_MATTER = commonTag("armors/chestplates/dark_matter");
+		public static final TagKey<Item> ARMORS_LEGGINGS_DARK_MATTER = commonTag("armors/leggings/dark_matter");
+		public static final TagKey<Item> ARMORS_BOOTS_DARK_MATTER = commonTag("armors/boots/dark_matter");
 
-		public static final TagKey<Item> TOOLS_SWORDS_DARK_MATTER = forgeTag("tools/swords/dark_matter");
-		public static final TagKey<Item> TOOLS_AXES_DARK_MATTER = forgeTag("tools/axes/dark_matter");
-		public static final TagKey<Item> TOOLS_PICKAXES_DARK_MATTER = forgeTag("tools/pickaxes/dark_matter");
-		public static final TagKey<Item> TOOLS_SHOVELS_DARK_MATTER = forgeTag("tools/shovels/dark_matter");
-		public static final TagKey<Item> TOOLS_HOES_DARK_MATTER = forgeTag("tools/hoes/dark_matter");
-		public static final TagKey<Item> TOOLS_HAMMERS_DARK_MATTER = forgeTag("tools/hammers/dark_matter");
+		public static final TagKey<Item> TOOLS_SWORDS_DARK_MATTER = commonTag("tools/swords/dark_matter");
+		public static final TagKey<Item> TOOLS_AXES_DARK_MATTER = commonTag("tools/axes/dark_matter");
+		public static final TagKey<Item> TOOLS_PICKAXES_DARK_MATTER = commonTag("tools/pickaxes/dark_matter");
+		public static final TagKey<Item> TOOLS_SHOVELS_DARK_MATTER = commonTag("tools/shovels/dark_matter");
+		public static final TagKey<Item> TOOLS_HOES_DARK_MATTER = commonTag("tools/hoes/dark_matter");
+		public static final TagKey<Item> TOOLS_HAMMERS_DARK_MATTER = commonTag("tools/hammers/dark_matter");
 
-		public static final TagKey<Item> ARMORS_HELMETS_RED_MATTER = forgeTag("armors/armors/red_matter");
-		public static final TagKey<Item> ARMORS_CHESTPLATES_RED_MATTER = forgeTag("armors/chestplates/red_matter");
-		public static final TagKey<Item> ARMORS_LEGGINGS_RED_MATTER = forgeTag("armors/leggings/red_matter");
-		public static final TagKey<Item> ARMORS_BOOTS_RED_MATTER = forgeTag("armors/boots/red_matter");
+		public static final TagKey<Item> ARMORS_HELMETS_RED_MATTER = commonTag("armors/armors/red_matter");
+		public static final TagKey<Item> ARMORS_CHESTPLATES_RED_MATTER = commonTag("armors/chestplates/red_matter");
+		public static final TagKey<Item> ARMORS_LEGGINGS_RED_MATTER = commonTag("armors/leggings/red_matter");
+		public static final TagKey<Item> ARMORS_BOOTS_RED_MATTER = commonTag("armors/boots/red_matter");
 
-		public static final TagKey<Item> TOOLS_SWORDS_RED_MATTER = forgeTag("tools/swords/red_matter");
-		public static final TagKey<Item> TOOLS_AXES_RED_MATTER = forgeTag("tools/axes/red_matter");
-		public static final TagKey<Item> TOOLS_PICKAXES_RED_MATTER = forgeTag("tools/pickaxes/red_matter");
-		public static final TagKey<Item> TOOLS_SHOVELS_RED_MATTER = forgeTag("tools/shovels/red_matter");
-		public static final TagKey<Item> TOOLS_HOES_RED_MATTER = forgeTag("tools/hoes/red_matter");
-		public static final TagKey<Item> TOOLS_HAMMERS_RED_MATTER = forgeTag("tools/hammers/red_matter");
-		public static final TagKey<Item> TOOLS_KATARS_RED_MATTER = forgeTag("tools/katars/red_matter");
-		public static final TagKey<Item> TOOLS_MORNING_STARS_RED_MATTER = forgeTag("tools/morning_stars/red_matter");
+		public static final TagKey<Item> TOOLS_SWORDS_RED_MATTER = commonTag("tools/swords/red_matter");
+		public static final TagKey<Item> TOOLS_AXES_RED_MATTER = commonTag("tools/axes/red_matter");
+		public static final TagKey<Item> TOOLS_PICKAXES_RED_MATTER = commonTag("tools/pickaxes/red_matter");
+		public static final TagKey<Item> TOOLS_SHOVELS_RED_MATTER = commonTag("tools/shovels/red_matter");
+		public static final TagKey<Item> TOOLS_HOES_RED_MATTER = commonTag("tools/hoes/red_matter");
+		public static final TagKey<Item> TOOLS_HAMMERS_RED_MATTER = commonTag("tools/hammers/red_matter");
+		public static final TagKey<Item> TOOLS_KATARS_RED_MATTER = commonTag("tools/katars/red_matter");
+		public static final TagKey<Item> TOOLS_MORNING_STARS_RED_MATTER = commonTag("tools/morning_stars/red_matter");
 
 		private static TagKey<Item> tag(String name) {
 			return ItemTags.create(PECore.rl(name));
 		}
 
 		private static TagKey<Item> curiosTag(String name) {
-			return ItemTags.create(new ResourceLocation(IntegrationHelper.CURIO_MODID, name));
+			return ItemTags.create(ResourceLocation.fromNamespaceAndPath(IntegrationHelper.CURIO_MODID, name));
 		}
 
-		private static TagKey<Item> forgeTag(String name) {
-			return ItemTags.create(new ResourceLocation("forge", name));
+		private static TagKey<Item> commonTag(String name) {
+			return ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", name));
 		}
 	}
 
@@ -104,23 +104,26 @@ public class PETags {
 		public static final TagKey<Block> NEEDS_DARK_MATTER_TOOL = tag("needs_dark_matter_tool");
 		public static final TagKey<Block> NEEDS_RED_MATTER_TOOL = tag("needs_red_matter_tool");
 
+		public static final TagKey<Block> INCORRECT_FOR_DARK_MATTER_TOOL = tag("incorrect_for_dark_matter_tool");
+		public static final TagKey<Block> INCORRECT_FOR_RED_MATTER_TOOL = tag("incorrect_for_red_matter_tool");
+
 		public static final TagKey<Block> MINEABLE_WITH_PE_KATAR = tag("mineable/katar");
 		public static final TagKey<Block> MINEABLE_WITH_PE_HAMMER = tag("mineable/hammer");
 		public static final TagKey<Block> MINEABLE_WITH_PE_MORNING_STAR = tag("mineable/morning_star");
 		public static final TagKey<Block> MINEABLE_WITH_PE_SHEARS = tag("mineable/shears");
 		public static final TagKey<Block> MINEABLE_WITH_PE_SWORD = tag("mineable/sword");
 
-		public static final TagKey<Block> MINEABLE_WITH_HAMMER = forgeTag("mineable/hammer");
-		public static final TagKey<Block> MINEABLE_WITH_KATAR = forgeTag("mineable/katar");
-		public static final TagKey<Block> MINEABLE_WITH_MORNING_STAR = forgeTag("mineable/morning_star");
+		public static final TagKey<Block> MINEABLE_WITH_HAMMER = commonTag("mineable/hammer");
+		public static final TagKey<Block> MINEABLE_WITH_KATAR = commonTag("mineable/katar");
+		public static final TagKey<Block> MINEABLE_WITH_MORNING_STAR = commonTag("mineable/morning_star");
 
 
 		private static TagKey<Block> tag(String name) {
 			return BlockTags.create(PECore.rl(name));
 		}
 
-		private static TagKey<Block> forgeTag(String name) {
-			return BlockTags.create(new ResourceLocation("forge", name));
+		private static TagKey<Block> commonTag(String name) {
+			return BlockTags.create(ResourceLocation.fromNamespaceAndPath("c", name));
 		}
 	}
 

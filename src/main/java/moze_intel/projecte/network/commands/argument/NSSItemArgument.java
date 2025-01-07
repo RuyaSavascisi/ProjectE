@@ -12,18 +12,16 @@ import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.network.commands.parser.NSSItemParser;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.Item;
 
+//TODO - 1.21: Remove this?
 public class NSSItemArgument implements ArgumentType<NSSItem> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "minecraft:stick{foo=bar}", "#minecraft:wool");
 
-	private final HolderLookup<Item> items;
+	private final NSSItemParser parser;
 
 	private NSSItemArgument(CommandBuildContext context) {
-		this.items = context.holderLookup(Registries.ITEM);
+		this.parser = new NSSItemParser(context);
 	}
 
 	public static NSSItemArgument nss(CommandBuildContext context) {
@@ -32,7 +30,7 @@ public class NSSItemArgument implements ArgumentType<NSSItem> {
 
 	@Override
 	public NSSItem parse(StringReader reader) throws CommandSyntaxException {
-		return NSSItemParser.parseResult(this.items, reader);
+		return this.parser.parseResult(reader);
 	}
 
 	public static <S> NSSItem getNSS(CommandContext<S> context, String name) {
@@ -41,7 +39,7 @@ public class NSSItemArgument implements ArgumentType<NSSItem> {
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-		return NSSItemParser.fillSuggestions(this.items, builder);
+		return this.parser.fillSuggestions(builder);
 	}
 
 	@Override

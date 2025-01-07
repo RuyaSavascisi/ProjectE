@@ -280,7 +280,7 @@ public class PEItemModelProvider extends ItemModelProvider {
 			String trimId = trimModelData.name();
 			ItemModelBuilder override = withExistingParent(builder.getLocation().withSuffix("_" + trimId + "_trim").getPath(), "item/generated")
 					.texture("layer0", texture)
-					.texture("layer1", new ResourceLocation("trims/items/" + type.getName() + "_trim_" + trimId));
+					.texture("layer1", ResourceLocation.withDefaultNamespace("trims/items/" + type.getName() + "_trim_" + trimId));
 			builder.override()
 					.predicate(ItemModelGenerators.TRIM_TYPE_PREDICATE_ID, trimModelData.itemModelIndex())
 					.model(override);

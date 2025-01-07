@@ -1,27 +1,24 @@
 package moze_intel.projecte.gameObjs.items.tools;
 
-import com.google.common.collect.Multimap;
 import java.util.List;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.EnumMatterType;
 import moze_intel.projecte.gameObjs.PETags;
+import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.IItemMode;
 import moze_intel.projecte.gameObjs.items.tools.PEPickaxe.PickaxeMode;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.ToolHelper;
-import moze_intel.projecte.utils.ToolHelper.ChargeAttributeCache;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -31,30 +28,29 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GrassBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.ToolAction;
-import net.neoforged.neoforge.common.ToolActions;
+import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class PEMorningStar extends PETool implements IItemMode<PickaxeMode> {
-
-	private final ChargeAttributeCache attributeCache = new ChargeAttributeCache();
+public class PEMorningStar extends PETool implements IItemMode<PickaxeMode>, IHasConditionalAttributes {
 
 	public PEMorningStar(EnumMatterType matterType, int numCharges, Properties props) {
-		super(matterType, PETags.Blocks.MINEABLE_WITH_PE_MORNING_STAR, 16, -3, numCharges, props);
+		super(matterType, PETags.Blocks.MINEABLE_WITH_PE_MORNING_STAR, numCharges, props.attributes(createAttributes(matterType, 16, -3))
+				.component(PEDataComponentTypes.PICKAXE_MODE, PickaxeMode.STANDARD)
+		);
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(getToolTip(stack));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(getToolTip(stack));
 	}
 
 	@Override
-	public boolean canPerformAction(ItemStack stack, ToolAction toolAction) {
-		return ToolActions.DEFAULT_PICKAXE_ACTIONS.contains(toolAction) || ToolActions.DEFAULT_SHOVEL_ACTIONS.contains(toolAction) ||
+	public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+		return ItemAbilities.DEFAULT_PICKAXE_ACTIONS.contains(toolAction) || ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(toolAction) ||
 			   ToolHelper.DEFAULT_PE_HAMMER_ACTIONS.contains(toolAction) || ToolHelper.DEFAULT_PE_MORNING_STAR_ACTIONS.contains(toolAction);
 	}
 
@@ -88,7 +84,7 @@ public class PEMorningStar extends PETool implements IItemMode<PickaxeMode> {
 		return ToolHelper.performActions(ToolHelper.flattenAOE(context, state, 0),
 				() -> ToolHelper.dowseCampfire(context, state),
 				() -> {
-					if (state.is(Tags.Blocks.GRAVEL) || state.is(Blocks.CLAY)) {
+					if (state.is(Tags.Blocks.GRAVELS) || state.is(Blocks.CLAY)) {
 						if (ProjectEConfig.server.items.pickaxeAoeVeinMining.get()) {
 							return ToolHelper.digAOE(level, player, hand, stack, pos, sideHit, false, 0);
 						}
@@ -119,14 +115,18 @@ public class PEMorningStar extends PETool implements IItemMode<PickaxeMode> {
 		return ToolHelper.canMatterMine(matterType, state.getBlock()) ? 1_200_000 : super.getDestroySpeed(stack, state) + 48.0F;
 	}
 
-	@NotNull
 	@Override
-	public Multimap<Attribute, AttributeModifier> getAttributeModifiers(@NotNull EquipmentSlot slot, ItemStack stack) {
-		return attributeCache.addChargeAttributeModifier(super.getAttributeModifiers(slot, stack), slot, stack);
+	public void adjustAttributes(ItemAttributeModifierEvent event) {
+		ToolHelper.applyChargeAttributes(event);
 	}
 
 	@Override
-	public AttachmentType<PickaxeMode> getAttachmentType() {
-		return PEAttachmentTypes.PICKAXE_MODE.get();
+	public DataComponentType<PickaxeMode> getDataComponentType() {
+		return PEDataComponentTypes.PICKAXE_MODE.get();
+	}
+
+	@Override
+	public PickaxeMode getDefaultMode() {
+		return PickaxeMode.STANDARD;
 	}
 }

@@ -12,7 +12,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.DyeColor;
@@ -21,7 +20,7 @@ import net.minecraft.world.item.InstrumentItem;
 import net.minecraft.world.item.Instruments;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
@@ -58,7 +57,7 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.conversion(ingotTag("cyanite"), 4).ingredient(ingotTag("uranium")).propagateTags().end()
 		;
 		NormalizedSimpleStack singleEMC = NSSFake.create("single_emc");
-		ItemStack waterBottle = PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER);
+		ItemStack waterBottle = PotionContents.createItemStack(Items.POTION, Potions.WATER);
 		CustomConversionBuilder defaultBuilder = createConversionBuilder(PECore.rl("defaults"))
 				.comment("Default values for vanilla items.")
 				.group("default")
@@ -282,7 +281,7 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.ROTTEN_FLESH, 32)
 				.before(Items.SLIME_BALL, 32)
 				.before(Items.EGG, 32)
-				.before(Items.SCUTE, 96)
+				.before(Items.TURTLE_SCUTE, 96)
 				.before(Items.TURTLE_EGG, 192)
 				//Regular horns
 				.before(horn(registries, Instruments.PONDER_GOAT_HORN), 96)
@@ -317,7 +316,8 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.SADDLE, 192)
 				.before(Items.ECHO_SHARD, 192)
 				.before(Items.NAME_TAG, 192)
-				.before(ItemTags.MUSIC_DISCS, 2_048)
+				//TODO - 1.21: Re-evaluate
+				//.before(ItemTags.MUSIC_DISCS, 2_048)
 				.before(Items.FLINT, 4)
 				.before(Items.COAL, 128)
 				.before(Tags.Items.GEMS_QUARTZ, 256)
@@ -383,14 +383,10 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 	}
 
 	private static NormalizedSimpleStack ingotTag(String ingot) {
-		return tag("forge:ingots/" + ingot);
+		return NSSItem.createTag(Tags.Items.INGOTS.location().withSuffix("/" + ingot));
 	}
 
 	private static NormalizedSimpleStack gemTag(String gem) {
-		return tag("forge:gems/" + gem);
-	}
-
-	private static NormalizedSimpleStack tag(String tag) {
-		return NSSItem.createTag(new ResourceLocation(tag));
+		return NSSItem.createTag(Tags.Items.GEMS.location().withSuffix("/" + gem));
 	}
 }

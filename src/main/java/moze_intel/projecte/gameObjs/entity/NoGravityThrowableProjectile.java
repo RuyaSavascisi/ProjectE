@@ -11,15 +11,12 @@ public abstract class NoGravityThrowableProjectile extends ThrowableProjectile {
 
 	protected NoGravityThrowableProjectile(EntityType<? extends ThrowableProjectile> type, Level level) {
 		super(type, level);
+		setNoGravity(true);
 	}
 
 	protected NoGravityThrowableProjectile(EntityType<? extends ThrowableProjectile> type, LivingEntity shooter, Level level) {
 		super(type, shooter, level);
-	}
-
-	@Override
-	public float getGravity() {
-		return 0;
+		setNoGravity(true);
 	}
 
 	@Override

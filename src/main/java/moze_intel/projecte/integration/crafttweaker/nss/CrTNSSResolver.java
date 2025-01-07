@@ -9,7 +9,6 @@ import com.blamejared.crafttweaker.api.tag.type.KnownTag;
 import com.blamejared.crafttweaker_annotations.annotations.Document;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import java.util.Optional;
@@ -41,6 +40,7 @@ public class CrTNSSResolver {
 	 */
 	@ZenCodeType.Method
 	public static NormalizedSimpleStack deserialize(String representation) {
+		//TODO - 1.21: Do we need to create a serialization context?
 		return deserialize(JsonOps.INSTANCE, new JsonPrimitive(representation));
 	}
 
@@ -58,7 +58,7 @@ public class CrTNSSResolver {
 
 	private static <T> NormalizedSimpleStack deserialize(DynamicOps<T> ops, T input) {
 		DataResult<NormalizedSimpleStack> result = IPECodecHelper.INSTANCE.nssCodec().parse(ops, input);
-		Optional<PartialResult<NormalizedSimpleStack>> error = result.error();
+		Optional<DataResult.Error<NormalizedSimpleStack>> error = result.error();
 		if (error.isPresent()) {
 			throw new IllegalArgumentException("Error deserializing NSS representation: " + error.get().message());
 		}

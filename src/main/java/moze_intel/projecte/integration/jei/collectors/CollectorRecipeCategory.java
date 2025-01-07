@@ -22,12 +22,10 @@ import org.jetbrains.annotations.NotNull;
 public class CollectorRecipeCategory implements IRecipeCategory<FuelUpgradeRecipe> {
 
 	public static final RecipeType<FuelUpgradeRecipe> RECIPE_TYPE = new RecipeType<>(PECore.rl("collector"), FuelUpgradeRecipe.class);
-	private final IDrawable background;
 	private final IDrawable arrow;
 	private final IDrawable icon;
 
 	public CollectorRecipeCategory(IGuiHelper guiHelper) {
-		background = guiHelper.createBlankDrawable(135, 48);
 		arrow = guiHelper.drawableBuilder(PECore.rl("textures/gui/arrow.png"), 0, 0, 22, 15).setTextureSize(32, 32).build();
 		icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(PEBlocks.COLLECTOR));
 	}
@@ -44,10 +42,14 @@ public class CollectorRecipeCategory implements IRecipeCategory<FuelUpgradeRecip
 		return PELang.JEI_COLLECTOR.translate();
 	}
 
-	@NotNull
 	@Override
-	public IDrawable getBackground() {
-		return background;
+	public int getWidth() {
+		return 135;
+	}
+
+	@Override
+	public int getHeight() {
+		return 48;
 	}
 
 	@NotNull
@@ -69,7 +71,7 @@ public class CollectorRecipeCategory implements IRecipeCategory<FuelUpgradeRecip
 		Component emc = PELang.EMC.translate(recipe.upgradeEMC());
 		Font fontRenderer = Minecraft.getInstance().font;
 		int stringWidth = fontRenderer.width(emc);
-		graphics.drawString(fontRenderer, emc.getVisualOrderText(), (getBackground().getWidth() - stringWidth) / 2F, 5, 0x808080, false);
+		graphics.drawString(fontRenderer, emc.getVisualOrderText(), (getWidth() - stringWidth) / 2F, 5, 0x808080, false);
 		arrow.draw(graphics, 55, 18);
 	}
 }

@@ -7,17 +7,17 @@ import java.util.List;
 import java.util.Set;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone;
 import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -30,14 +30,14 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public boolean matches(@NotNull CraftingContainer inv, @NotNull Level level) {
+	public boolean matches(@NotNull CraftingInput inv, @NotNull Level level) {
 		//If we have at least one matching recipe, return that we found a match
 		return !getMatchingRecipes(inv, level).isEmpty();
 	}
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registryAccess) {
+	public ItemStack assemble(@NotNull CraftingInput inv, @NotNull HolderLookup.Provider registryAccess) {
 		Set<RecipeHolder<SmeltingRecipe>> matchingRecipes = getMatchingRecipes(inv, ServerLifecycleHooks.getCurrentServer().overworld());
 		if (matchingRecipes.isEmpty()) {
 			return ItemStack.EMPTY;
@@ -51,12 +51,11 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 		return output.copyWithCount(output.getCount() * 7);
 	}
 
-	private Set<RecipeHolder<SmeltingRecipe>> getMatchingRecipes(CraftingContainer inv, @NotNull Level level) {
+	private Set<RecipeHolder<SmeltingRecipe>> getMatchingRecipes(CraftingInput inv, @NotNull Level level) {
 		List<ItemStack> philoStones = new ArrayList<>();
 		List<ItemStack> coals = new ArrayList<>();
 		List<ItemStack> allItems = new ArrayList<>();
-		for (int i = 0; i < inv.getContainerSize(); ++i) {
-			ItemStack stack = inv.getItem(i);
+		for (ItemStack stack : inv.items()) {
 			if (!stack.isEmpty()) {
 				Item item = stack.getItem();
 				allItems.add(stack);
@@ -84,7 +83,7 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 							//Ignore checking the piece of coal and the philosopher's stone
 							if (stack != philoStone && stack != coal) {
 								//And check all the other elements to find any matching recipes
-								SimpleContainer furnaceInput = new SimpleContainer(stack);
+								SingleRecipeInput furnaceInput = new SingleRecipeInput(stack);
 								if (matchingRecipes.isEmpty()) {
 									//If there are no matching recipes yet see if there are any recipes that match the current stack and add them if they are,
 									// if we didn't end up adding any elements that means there are no matching recipes so fail

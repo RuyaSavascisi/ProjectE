@@ -3,17 +3,17 @@ package moze_intel.projecte.config;
 import com.google.gson.JsonParseException;
 import java.util.Map;
 import moze_intel.projecte.api.nss.NSSItem;
-import moze_intel.projecte.api.nss.NormalizedSimpleStackTestHelper;
 import moze_intel.projecte.config.CustomEMCParser.CustomEMCFile;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.common.Tags;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Test parsing Custom EMC files")
-class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
+class CustomEMCParserTest {
 
 	private static CustomEMCFile parseJson(String json) {
 		return CodecTestHelper.parseJson(CustomEMCParser.CustomEMCFile.CODEC, "custom emc test", json);
@@ -79,14 +79,14 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 					"entries": {
 						"minecraft:dirt": 1,
 						"minecraft:stone": 2,
-						"#forge:ingots/iron": 3
+						"#c:ingots/iron": 3
 					}
 				}""");
 		Map<NSSItem, Long> entries = customEMCFile.entries();
 		Assertions.assertEquals(3, entries.size());
-		Assertions.assertEquals(1, entries.get(createItem("minecraft", "dirt")));
-		Assertions.assertEquals(2, entries.get(createItem("minecraft", "stone")));
-		Assertions.assertEquals(3, entries.get(createTag("forge", "ingots/iron")));
+		Assertions.assertEquals(1, entries.get(NSSItem.createItem(Items.DIRT)));
+		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(3, entries.get(NSSItem.createTag(Tags.Items.INGOTS_IRON)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
 		CustomEMCFile customEMCFileLegacy = parseJson("""
 				{
@@ -100,16 +100,16 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 							"emc": 2
 						},
 						{
-							"item": "#forge:ingots/iron",
+							"item": "#c:ingots/iron",
 							"emc": 3
 						}
 					]
 				}""");
 		Map<NSSItem, Long> legacyEntries = customEMCFileLegacy.entries();
 		Assertions.assertEquals(3, legacyEntries.size());
-		Assertions.assertEquals(1, legacyEntries.get(createItem("minecraft", "dirt")));
-		Assertions.assertEquals(2, legacyEntries.get(createItem("minecraft", "stone")));
-		Assertions.assertEquals(3, legacyEntries.get(createTag("forge", "ingots/iron")));
+		Assertions.assertEquals(1, legacyEntries.get(NSSItem.createItem(Items.DIRT)));
+		Assertions.assertEquals(2, legacyEntries.get(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(3, legacyEntries.get(NSSItem.createTag(Tags.Items.INGOTS_IRON)));
 	}
 
 	@Test
@@ -127,16 +127,16 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 							"emc": 2
 						},
 						{
-							"tag": "forge:ingots/iron",
+							"tag": "c:ingots/iron",
 							"emc": 3
 						}
 					]
 				}""");
 		Map<NSSItem, Long> entries = customEMCFile.entries();
 		Assertions.assertEquals(3, entries.size());
-		Assertions.assertEquals(1, entries.get(createItem("minecraft", "dirt")));
-		Assertions.assertEquals(2, entries.get(createItem("minecraft", "stone")));
-		Assertions.assertEquals(3, entries.get(createTag("forge", "ingots/iron")));
+		Assertions.assertEquals(1, entries.get(NSSItem.createItem(Items.DIRT)));
+		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(3, entries.get(NSSItem.createTag(Tags.Items.INGOTS_IRON)));
 	}
 
 	@Test
@@ -152,7 +152,7 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 		Map<NSSItem, Long> entries = customEMCFile.entries();
 		Assertions.assertEquals(1, entries.size());
 		//Max int + 1
-		Assertions.assertEquals(2_147_483_648L, entries.get(createItem("minecraft", "dirt")));
+		Assertions.assertEquals(2_147_483_648L, entries.get(NSSItem.createItem(Items.DIRT)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
 		CustomEMCFile customEMCFileLegacy = parseJson("""
 				{
@@ -166,7 +166,7 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 		Map<NSSItem, Long> legacyEntries = customEMCFileLegacy.entries();
 		Assertions.assertEquals(1, legacyEntries.size());
 		//Max int + 1
-		Assertions.assertEquals(2_147_483_648L, legacyEntries.get(createItem("minecraft", "dirt")));
+		Assertions.assertEquals(2_147_483_648L, legacyEntries.get(NSSItem.createItem(Items.DIRT)));
 	}
 
 	@Test
@@ -227,7 +227,7 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 				}""");
 		Map<NSSItem, Long> entries = customEMCFile.entries();
 		Assertions.assertEquals(1, entries.size());
-		Assertions.assertEquals(2, entries.get(createItem("minecraft", "stone")));
+		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
 		CustomEMCFile customEMCFileLegacy = parseJson("""
 				{
@@ -252,7 +252,7 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 				}""");
 		Map<NSSItem, Long> legacyEntries = customEMCFileLegacy.entries();
 		Assertions.assertEquals(1, legacyEntries.size());
-		Assertions.assertEquals(2, legacyEntries.get(createItem("minecraft", "stone")));
+		Assertions.assertEquals(2, legacyEntries.get(NSSItem.createItem(Items.STONE)));
 	}
 
 	@Test
@@ -267,7 +267,7 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 				}""");
 		Map<NSSItem, Long> entries = customEMCFile.entries();
 		Assertions.assertEquals(1, entries.size());
-		Assertions.assertEquals(0, entries.get(createItem("minecraft", "dirt")));
+		Assertions.assertEquals(0, entries.get(NSSItem.createItem(Items.DIRT)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
 		CustomEMCFile customEMCFileLegacy = parseJson("""
 				{
@@ -280,59 +280,61 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 				}""");
 		Map<NSSItem, Long> legacyEntries = customEMCFileLegacy.entries();
 		Assertions.assertEquals(1, legacyEntries.size());
-		Assertions.assertEquals(0, legacyEntries.get(createItem("minecraft", "dirt")));
+		Assertions.assertEquals(0, legacyEntries.get(NSSItem.createItem(Items.DIRT)));
 	}
 
 	@Test
 	@DisplayName("Test custom emc file with items dependent on nbt")
 	void testCustomEmcFileWithNbt() {
-		CompoundTag nbt = new CompoundTag();
-		nbt.putString("my", "tag");
 		//New format that just uses it as an array of NSS -> emc
 		CustomEMCFile customEMCFile = parseJson("""
 				{
 					"entries": {
-						"minecraft:dirt{my: \\"tag\\"}": 1
+						"minecraft:dirt[custom_data={my: \\"tag\\"}]": 1
 					}
 				}""");
 		Map<NSSItem, Long> entries = customEMCFile.entries();
 		Assertions.assertEquals(1, entries.size());
-		Assertions.assertEquals(1, entries.get(createItem("minecraft", "dirt", nbt)));
+		Assertions.assertEquals(1, entries.get(NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
 		CustomEMCFile customEMCFileLegacy = parseJson("""
 				{
 					"entries": [
 						{
-							"item": "minecraft:dirt{my: \\"tag\\"}",
+							"item": "minecraft:dirt[custom_data={my: \\"tag\\"}]",
 							"emc": 1
 						}
 					]
 				}""");
 		Map<NSSItem, Long> legacyEntries = customEMCFileLegacy.entries();
 		Assertions.assertEquals(1, legacyEntries.size());
-		Assertions.assertEquals(1, legacyEntries.get(createItem("minecraft", "dirt", nbt)));
+		Assertions.assertEquals(1, legacyEntries.get(NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
 		//Expanded legacy format using an array that lists the item and the emc value as separate values in the object but supporting using the explicit format for representing the item
 		CustomEMCFile customEMCFileExtendedLegacy = parseJson("""
 				{
 					"entries": [
 						{
 							"id": "minecraft:dirt",
-							"nbt": {
-								"my": "tag"
+							"data": {
+								"custom_data": {
+									"my": "tag"
+								}
 							},
 							"emc": 1
 						},
 						{
 							"id": "minecraft:stone",
-							"nbt": "{my: \\"tag\\"}",
+							"data": {
+								"custom_data": "{my: \\"tag\\"}"
+							},
 							"emc": 2
 						}
 					]
 				}""");
 		Map<NSSItem, Long> extendedLegacyEntries = customEMCFileExtendedLegacy.entries();
 		Assertions.assertEquals(2, extendedLegacyEntries.size());
-		Assertions.assertEquals(1, extendedLegacyEntries.get(createItem("minecraft", "dirt", nbt)));
-		Assertions.assertEquals(2, extendedLegacyEntries.get(createItem("minecraft", "stone", nbt)));
+		Assertions.assertEquals(1, extendedLegacyEntries.get(NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
+		Assertions.assertEquals(2, extendedLegacyEntries.get(NSSItem.createItem(Items.STONE, CodecTestHelper.MY_TAG_PATCH)));
 	}
 
 	@Test
@@ -347,14 +349,14 @@ class CustomEMCParserTest extends NormalizedSimpleStackTestHelper {
 							"emc": 1
 						},
 						{
-							"tag": "forge:cobblestone",
+							"tag": "c:cobblestones",
 							"emc": 2
 						}
 					]
 				}""");
 		Map<NSSItem, Long> entries = customEMCFile.entries();
 		Assertions.assertEquals(2, entries.size());
-		Assertions.assertEquals(1, entries.get(createItem("minecraft", "dirt")));
-		Assertions.assertEquals(2, entries.get(createTag("forge", "cobblestone")));
+		Assertions.assertEquals(1, entries.get(NSSItem.createItem(Items.DIRT)));
+		Assertions.assertEquals(2, entries.get(NSSItem.createTag(Tags.Items.COBBLESTONES)));
 	}
 }

@@ -15,7 +15,7 @@ public class IntegrationHelper {
 	public static final String CURIO_MODID = "curios";
 	public static final String TOP_MODID = "theoneprobe";
 
-	public static final EntityCapability<IItemHandler, Void> CURIO_ITEM_HANDLER = EntityCapability.createVoid(new ResourceLocation(CURIO_MODID, "item_handler"), IItemHandler.class);
+	public static final EntityCapability<IItemHandler, Void> CURIO_ITEM_HANDLER = EntityCapability.createVoid(ResourceLocation.fromNamespaceAndPath(CURIO_MODID, "item_handler"), IItemHandler.class);
 
 	public static void sendIMCMessages(InterModEnqueueEvent event) {
 		ModList modList = ModList.get();

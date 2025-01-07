@@ -182,7 +182,7 @@
           "ingredients": {
             "minecraft:dirt": 1,
             "minecraft:glass_bottle": -1,
-            "minecraft:potion{Potion:\"minecraft:water\"}": 1
+            "minecraft:potion[minecraft:potion_contents={potion:\"minecraft:water\"}]": 1
           },
           "output": "minecraft:mud"
         },
@@ -200,19 +200,19 @@
         },
         {
           "ingredients": {
-            "#forge:ingots/iron": 8
+            "#c:ingots/iron": 8
           },
           "output": "minecraft:iron_horse_armor"
         },
         {
           "ingredients": {
-            "#forge:ingots/gold": 8
+            "#c:ingots/gold": 8
           },
           "output": "minecraft:golden_horse_armor"
         },
         {
           "ingredients": {
-            "#forge:gems/diamond": 8
+            "#c:gems/diamond": 8
           },
           "output": "minecraft:diamond_horse_armor"
         },
@@ -249,7 +249,7 @@
         },
         {
           "ingredients": {
-            "#forge:storage_blocks/gold": 8,
+            "#c:storage_blocks/gold": 8,
             "minecraft:apple": 1
           },
           "output": "minecraft:enchanted_golden_apple"
@@ -262,7 +262,7 @@
         },
         {
           "ingredients": {
-            "#forge:gems/emerald": 3
+            "#c:gems/emerald": 3
           },
           "output": "minecraft:globe_banner_pattern"
         },
@@ -286,7 +286,7 @@
         },
         {
           "ingredients": {
-            "#forge:ingots/gold": 7
+            "#c:ingots/gold": 7
           },
           "output": "minecraft:bell"
         },
@@ -307,13 +307,13 @@
         {
           "ingredients": [
             "minecraft:ink_sac",
-            "#forge:dusts/glowstone"
+            "#c:dusts/glowstone"
           ],
           "output": "minecraft:glow_ink_sac"
         },
         {
           "ingredients": [
-            "#forge:rods/wooden"
+            "#c:rods/wooden"
           ],
           "output": "minecraft:hanging_roots"
         },
@@ -376,7 +376,7 @@
         {
           "ingredients": [
             "minecraft:glowstone_dust",
-            "#forge:mushrooms"
+            "#c:mushrooms"
           ],
           "output": "minecraft:shroomlight"
         },
@@ -479,7 +479,7 @@
           "ingredients": {
             "FAKE|single_emc": 16
           },
-          "output": "FLUID|#forge:milk"
+          "output": "FLUID|#c:milk"
         },
         {
           "ingredients": {
@@ -497,7 +497,7 @@
         },
         {
           "ingredients": {
-            "FLUID|#forge:milk": 1000,
+            "FLUID|#c:milk": 1000,
             "minecraft:bucket": 1
           },
           "output": "minecraft:milk_bucket"
@@ -510,112 +510,112 @@
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/white"
+            "#c:dyes/white"
           ],
           "output": "minecraft:white_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/orange"
+            "#c:dyes/orange"
           ],
           "output": "minecraft:orange_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/magenta"
+            "#c:dyes/magenta"
           ],
           "output": "minecraft:magenta_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/light_blue"
+            "#c:dyes/light_blue"
           ],
           "output": "minecraft:light_blue_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/yellow"
+            "#c:dyes/yellow"
           ],
           "output": "minecraft:yellow_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/lime"
+            "#c:dyes/lime"
           ],
           "output": "minecraft:lime_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/pink"
+            "#c:dyes/pink"
           ],
           "output": "minecraft:pink_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/gray"
+            "#c:dyes/gray"
           ],
           "output": "minecraft:gray_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/light_gray"
+            "#c:dyes/light_gray"
           ],
           "output": "minecraft:light_gray_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/cyan"
+            "#c:dyes/cyan"
           ],
           "output": "minecraft:cyan_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/purple"
+            "#c:dyes/purple"
           ],
           "output": "minecraft:purple_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/blue"
+            "#c:dyes/blue"
           ],
           "output": "minecraft:blue_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/brown"
+            "#c:dyes/brown"
           ],
           "output": "minecraft:brown_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/green"
+            "#c:dyes/green"
           ],
           "output": "minecraft:green_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/red"
+            "#c:dyes/red"
           ],
           "output": "minecraft:red_shulker_box"
         },
         {
           "ingredients": [
             "minecraft:shulker_box",
-            "#forge:dyes/black"
+            "#c:dyes/black"
           ],
           "output": "minecraft:black_shulker_box"
         }
@@ -624,24 +624,23 @@
   },
   "values": {
     "before": {
-      "#forge:crops/beetroot": 64,
-      "#forge:crops/carrot": 64,
-      "#forge:crops/nether_wart": 24,
-      "#forge:crops/potato": 64,
-      "#forge:crops/wheat": 24,
-      "#forge:dusts/glowstone": 384,
-      "#forge:dusts/redstone": 64,
-      "#forge:gems/diamond": 8192,
-      "#forge:gems/emerald": 16384,
-      "#forge:gems/quartz": 256,
-      "#forge:nether_stars": 139264,
-      "#forge:rods/wooden": 4,
-      "#forge:seeds/beetroot": 16,
-      "#forge:seeds/wheat": 16,
+      "#c:crops/beetroot": 64,
+      "#c:crops/carrot": 64,
+      "#c:crops/nether_wart": 24,
+      "#c:crops/potato": 64,
+      "#c:crops/wheat": 24,
+      "#c:dusts/glowstone": 384,
+      "#c:dusts/redstone": 64,
+      "#c:gems/diamond": 8192,
+      "#c:gems/emerald": 16384,
+      "#c:gems/quartz": 256,
+      "#c:nether_stars": 139264,
+      "#c:rods/wooden": 4,
+      "#c:seeds/beetroot": 16,
+      "#c:seeds/wheat": 16,
       "#minecraft:decorated_pot_sherds": 216,
       "#minecraft:leaves": 1,
       "#minecraft:logs": 32,
-      "#minecraft:music_discs": 2048,
       "#minecraft:planks": 8,
       "#minecraft:saplings": 32,
       "#minecraft:small_flowers": 16,
@@ -718,14 +717,14 @@
       "minecraft:ghast_tear": 4096,
       "minecraft:glow_berries": 16,
       "minecraft:glow_lichen": 8,
-      "minecraft:goat_horn{instrument:\"minecraft:admire_goat_horn\"}": 192,
-      "minecraft:goat_horn{instrument:\"minecraft:call_goat_horn\"}": 192,
-      "minecraft:goat_horn{instrument:\"minecraft:dream_goat_horn\"}": 192,
-      "minecraft:goat_horn{instrument:\"minecraft:feel_goat_horn\"}": 96,
-      "minecraft:goat_horn{instrument:\"minecraft:ponder_goat_horn\"}": 96,
-      "minecraft:goat_horn{instrument:\"minecraft:seek_goat_horn\"}": 96,
-      "minecraft:goat_horn{instrument:\"minecraft:sing_goat_horn\"}": 96,
-      "minecraft:goat_horn{instrument:\"minecraft:yearn_goat_horn\"}": 192,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.0\"},use_duration:140}]": 96,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.1\"},use_duration:140}]": 96,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.2\"},use_duration:140}]": 96,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.3\"},use_duration:140}]": 96,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.4\"},use_duration:140}]": 192,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.5\"},use_duration:140}]": 192,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.6\"},use_duration:140}]": 192,
+      "minecraft:goat_horn[minecraft:instrument={range:256.0f,sound_event:{sound_id:\"minecraft:item.goat_horn.sound.7\"},use_duration:140}]": 192,
       "minecraft:granite": 16,
       "minecraft:gravel": 4,
       "minecraft:gunpowder": 192,
@@ -777,7 +776,6 @@
       "minecraft:sand": 1,
       "minecraft:sculk_catalyst": 8040,
       "minecraft:sculk_vein": 4,
-      "minecraft:scute": 96,
       "minecraft:sea_pickle": 16,
       "minecraft:seagrass": 1,
       "minecraft:sentry_armor_trim_smithing_template": 57345,
@@ -809,6 +807,7 @@
       "minecraft:tube_coral_fan": 16,
       "minecraft:tuff": 4,
       "minecraft:turtle_egg": 192,
+      "minecraft:turtle_scute": 96,
       "minecraft:twisting_vines": 8,
       "minecraft:vex_armor_trim_smithing_template": 51917,
       "minecraft:vine": 8,

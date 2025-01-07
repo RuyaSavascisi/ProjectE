@@ -7,7 +7,6 @@ import moze_intel.projecte.gameObjs.container.slots.IInsertableSlot;
 import moze_intel.projecte.gameObjs.container.slots.InventoryContainerSlot;
 import moze_intel.projecte.gameObjs.container.slots.MainInventorySlot;
 import moze_intel.projecte.gameObjs.registration.impl.ContainerTypeRegistryObject;
-import moze_intel.projecte.network.PacketUtils;
 import moze_intel.projecte.network.packets.IPEPacket;
 import moze_intel.projecte.network.packets.to_client.UpdateWindowLongPKT;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -195,11 +195,11 @@ public abstract class PEContainer extends AbstractContainerMenu {
 		broadcastPE(true);
 	}
 
-	protected void syncDataChange(IPEPacket<?> packet) {
+	protected void syncDataChange(IPEPacket packet) {
 		//Note: We ignore suppressRemoteUpdates as that is mostly used as a hack for slot syncing
 		// (which we don't sync with this) and also we would have to AT in to access it
 		if (this.playerInv.player instanceof ServerPlayer player) {
-			PacketUtils.sendTo(packet, player);
+			PacketDistributor.sendToPlayer(player, packet);
 		}
 	}
 

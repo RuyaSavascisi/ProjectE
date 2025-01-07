@@ -8,6 +8,7 @@ import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -73,14 +74,14 @@ public class EntityFireProjectile extends NoGravityThrowableProjectile {
 			ItemStack found = PlayerHelper.findFirstItem(player, fromArcana ? PEItems.ARCANA_RING.get() : PEItems.IGNITION_RING.get());
 			if (!found.isEmpty() && ItemPE.consumeFuel(player, found, 32, true)) {
 				Entity ent = result.getEntity();
-				ent.setSecondsOnFire(5);
+				ent.igniteForSeconds(5);
 				ent.hurt(level().damageSources().inFire(), 5);
 			}
 		}
 	}
 
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
 	}
 
 	@Override

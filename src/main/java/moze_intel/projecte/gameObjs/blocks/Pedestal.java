@@ -13,9 +13,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -60,7 +61,7 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 
 	@Override
 	@Deprecated
-	public boolean isPathfindable(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull PathComputationType type) {
+	public boolean isPathfindable(@NotNull BlockState state, @NotNull PathComputationType pathComputationType) {
 		return false;
 	}
 
@@ -119,15 +120,14 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 	@NotNull
 	@Override
 	@Deprecated
-	public InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand,
-			@NotNull BlockHitResult rtr) {
+	protected ItemInteractionResult useItemOn(ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player,
+			@NotNull InteractionHand hand, @NotNull BlockHitResult rtr) {
 		if (!level.isClientSide) {
 			DMPedestalBlockEntity pedestal = WorldHelper.getBlockEntity(DMPedestalBlockEntity.class, level, pos, true);
 			if (pedestal == null) {
-				return InteractionResult.FAIL;
+				return ItemInteractionResult.FAIL;
 			}
 			ItemStack item = pedestal.getInventory().getStackInSlot(0);
-			ItemStack stack = player.getItemInHand(hand);
 			if (stack.isEmpty() && !item.isEmpty()) {
 				IPedestalItem pedestalItem = item.getCapability(PECapabilities.PEDESTAL_ITEM_CAPABILITY);
 				if (pedestalItem != null) {
@@ -136,12 +136,9 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 				}
 			} else if (!stack.isEmpty() && item.isEmpty()) {
 				pedestal.getInventory().setStackInSlot(0, stack.split(1));
-				if (stack.getCount() <= 0) {
-					player.setItemInHand(hand, ItemStack.EMPTY);
-				}
 			}
 		}
-		return InteractionResult.sidedSuccess(level.isClientSide);
+		return ItemInteractionResult.sidedSuccess(level.isClientSide);
 	}
 
 	// [VanillaCopy] Adapted from NoteBlock
@@ -200,8 +197,8 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable BlockGetter level, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltip, flags);
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
 		tooltip.add(PELang.PEDESTAL_TOOLTIP1.translate());
 		tooltip.add(PELang.PEDESTAL_TOOLTIP2.translate());
 	}

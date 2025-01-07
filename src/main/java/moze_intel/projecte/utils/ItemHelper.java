@@ -3,8 +3,6 @@ package moze_intel.projecte.utils;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.item.BlockItem;
@@ -64,7 +62,7 @@ public final class ItemHelper {
 			if (!s.isEmpty()) {
 				for (int j = i + 1; j < list.size(); j++) {
 					ItemStack s1 = list.get(j);
-					if (ItemHandlerHelper.canItemStacksStack(s, s1)) {
+					if (ItemStack.isSameItemSameComponents(s, s1)) {
 						s.grow(s1.getCount());
 						list.set(j, ItemStack.EMPTY);
 					}
@@ -73,31 +71,6 @@ public final class ItemHelper {
 		}
 		list.removeIf(ItemStack::isEmpty);
 		list.sort(Comparators.ITEMSTACK_ASCENDING);
-	}
-
-	/**
-	 * Copies the nbt compound similar to how {@link CompoundTag#copy()} does, except it just skips the desired key instead of having to copy a potentially large value
-	 * which may be expensive, and then remove it from the copy.
-	 *
-	 * @implNote If the input {@link CompoundTag} only contains the key we want to skip, we return null instead of an empty {@link CompoundTag}.
-	 */
-	@Nullable
-	public static CompoundTag copyNBTSkipKey(@NotNull CompoundTag nbt, @NotNull String keyToSkip) {
-		CompoundTag copiedNBT = new CompoundTag();
-		for (String key : nbt.getAllKeys()) {
-			if (keyToSkip.equals(key)) {
-				continue;
-			}
-			Tag innerNBT = nbt.get(key);
-			if (innerNBT != null) {
-				//Shouldn't be null but double check
-				copiedNBT.put(key, innerNBT.copy());
-			}
-		}
-		if (copiedNBT.isEmpty()) {
-			return null;
-		}
-		return copiedNBT;
 	}
 
 	/**
@@ -170,7 +143,7 @@ public final class ItemHelper {
 				//Slot is empty, just put it all there
 				return 0;
 			}
-			if (ItemHandlerHelper.canItemStacksStack(stack, invStack)) {
+			if (ItemStack.isSameItemSameComponents(stack, invStack)) {
 				int amountSlotNeeds = invStack.getMaxStackSize() - invStack.getCount();
 				//Double check we don't have an over sized stack
 				if (amountSlotNeeds > 0) {
@@ -184,18 +157,6 @@ public final class ItemHelper {
 			}
 		}
 		return remainder;
-	}
-
-	@Nullable
-	public static CompoundTag recombineNBT(List<CompoundTag> pieces) {
-		if (pieces.isEmpty()) {
-			return null;
-		}
-		CompoundTag combinedNBT = pieces.get(0);
-		for (int i = 1; i < pieces.size(); i++) {
-			combinedNBT = combinedNBT.merge(pieces.get(i));
-		}
-		return combinedNBT;
 	}
 
 	public static ItemStack size(ItemStack stack, int size) {

@@ -2,11 +2,11 @@ package moze_intel.projecte.integration.jei.world_transmute;
 
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
+import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -30,12 +30,10 @@ import org.jetbrains.annotations.NotNull;
 public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransmuteEntry> {
 
 	public static final RecipeType<WorldTransmuteEntry> RECIPE_TYPE = new RecipeType<>(PECore.rl("world_transmutation"), WorldTransmuteEntry.class);
-	private final IDrawable background;
 	private final IDrawable arrow;
 	private final IDrawable icon;
 
 	public WorldTransmuteRecipeCategory(IGuiHelper guiHelper) {
-		background = guiHelper.createBlankDrawable(135, 48);
 		arrow = guiHelper.drawableBuilder(PECore.rl("textures/gui/arrow.png"), 0, 0, 22, 15).setTextureSize(32, 32).build();
 		icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, PEItems.PHILOSOPHERS_STONE.asStack());
 	}
@@ -52,10 +50,14 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 		return PELang.WORLD_TRANSMUTE.translate();
 	}
 
-	@NotNull
 	@Override
-	public IDrawable getBackground() {
-		return background;
+	public int getWidth() {
+		return 135;
+	}
+
+	@Override
+	public int getHeight() {
+		return 48;
 	}
 
 	@NotNull
@@ -91,13 +93,11 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 		}
 	}
 
-	@NotNull
 	@Override
-	public List<Component> getTooltipStrings(@NotNull WorldTransmuteEntry recipe, @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
+	public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull WorldTransmuteEntry recipe, @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
 		if (mouseX > 67 && mouseX < 107 && mouseY > 18 && mouseY < 38) {
-			return Collections.singletonList(PELang.WORLD_TRANSMUTE_DESCRIPTION.translate());
+			tooltip.add(PELang.WORLD_TRANSMUTE_DESCRIPTION.translate());
 		}
-		return Collections.emptyList();
 	}
 
 	public static List<WorldTransmuteEntry> getAllTransmutations() {
@@ -112,9 +112,9 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 				FluidStack inputFluid = e.getInputFluid();
 				if (inputFluid.isEmpty()) {
 					ItemStack inputItem = e.getInputItem();
-					alreadyHas = visible.stream().map(WorldTransmuteEntry::getInputItem).anyMatch(otherInputItem -> !otherInputItem.isEmpty() && ItemStack.isSameItemSameTags(inputItem, otherInputItem));
+					alreadyHas = visible.stream().map(WorldTransmuteEntry::getInputItem).anyMatch(otherInputItem -> !otherInputItem.isEmpty() && ItemStack.isSameItemSameComponents(inputItem, otherInputItem));
 				} else {
-					alreadyHas = visible.stream().map(WorldTransmuteEntry::getInputFluid).anyMatch(otherInputFluid -> !otherInputFluid.isEmpty() && inputFluid.isFluidEqual(otherInputFluid));
+					alreadyHas = visible.stream().map(WorldTransmuteEntry::getInputFluid).anyMatch(otherInputFluid -> !otherInputFluid.isEmpty() && FluidStack.isSameFluidSameComponents(inputFluid, otherInputFluid));
 				}
 				if (!alreadyHas) {
 					//Only add items that we haven't already had.

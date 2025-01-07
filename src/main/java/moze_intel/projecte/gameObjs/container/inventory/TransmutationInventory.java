@@ -18,7 +18,7 @@ import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.api.event.PlayerAttemptLearnEvent;
 import moze_intel.projecte.emc.FuelMapper;
-import moze_intel.projecte.emc.nbt.NBTManager;
+import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.PlayerHelper;
@@ -77,7 +77,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	public void handleKnowledge(ItemInfo info) {
-		ItemInfo cleanedInfo = NBTManager.getPersistentInfo(info);
+		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
 		//Pass both stacks to the Attempt Learn Event in case a mod cares about the NBT/damage difference when comparing
 		if (!provider.hasKnowledge(cleanedInfo) && !NeoForge.EVENT_BUS.post(new PlayerAttemptLearnEvent(player, info, cleanedInfo)).isCanceled()) {
 			if (provider.addKnowledge(cleanedInfo)) {
@@ -110,7 +110,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	public void handleUnlearn(ItemInfo info) {
-		ItemInfo cleanedInfo = NBTManager.getPersistentInfo(info);
+		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
 		if (provider.hasKnowledge(cleanedInfo) && provider.removeKnowledge(cleanedInfo)) {
 			//Only sync the knowledge changed if the provider successfully removed it
 			provider.syncKnowledgeChange((ServerPlayer) player, cleanedInfo, false);
@@ -154,7 +154,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 		ItemInfo lockInfo = null;
 		BigInteger availableEMC = getAvailableEmc();
 		if (!inputLocks.getStackInSlot(LOCK_INDEX).isEmpty()) {
-			lockInfo = NBTManager.getPersistentInfo(ItemInfo.fromStack(inputLocks.getStackInSlot(LOCK_INDEX)));
+			lockInfo = DataComponentManager.getPersistentInfo(ItemInfo.fromStack(inputLocks.getStackInSlot(LOCK_INDEX)));
 			//Note: We look up using only the persistent information here, instead of all the data as
 			// we cannot replicate the extra data anyways since it cannot be learned. So we need to make
 			// sure that we only go off of the data that can be matched

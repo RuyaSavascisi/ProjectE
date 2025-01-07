@@ -4,10 +4,13 @@ import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.gameObjs.EnumMatterType;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ToolHelper;
+import net.minecraft.core.Holder;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
@@ -19,8 +22,10 @@ public abstract class PETool extends DiggerItem implements IItemCharge, IBarHelp
 	protected final EnumMatterType matterType;
 	private final int numCharges;
 
-	public PETool(EnumMatterType matterType, TagKey<Block> blocks, float damage, float attackSpeed, int numCharges, Properties props) {
-		super(damage, attackSpeed, matterType, blocks, props);
+	public PETool(EnumMatterType matterType, TagKey<Block> blocks, int numCharges, Properties props) {
+		super(matterType, blocks, props.component(PEDataComponentTypes.CHARGE, 0)
+				.component(PEDataComponentTypes.STORED_EMC, 0L)
+		);
 		this.matterType = matterType;
 		this.numCharges = numCharges;
 	}
@@ -36,12 +41,12 @@ public abstract class PETool extends DiggerItem implements IItemCharge, IBarHelp
 	}
 
 	@Override
-	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+	public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {//TODO - 1.21: Do we need to override supportsEnchantment as well?
 		return false;
 	}
 
 	@Override
-	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
+	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<Item> onBroken) {
 		return 0;
 	}
 

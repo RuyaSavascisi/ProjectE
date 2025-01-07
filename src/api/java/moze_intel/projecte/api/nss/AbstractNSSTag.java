@@ -1,6 +1,7 @@
 package moze_intel.projecte.api.nss;
 
 import com.google.common.collect.ImmutableSet;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -11,15 +12,15 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import moze_intel.projecte.api.codec.IPECodecHelper;
+import moze_intel.projecte.api.nss.LegacyNSSCodec.NameComponent;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Abstract implementation to make implementing {@link NSSTag} simpler, and automatically be able to register conversions for:
@@ -134,17 +135,6 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	}
 
 	/**
-	 * Helper to read a resource location and validate it is part of a registry.
-	 *
-	 * @param registry     Registry that backs this codec.
-	 * @param allowDefault {@code true} to allow ids matching the default element of the registry.
-	 * @param rl           Resource Location string representation.
-	 */
-	protected static DataResult<ResourceLocation> readRL(@Nullable Registry<?> registry, boolean allowDefault, String rl) {
-		return ResourceLocation.read(rl).flatMap(id -> validate(registry, allowDefault, id));
-	}
-
-	/**
 	 * {@return a {@link MapCodec} representing the tag variant of an explicit codec}
 	 *
 	 * @param nssConstructor Normalized Simple Stack constructor.
@@ -163,8 +153,8 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 * @param registry     Registry that backs this codec.
 	 * @param allowDefault {@code true} to allow ids matching the default element of the registry.
 	 */
-	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> RecordCodecBuilder<NSS, ResourceLocation> idComponent(@Nullable Registry<?> registry, boolean allowDefault) {
-		return ExtraCodecs.validate(ResourceLocation.CODEC, id -> {
+	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> RecordCodecBuilder<NSS, ResourceLocation> idComponent(Registry<?> registry, boolean allowDefault) {
+		return ResourceLocation.CODEC.validate(id -> {
 			if (id == null) {
 				return com.mojang.serialization.DataResult.error(() -> "Must represent a registry id");
 			}
@@ -178,10 +168,7 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 * @param registry     Registry that backs this codec.
 	 * @param allowDefault {@code true} to allow ids matching the default element of the registry.
 	 */
-	private static DataResult<ResourceLocation> validate(@Nullable Registry<?> registry, boolean allowDefault, ResourceLocation id) {
-		if (registry == null) {//TODO - 1.20.4: Remove nullability of registry when neoforge allows initializing junit with registries
-			return DataResult.success(id);
-		}
+	private static DataResult<ResourceLocation> validate(Registry<?> registry, boolean allowDefault, ResourceLocation id) {
 		if (!registry.containsKey(id)) {
 			return DataResult.error(() -> "Registry " + registry.key().location() + " does not contain element " + id);
 		} else if (!allowDefault && registry instanceof DefaultedRegistry<?> defaultedRegistry && id.equals(defaultedRegistry.getDefaultKey())) {
@@ -197,7 +184,7 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 * @param allowDefault   {@code true} to allow ids matching the default element of the registry.
 	 * @param nssConstructor Normalized Simple Stack constructor.
 	 */
-	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> MapCodec<NSS> createExplicitCodec(@Nullable Registry<TYPE> registry, boolean allowDefault,
+	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> MapCodec<NSS> createExplicitCodec(Registry<TYPE> registry, boolean allowDefault,
 			NSSTagConstructor<TYPE, NSS> nssConstructor) {
 		//Note: We return a MapCodec so that dispatch codecs can inline this
 		return NeoForgeExtraCodecs.withAlternative(
@@ -217,19 +204,12 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 *                       item.
 	 * @param nssConstructor Normalized Simple Stack constructor.
 	 */
-	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> Codec<NSS> createLegacyCodec(@Nullable Registry<TYPE> registry, boolean allowDefault, String prefix,
+	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> Codec<NSS> createLegacyCodec(Registry<TYPE> registry, boolean allowDefault, String prefix,
 			NSSTagConstructor<TYPE, NSS> nssConstructor) {
-		return IPECodecHelper.INSTANCE.withPrefix(prefix).comapFlatMap(name -> {
-			if (name.startsWith("#")) {
-				return ResourceLocation.read(name.substring(1)).map(nssConstructor::createTag);
-			}
-			return readRL(registry, allowDefault, name).map(nssConstructor::create);
-		}, nss -> {
-			if (nss.representsTag()) {
-				return "#" + nss.getResourceLocation();
-			}
-			return nss.getResourceLocation().toString();
-		});
+		return new LegacyNSSCodec<>(registry, allowDefault, IPECodecHelper.INSTANCE.withPrefix(prefix)).xmap(
+				data -> data.map(nssConstructor::createTag, right -> nssConstructor.create(right.name())),
+				nss -> nss.representsTag() ? Either.left(nss.getResourceLocation()) : Either.right(new NameComponent(nss.getResourceLocation(), DataComponentPatch.EMPTY))
+		);
 	}
 
 	/**

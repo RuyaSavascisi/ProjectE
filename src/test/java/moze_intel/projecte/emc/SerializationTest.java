@@ -8,21 +8,21 @@ import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import moze_intel.projecte.api.nss.NormalizedSimpleStackTestHelper;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
-import net.minecraft.Util;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.common.Tags;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-//TODO - 1.20.4: Add some tests that actually test serialization as all of these (and the ones for the other tests) only test deserialization
+//TODO - 1.21: Add some tests that actually test serialization as all of these (and the ones for the other tests) only test deserialization
 @DisplayName("Test Serialization of Normalized Simple Stacks")
-class SerializationTest extends NormalizedSimpleStackTestHelper {
+class SerializationTest {
 
 	private static NormalizedSimpleStack deserializeLegacyNSS(String jsonString) {
-		return Util.getOrThrow(IPECodecHelper.INSTANCE.legacyNSSCodec().parse(JsonOps.INSTANCE, new JsonPrimitive(jsonString)), JsonParseException::new);
+		return IPECodecHelper.INSTANCE.legacyNSSCodec().parse(JsonOps.INSTANCE, new JsonPrimitive(jsonString)).getOrThrow(JsonParseException::new);
 	}
 
 	private static NormalizedSimpleStack parseJson(String json) {
@@ -39,7 +39,7 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 	@Test
 	@DisplayName("Test Serialization of a valid Item")
 	void testValidItemSerialization() {
-		NSSItem expected = createItem("minecraft", "dirt");
+		NSSItem expected = NSSItem.createItem(Items.DIRT);
 		Assertions.assertEquals(expected, deserializeLegacyNSS("minecraft:dirt"));
 		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson("""
@@ -52,7 +52,7 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 	@Test
 	@DisplayName("Test Serialization of a valid Item with prefix included")
 	void testValidItemSerializationAlt() {
-		Assertions.assertEquals(createItem("minecraft", "dirt"), deserializeLegacyNSS("ITEM|minecraft:dirt"));
+		Assertions.assertEquals(NSSItem.createItem(Items.DIRT), deserializeLegacyNSS("ITEM|minecraft:dirt"));
 	}
 
 	@Test
@@ -70,24 +70,26 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 	@Test
 	@DisplayName("Test Serialization of an Item with NBT")
 	void testItemNBTSerialization() {
-		CompoundTag nbt = new CompoundTag();
-		nbt.putString("my", "tag");
-		NSSItem expected = createItem("minecraft", "dirt", nbt);
-		Assertions.assertEquals(expected, deserializeLegacyNSS("minecraft:dirt{my: \"tag\"}"));
+		NSSItem expected = NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH);
+		Assertions.assertEquals(expected, deserializeLegacyNSS("minecraft:dirt[custom_data={my: \"tag\"}]"));
 		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:item",
 					"id": "minecraft:dirt",
-					"nbt": "{my: \\"tag\\"}"
+					"data": {
+						"custom_data": "{my: \\"tag\\"}"
+					}
 				}"""));
 		//Alternate nbt format
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:item",
 					"id": "minecraft:dirt",
-					"nbt": {
-						"my": "tag"
+					"data": {
+						"custom_data": {
+							"my": "tag"
+						}
 					}
 				}"""));
 	}
@@ -95,13 +97,13 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 	@Test
 	@DisplayName("Test Serialization of a valid Item Tag")
 	void testValidItemTagSerialization() {
-		NSSItem expected = createTag("forge", "cobblestone");
-		Assertions.assertEquals(expected, deserializeLegacyNSS("#forge:cobblestone"));
+		NSSItem expected = NSSItem.createTag(Tags.Items.COBBLESTONES);
+		Assertions.assertEquals(expected, deserializeLegacyNSS("#c:cobblestones"));
 		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:item",
-					"tag": "forge:cobblestone"
+					"tag": "c:cobblestones"
 				}"""));
 	}
 
@@ -120,27 +122,29 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
 				{
 					"type": "projecte:item",
-					"tag": "#forge:cobblestone"
+					"tag": "#c:cobblestones"
 				}"""));
 	}
 
 	@Test
 	@DisplayName("Test Serialization of an Item Tag with NBT")
 	void testItemTagNBTSerialization() {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("#forge:cobblestone{my: \"tag\"}"));
+		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("#c:cobblestones{my: \"tag\"}"));
 	}
 
 	@Test
 	@DisplayName("Test Serialization of an Explicit Item Tag with NBT")
 	void testExplicitItemTagNBTSerialization() {
 		//The tag is ignored
-		NSSItem expected = createTag("forge", "cobblestone");
+		NSSItem expected = NSSItem.createTag(Tags.Items.COBBLESTONES);
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:item",
-					"tag": "forge:cobblestone",
-					"nbt": {
-						"my": "tag"
+					"tag": "c:cobblestones",
+					"data": {
+						"custom_data": {
+							"my": "tag"
+						}
 					}
 				}"""));
 	}
@@ -148,7 +152,7 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 	@Test
 	@DisplayName("Test Serialization of a valid Fluid")
 	void testValidFluidSerialization() {
-		NSSFluid expected = createFluid("minecraft", "water");
+		NSSFluid expected = NSSFluid.createFluid(Fluids.WATER);
 		Assertions.assertEquals(expected, deserializeLegacyNSS("FLUID|minecraft:water"));
 		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson("""
@@ -173,24 +177,26 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 	@Test
 	@DisplayName("Test Serialization of a Fluid with NBT")
 	void testFluidNBTSerialization() {
-		CompoundTag nbt = new CompoundTag();
-		nbt.putString("my", "tag");
-		NSSFluid expected = createFluid("minecraft", "water", nbt);
-		Assertions.assertEquals(expected, deserializeLegacyNSS("FLUID|minecraft:water{my: \"tag\"}"));
+		NSSFluid expected = NSSFluid.createFluid(Fluids.WATER, CodecTestHelper.MY_TAG_PATCH);
+		Assertions.assertEquals(expected, deserializeLegacyNSS("FLUID|minecraft:water[custom_data={my: \"tag\"}]"));
 		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:fluid",
 					"id": "minecraft:water",
-					"nbt": "{my: \\"tag\\"}"
+					"data": {
+						"custom_data": "{my: \\"tag\\"}"
+					}
 				}"""));
 		//Alternate nbt format
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:fluid",
 					"id": "minecraft:water",
-					"nbt": {
-						"my": "tag"
+					"data": {
+						"custom_data": {
+							"my": "tag"
+						}
 					}
 				}"""));
 	}
@@ -198,20 +204,20 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 	@Test
 	@DisplayName("Test Serialization of a valid Fluid Tag")
 	void testValidFluidTagSerialization() {
-		NSSFluid expected = createFluidTag("forge", "milk");
-		Assertions.assertEquals(expected, deserializeLegacyNSS("FLUID|#forge:milk"));
+		NSSFluid expected = NSSFluid.createTag(Tags.Fluids.MILK);
+		Assertions.assertEquals(expected, deserializeLegacyNSS("FLUID|#c:milk"));
 		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:fluid",
-					"tag": "forge:milk"
+					"tag": "c:milk"
 				}"""));
 	}
 
 	@Test
 	@DisplayName("Test Serialization of an invalid Fluid Tag")
 	void testInvalidFluidTagSerialization() {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("FLUID|#forge:Milk"));
+		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("FLUID|#c:Milk"));
 		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("FLUID|#TAG"));
 		//Test explicit syntax
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
@@ -223,22 +229,24 @@ class SerializationTest extends NormalizedSimpleStackTestHelper {
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
 				{
 					"type": "projecte:fluid",
-					"tag": "#forge:milk"
+					"tag": "#c:milk"
 				}"""));
 	}
 
 	@Test
 	@DisplayName("Test Serialization of a Fluid Tag with NBT")
 	void testFluidTagNBTSerialization() {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("FLUID|#forge:milk{my: \"tag\"}"));
+		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("FLUID|#c:milk{my: \"tag\"}"));
 		//The tag is ignored
-		NSSFluid expected = createFluidTag("forge", "milk");
+		NSSFluid expected = NSSFluid.createTag(Tags.Fluids.MILK);
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:fluid",
-					"tag": "forge:milk",
-					"nbt": {
-						"my": "tag"
+					"tag": "c:milk",
+					"data": {
+						"custom_data": {
+							"my": "tag"
+						}
 					}
 				}"""));
 	}

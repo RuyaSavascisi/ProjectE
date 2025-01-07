@@ -12,7 +12,6 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
-import moze_intel.projecte.network.PacketUtils;
 import moze_intel.projecte.network.packets.to_client.NovaExplosionSyncPKT;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -74,20 +73,18 @@ import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.common.IPlantable;
 import net.neoforged.neoforge.common.IShearable;
 import net.neoforged.neoforge.common.util.TriPredicate;
 import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.fluids.IFluidBlock;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
 import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -134,7 +131,7 @@ public final class WorldHelper {
 				for (ServerPlayer player : serverLevel.players()) {
 					//Based on ServerLevel#explode's range check
 					if (player.distanceToSqr(x, y, z) < 4096.0) {
-						PacketUtils.sendTo(packet, player);
+						PacketDistributor.sendToPlayer(player, packet);
 					}
 				}
 			}
@@ -143,12 +140,7 @@ public final class WorldHelper {
 
 	public static void drainFluid(@Nullable Player player, Level level, BlockPos pos, BlockState state, Fluid toMatch) {
 		Block block = state.getBlock();
-		if (block instanceof IFluidBlock fluidBlock && fluidBlock.getFluid().isSame(toMatch)) {
-			//If it is a fluid block drain it (may be the case for some custom block?)
-			// We double check though the fluid block represents a given one though, in case there is some weird thing
-			// going on and we are a bucket pickup handler for the actual water and fluid state
-			fluidBlock.drain(level, pos, FluidAction.EXECUTE);
-		} else if (block instanceof BucketPickup bucketPickup) {
+		if (block instanceof BucketPickup bucketPickup) {
 			//If it is a bucket pickup handler (so may be a fluid logged block) "pick it up"
 			// This includes normal fluid blocks
 			bucketPickup.pickupBlock(player, level, pos, state);
@@ -403,7 +395,7 @@ public final class WorldHelper {
 			}
 			// All modded
 			// Cactus, Reeds, Netherwart, Flower
-			else if (crop instanceof IPlantable) {
+			else if (isPlantable(state)) {
 				if (serverLevel.random.nextInt(chance / 4) == 0) {
 					for (int i = 0; i < (harvest ? 8 : 4); i++) {
 						state.randomTick(serverLevel, currentPos, serverLevel.random);
@@ -429,6 +421,17 @@ public final class WorldHelper {
 				grewWater = true;
 			}
 		}
+	}
+
+	//TODO - 1.21: Re-evaluate how we do this and other modded and maybe vanilla plants
+	//TODO - 1.21: This used to include flowers? And maybe other things
+	private static boolean isPlantable(BlockState state) {
+		return state.is(Blocks.SUGAR_CANE) || state.is(Blocks.CACTUS) || state.is(Blocks.NETHER_WART);
+	}
+
+	public static boolean isCrop(BlockState state) {
+		Block block = state.getBlock();
+		return block instanceof BonemealableBlock || isPlantable(state);
 	}
 
 	private static boolean leaveBottomBlock(BlockState crop) {
@@ -530,7 +533,7 @@ public final class WorldHelper {
 			BlockPos pos = targetInfo.pos();
 			BlockState state = targetInfo.state();
 			BlockEntity blockEntity = state.hasBlockEntity() ? getBlockEntity(level, pos) : null;
-			//TODO - 1.20.4: Decide if we want to call onDestroyedByPlayer etc??
+			//TODO - 1.21: Decide if we want to call onDestroyedByPlayer etc??
 			currentDrops.addAll(Block.getDrops(state, (ServerLevel) level, pos, blockEntity, player, stack));
 			level.removeBlock(pos, false);
 			if (++numMined >= Constants.MAX_VEIN_SIZE) {

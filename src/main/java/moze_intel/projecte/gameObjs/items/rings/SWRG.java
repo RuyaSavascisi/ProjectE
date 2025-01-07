@@ -1,7 +1,11 @@
 package moze_intel.projecte.gameObjs.items.rings;
 
+import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.function.IntFunction;
 import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
@@ -11,6 +15,7 @@ import moze_intel.projecte.gameObjs.items.ICapabilityAware;
 import moze_intel.projecte.gameObjs.items.IFlightProvider;
 import moze_intel.projecte.gameObjs.items.ItemPE;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.EMCHelper;
@@ -20,7 +25,11 @@ import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ByIdMap;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -39,7 +48,10 @@ import org.jetbrains.annotations.Nullable;
 public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IProjectileShooter, ICapabilityAware {
 
 	public SWRG(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.SWRG_MODE, SWRGMode.OFF)
+				.component(PEDataComponentTypes.STORED_EMC, 0L)
+				.component(PEDataComponentTypes.UNPROCESSED_EMC, 0.0)
+		);
 	}
 
 	private void tick(ItemStack stack, Player player) {
@@ -98,7 +110,7 @@ public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IPro
 	}
 
 	private SWRGMode getMode(ItemStack stack) {
-		return stack.getData(PEAttachmentTypes.SWRG_MODE);
+		return stack.getOrDefault(PEDataComponentTypes.SWRG_MODE, SWRGMode.OFF);
 	}
 
 	@NotNull
@@ -116,7 +128,7 @@ public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IPro
 		if (mode == oldMode) {
 			return mode;
 		}
-		stack.setData(PEAttachmentTypes.SWRG_MODE, mode);
+		stack.set(PEDataComponentTypes.SWRG_MODE, mode);
 		if (player == null) {
 			//Don't do sounds if the player is null
 			return mode;
@@ -188,11 +200,27 @@ public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IPro
 		IntegrationHelper.registerCuriosCapability(event, this);
 	}
 
-	public enum SWRGMode {//Change the mode of SWRG. Modes:<p> 0 = Ring Off<p> 1 = Flight<p> 2 = Shield<p> 3 = Flight + Shield<p>
+	public enum SWRGMode implements StringRepresentable {//Change the mode of SWRG. Modes:<p> 0 = Ring Off<p> 1 = Flight<p> 2 = Shield<p> 3 = Flight + Shield<p>
 		OFF,
 		FLIGHT,
 		SHIELD,
 		SHIELDED_FLIGHT;
+
+		public static final Codec<SWRGMode> CODEC = StringRepresentable.fromEnum(SWRGMode::values);
+		public static final IntFunction<SWRGMode> BY_ID = ByIdMap.continuous(SWRGMode::ordinal, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+		public static final StreamCodec<ByteBuf, SWRGMode> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, SWRGMode::ordinal);
+
+		private final String serializedName;
+
+		SWRGMode() {
+			this.serializedName = name().toLowerCase(Locale.ROOT);
+		}
+
+		@NotNull
+		@Override
+		public String getSerializedName() {
+			return serializedName;
+		}
 
 		public boolean hasFlight() {
 			return this == FLIGHT || this == SHIELDED_FLIGHT;

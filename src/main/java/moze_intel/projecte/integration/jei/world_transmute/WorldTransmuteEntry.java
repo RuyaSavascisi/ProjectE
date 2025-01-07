@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import net.neoforged.neoforge.fluids.IFluidBlock;
 import org.jetbrains.annotations.Nullable;
 
 public class WorldTransmuteEntry {
@@ -61,9 +60,7 @@ public class WorldTransmuteEntry {
 
 	private FluidStack fluidFromBlock(Block block) {
 		if (block instanceof LiquidBlock liquidBlock) {
-			return new FluidStack(liquidBlock.getFluid(), FluidType.BUCKET_VOLUME);
-		} else if (block instanceof IFluidBlock fluidBlock) {
-			return new FluidStack(fluidBlock.getFluid(), FluidType.BUCKET_VOLUME);
+			return new FluidStack(liquidBlock.fluid, FluidType.BUCKET_VOLUME);
 		}
 		return FluidStack.EMPTY;
 	}

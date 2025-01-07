@@ -3,6 +3,8 @@ package moze_intel.projecte.api.proxy;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import moze_intel.projecte.api.ItemInfo;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
@@ -29,7 +31,14 @@ public interface IEMCProxy {
 	 * @return Whether the item has an emc value
 	 */
 	default boolean hasValue(@NotNull ItemLike itemLike) {
-		return Objects.requireNonNull(itemLike).asItem() != Items.AIR && hasValue(ItemInfo.fromItem(itemLike));
+		Item item = Objects.requireNonNull(itemLike).asItem();
+		return item != Items.AIR && hasValue(ItemInfo.fromItem(item));
+	}
+
+	//TODO - 1.21: Docs and re-evaluate ItemLike variant
+	default boolean hasValue(@NotNull Holder<Item> itemLike) {
+		//TODO - 1.21: Better check against air
+		return Objects.requireNonNull(itemLike).value() != Items.AIR && hasValue(ItemInfo.fromItem(itemLike));
 	}
 
 	/**
@@ -77,7 +86,15 @@ public interface IEMCProxy {
 	 */
 	@Range(from = 0, to = Long.MAX_VALUE)
 	default long getValue(@NotNull ItemLike itemLike) {
-		return Objects.requireNonNull(itemLike).asItem() == Items.AIR ? 0 : getValue(ItemInfo.fromItem(itemLike));
+		Item item = Objects.requireNonNull(itemLike).asItem();
+		return item == Items.AIR ? 0 : getValue(ItemInfo.fromItem(item));
+	}
+
+	//TODO - 1.21: Docs and re-evaluate ItemLike variant
+	@Range(from = 0, to = Long.MAX_VALUE)
+	default long getValue(@NotNull Holder<Item> item) {
+		//TODO - 1.21: Better check against air
+		return Objects.requireNonNull(item).value() == Items.AIR ? 0 : getValue(ItemInfo.fromItem(item));
 	}
 
 	/**

@@ -17,57 +17,55 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
-import net.neoforged.neoforge.event.TickEvent;
+import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 
-@Mod.EventBusSubscriber(modid = PECore.MODID)
+@EventBusSubscriber(modid = PECore.MODID)
 public class TickEvents {
 
 	@SubscribeEvent
-	public static void playerTick(TickEvent.PlayerTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			Player player = event.player;
-			IAlchBagProvider provider = player.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
-			if (provider != null) {
-				Set<DyeColor> colorsChanged = EnumSet.noneOf(DyeColor.class);
-				for (DyeColor color : getBagColorsPresent(player)) {
-					IItemHandler inv = provider.getBag(color);
-					for (int i = 0; i < inv.getSlots(); i++) {
-						ItemStack current = inv.getStackInSlot(i);
-						if (!current.isEmpty()) {
-							IAlchBagItem alchBagItem = current.getCapability(PECapabilities.ALCH_BAG_ITEM_CAPABILITY);
-							if (alchBagItem != null && alchBagItem.updateInAlchBag(inv, player, current)) {
-								colorsChanged.add(color);
-							}
+	public static void playerTick(PlayerTickEvent.Post event) {
+		Player player = event.getEntity();
+		IAlchBagProvider provider = player.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
+		if (provider != null) {
+			Set<DyeColor> colorsChanged = EnumSet.noneOf(DyeColor.class);
+			for (DyeColor color : getBagColorsPresent(player)) {
+				IItemHandler inv = provider.getBag(color);
+				for (int i = 0; i < inv.getSlots(); i++) {
+					ItemStack current = inv.getStackInSlot(i);
+					if (!current.isEmpty()) {
+						IAlchBagItem alchBagItem = current.getCapability(PECapabilities.ALCH_BAG_ITEM_CAPABILITY);
+						if (alchBagItem != null && alchBagItem.updateInAlchBag(inv, player, current)) {
+							colorsChanged.add(color);
 						}
-					}
-				}
-
-				if (player instanceof ServerPlayer serverPlayer) {
-					//Only sync for when it ticks on the server
-					for (DyeColor e : colorsChanged) {
-						if (serverPlayer.containerMenu instanceof AlchBagContainer container) {
-							ItemStack heldItem = serverPlayer.getItemInHand(container.hand);
-							if (heldItem.getItem() instanceof AlchemicalBag bag && bag.color == e) {
-								// Do not sync if this color is open, the container system does it for us
-								// and we'll stay out of its way.
-								continue;
-							}
-						}
-						provider.sync(e, serverPlayer);
 					}
 				}
 			}
 
-			player.getData(PEAttachmentTypes.COMMON_INTERNAL_ABILITIES).tick(player);
-			if (event.side.isServer()) {
-				player.getData(PEAttachmentTypes.INTERNAL_ABILITIES).tick(player);
-				player.getData(PEAttachmentTypes.INTERNAL_TIMERS).tick();
-				if (player.isOnFire() && shouldPlayerResistFire(player)) {
-					player.clearFire();
+			if (player instanceof ServerPlayer serverPlayer) {
+				//Only sync for when it ticks on the server
+				for (DyeColor e : colorsChanged) {
+					if (serverPlayer.containerMenu instanceof AlchBagContainer container) {
+						ItemStack heldItem = serverPlayer.getItemInHand(container.hand);
+						if (heldItem.getItem() instanceof AlchemicalBag bag && bag.color == e) {
+							// Do not sync if this color is open, the container system does it for us
+							// and we'll stay out of its way.
+							continue;
+						}
+					}
+					provider.sync(e, serverPlayer);
 				}
+			}
+		}
+
+		player.getData(PEAttachmentTypes.COMMON_INTERNAL_ABILITIES).tick(player);
+		if (!player.level().isClientSide()) {
+			player.getData(PEAttachmentTypes.INTERNAL_ABILITIES).tick(player);
+			player.getData(PEAttachmentTypes.INTERNAL_TIMERS).tick();
+			if (player.isOnFire() && shouldPlayerResistFire(player)) {
+				player.clearFire();
 			}
 		}
 	}

@@ -23,16 +23,11 @@ public final class ServerConfig extends BasePEConfig {
 
 	ServerConfig() {
 		ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-		builder.comment("All of the config options in this file are server side and will be synced from server to client. ProjectE uses one \"server\" config file for " +
-						"all worlds, for convenience in going from one world to another, but makes it be a \"server\" config file so that forge will automatically sync it when " +
-						"we connect to a multiplayer server.")
-				.push("server");
 		difficulty = new Difficulty(this, builder);
 		items = new Items(this, builder);
 		effects = new Effects(this, builder);
 		misc = new Misc(this, builder);
 		cooldown = new Cooldown(this, builder);
-		builder.pop();
 		configSpec = builder.build();
 	}
 

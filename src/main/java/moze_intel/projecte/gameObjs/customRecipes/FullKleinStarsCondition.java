@@ -1,6 +1,6 @@
 package moze_intel.projecte.gameObjs.customRecipes;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.registries.PERecipeConditions;
 import net.neoforged.neoforge.common.conditions.ICondition;
@@ -18,7 +18,7 @@ public class FullKleinStarsCondition implements ICondition {
 	}
 
 	@Override
-	public Codec<? extends ICondition> codec() {
+	public MapCodec<? extends ICondition> codec() {
 		return PERecipeConditions.FULL_KLEIN_STARS.value();
 	}
 }

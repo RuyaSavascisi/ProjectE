@@ -16,6 +16,8 @@ public class PregeneratedEMC {
 	// emc values were pregenerated, and then it will be referencing an item that doesn't exist anymore
 	@VisibleForTesting
 	static final Codec<Map<ItemInfo, Long>> CODEC = IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(ItemInfo.LEGACY_CODEC, IPECodecHelper.INSTANCE.positiveLong());
+	//TODO - 1.21: Do we want to be using the legacy codec for pregenerated file? Theoretically players shouldn't be interacting with it
+	// BUT I also vaguely recall it potentially not working for either reading or writing from file? Probably not liking the keys not being strings
 
 	public static Optional<Map<ItemInfo, Long>> read(Path path, boolean shouldUsePregenerated) {
 		if (shouldUsePregenerated && Files.isReadable(path)) {

@@ -2,7 +2,7 @@ package moze_intel.projecte.gameObjs.items;
 
 import java.util.Objects;
 import moze_intel.projecte.api.capabilities.item.IModeChanger;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -20,7 +20,7 @@ public class ItemPE extends Item {
 	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
 		if (oldStack.getItem() != newStack.getItem()) {
 			return true;
-		} else if (oldStack.getData(PEAttachmentTypes.ACTIVE) != newStack.getData(PEAttachmentTypes.ACTIVE)) {
+		} else if (oldStack.getOrDefault(PEDataComponentTypes.ACTIVE, false) != newStack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			return true;
 		}
 		return this instanceof IModeChanger<?> modeChanger && !modeMatches(modeChanger, oldStack, newStack);
@@ -32,11 +32,12 @@ public class ItemPE extends Item {
 
 	@Range(from = 0, to = Long.MAX_VALUE)
 	public static long getEmc(ItemStack stack) {
-		return stack.getExistingData(PEAttachmentTypes.STORED_EMC).orElse(0L);
+		return stack.getOrDefault(PEDataComponentTypes.STORED_EMC, 0L);
 	}
 
 	public static void setEmc(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {
-		stack.setData(PEAttachmentTypes.STORED_EMC, amount);
+		//TODO - 1.21: Re-evaluate this and how we define the default component for this
+		stack.set(PEDataComponentTypes.STORED_EMC, amount);
 	}
 
 	public static void addEmcToStack(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {

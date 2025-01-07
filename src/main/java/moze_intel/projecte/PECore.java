@@ -10,20 +10,23 @@ import moze_intel.projecte.api.ProjectERegistries;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.nss.AbstractNSSTag;
 import moze_intel.projecte.config.CustomEMCParser;
-import moze_intel.projecte.config.PEModConfig;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.EMCMappingHandler;
+import moze_intel.projecte.emc.FuelMapper;
+import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.emc.mappers.recipe.CraftingMapper;
-import moze_intel.projecte.emc.nbt.NBTManager;
+import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.rings.Arcana;
 import moze_intel.projecte.gameObjs.items.rings.Arcana.ArcanaMode;
 import moze_intel.projecte.gameObjs.registries.PEArgumentTypes;
+import moze_intel.projecte.gameObjs.registries.PEArmorMaterials;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlockTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEContainerTypes;
 import moze_intel.projecte.gameObjs.registries.PECreativeTabs;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.gameObjs.registries.PENormalizedSimpleStacks;
@@ -36,7 +39,6 @@ import moze_intel.projecte.impl.capability.AlchBagImpl;
 import moze_intel.projecte.impl.capability.KnowledgeImpl;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.network.PacketHandler;
-import moze_intel.projecte.network.PacketUtils;
 import moze_intel.projecte.network.ThreadCheckUUID;
 import moze_intel.projecte.network.ThreadCheckUpdate;
 import moze_intel.projecte.network.commands.EMCCMD;
@@ -45,6 +47,8 @@ import moze_intel.projecte.network.commands.RemoveEmcCMD;
 import moze_intel.projecte.network.commands.ResetEmcCMD;
 import moze_intel.projecte.network.commands.SetEmcCMD;
 import moze_intel.projecte.network.commands.ShowBagCMD;
+import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
+import moze_intel.projecte.network.packets.to_client.SyncFuelMapperPKT;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.WorldTransmutations;
 import net.minecraft.commands.CommandBuildContext;
@@ -59,6 +63,7 @@ import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
 import net.minecraft.core.dispenser.ShearsDispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ReloadableServerResources;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.sounds.SoundSource;
@@ -75,8 +80,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -84,6 +87,8 @@ import net.neoforged.neoforge.capabilities.Capabilities.FluidHandler;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -91,6 +96,7 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.registries.NewRegistryEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -117,7 +123,7 @@ public class PECore {
 	}
 
 	public static ResourceLocation rl(String path) {
-		return new ResourceLocation(MODID, path);
+		return ResourceLocation.fromNamespaceAndPath(MODID, path);
 	}
 
 	private static PECore instance;
@@ -133,16 +139,17 @@ public class PECore {
 		modEventBus.addListener(this::commonSetup);
 		modEventBus.addListener(this::imcQueue);
 		modEventBus.addListener(IMCHandler::handleMessages);
-		modEventBus.addListener(this::onConfigLoad);
 		modEventBus.addListener(this::registerCapabilities);
 		modEventBus.addListener(this::registerRegistries);
 		PEAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
 		PEArgumentTypes.ARGUMENT_TYPES.register(modEventBus);
+		PEArmorMaterials.ARMOR_MATERIALS.register(modEventBus);
 		PEBlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
 		PEBlocks.BLOCKS.register(modEventBus);
 		PEBlockTypes.BLOCK_TYPES.register(modEventBus);
 		PEContainerTypes.CONTAINER_TYPES.register(modEventBus);
 		PECreativeTabs.CREATIVE_TABS.register(modEventBus);
+		PEDataComponentTypes.DATA_COMPONENT_TYPES.register(modEventBus);
 		PEEntityTypes.ENTITY_TYPES.register(modEventBus);
 		PEItems.ITEMS.register(modEventBus);
 		PENormalizedSimpleStacks.NSS_SERIALIZERS.register(modEventBus);
@@ -151,13 +158,16 @@ public class PECore {
 		PESoundEvents.SOUND_EVENTS.register(modEventBus);
 		NeoForge.EVENT_BUS.addListener(this::addReloadListeners);
 		NeoForge.EVENT_BUS.addListener(this::tagsUpdated);
+		NeoForge.EVENT_BUS.addListener(this::dataPackSync);
 		NeoForge.EVENT_BUS.addListener(this::registerCommands);
 		NeoForge.EVENT_BUS.addListener(this::serverStarting);
 		NeoForge.EVENT_BUS.addListener(this::serverQuit);
 		NeoForge.EVENT_BUS.addListener(PEPermissions::registerPermissionNodes);
+		NeoForge.EVENT_BUS.addListener(this::onModifyItemAttributes);
 
 		//Register our config files
 		ProjectEConfig.register(modContainer);
+		modEventBus.addListener(ProjectEConfig::onConfigLoad);
 
 		this.packetHandler = new PacketHandler(modEventBus, modContainer.getModInfo().getVersion());
 	}
@@ -180,7 +190,7 @@ public class PECore {
 
 		EMCMappingHandler.loadMappers();
 		CraftingMapper.loadMappers();
-		NBTManager.loadProcessors();
+		DataComponentManager.loadProcessors();
 
 		event.enqueueWork(() -> {
 			//Dispenser Behavior
@@ -252,17 +262,27 @@ public class PECore {
 		IntegrationHelper.sendIMCMessages(event);
 	}
 
-	private void onConfigLoad(ModConfigEvent configEvent) {
-		//Note: We listen to both the initial load and the reload, so as to make sure that we fix any accidentally
-		// cached values from calls before the initial loading
-		ModConfig config = configEvent.getConfig();
-		//Make sure it is for the same modid as us
-		if (config.getModId().equals(MODID) && config instanceof PEModConfig peConfig) {
-			peConfig.clearCache(configEvent);
-		}
+	@Deprecated(forRemoval = true)
+	private void tagsUpdated(TagsUpdatedEvent event) {
+		/*if (emcUpdateResourceManager != null) {
+			long start = System.currentTimeMillis();
+			//Clear the cached created tags
+			AbstractNSSTag.clearCreatedTags();
+			CustomEMCParser.init();
+			try {
+				EMCMappingHandler.map(emcUpdateResourceManager.serverResources(), emcUpdateResourceManager.registryAccess(), emcUpdateResourceManager.resourceManager());
+				PECore.LOGGER.info("Registered {} EMC values. (took {} ms)", EMCMappingHandler.getEmcMapSize(), System.currentTimeMillis() - start);
+				//TODO - 1.21: Re-evaluate if we should be doing this here, and also make sure that data pack sync properly has all this data
+				// Maybe we want to move all of this check into the initial onDatapackSyncEvent check?
+				//PacketUtils.sendFragmentedEmcPacketToAll();
+			} catch (Throwable t) {
+				PECore.LOGGER.error("Error calculating EMC values", t);
+			}
+			emcUpdateResourceManager = null;
+		}*/
 	}
 
-	private void tagsUpdated(TagsUpdatedEvent event) {
+	private void dataPackSync(OnDatapackSyncEvent event) {
 		if (emcUpdateResourceManager != null) {
 			long start = System.currentTimeMillis();
 			//Clear the cached created tags
@@ -271,11 +291,33 @@ public class PECore {
 			try {
 				EMCMappingHandler.map(emcUpdateResourceManager.serverResources(), emcUpdateResourceManager.registryAccess(), emcUpdateResourceManager.resourceManager());
 				PECore.LOGGER.info("Registered {} EMC values. (took {} ms)", EMCMappingHandler.getEmcMapSize(), System.currentTimeMillis() - start);
-				PacketUtils.sendFragmentedEmcPacketToAll();
+				//TODO - 1.21: Re-evaluate if we should be doing this here, and also make sure that data pack sync properly has all this data
+				// Maybe we want to move all of this check into the initial onDatapackSyncEvent check?
+				//PacketUtils.sendFragmentedEmcPacketToAll();
 			} catch (Throwable t) {
 				PECore.LOGGER.error("Error calculating EMC values", t);
 			}
 			emcUpdateResourceManager = null;
+		}
+		if (event.getPlayer() == null) {
+			List<ServerPlayer> players = event.getPlayerList().getPlayers();
+			if (players.isEmpty()) {
+				return;
+			}
+			SyncEmcPKT pkt = new SyncEmcPKT(players.getFirst().registryAccess());
+			SyncFuelMapperPKT fuelPkt = FuelMapper.getSyncPacket();
+			for (ServerPlayer player : players) {
+				if (!player.connection.getConnection().isMemoryConnection()) {
+					PacketDistributor.sendToPlayer(player, pkt);
+					PacketDistributor.sendToPlayer(player, fuelPkt);
+				}
+			}
+		} else {
+			ServerPlayer player = event.getPlayer();
+			if (!player.connection.getConnection().isMemoryConnection()) {
+				PacketDistributor.sendToPlayer(player, new SyncEmcPKT(player.registryAccess()));
+				PacketDistributor.sendToPlayer(player, FuelMapper.getSyncPacket());
+			}
 		}
 	}
 
@@ -307,6 +349,12 @@ public class PECore {
 		CustomEMCParser.flush();
 		TransmutationOffline.cleanAll();
 		EMCMappingHandler.clearEmcMap();
+	}
+
+	private void onModifyItemAttributes(ItemAttributeModifierEvent event) {
+		if (event.getItemStack().getItem() instanceof IHasConditionalAttributes item) {
+			item.adjustAttributes(event);
+		}
 	}
 
 	private record EmcUpdateData(ReloadableServerResources serverResources, RegistryAccess registryAccess, ResourceManager resourceManager) {

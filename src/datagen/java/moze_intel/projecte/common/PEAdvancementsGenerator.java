@@ -28,7 +28,7 @@ public class PEAdvancementsGenerator implements AdvancementGenerator {
 				.display(PEItems.PHILOSOPHERS_STONE,
 						PELang.PROJECTE.translate(),
 						PELang.ADVANCEMENTS_PROJECTE_DESCRIPTION.translate(),
-						new ResourceLocation("textures/gui/advancements/backgrounds/stone.png"),
+						ResourceLocation.withDefaultNamespace("textures/gui/advancements/backgrounds/stone.png"),
 						AdvancementType.TASK,
 						false,
 						false,

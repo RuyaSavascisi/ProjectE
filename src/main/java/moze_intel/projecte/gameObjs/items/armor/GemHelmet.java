@@ -3,6 +3,7 @@ package moze_intel.projecte.gameObjs.items.armor;
 import java.util.List;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.handlers.InternalTimers;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
@@ -20,23 +21,25 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class GemHelmet extends GemArmorBase {
 
+	private static final boolean NIGHT_VISION_DEFAULT = false;
+
 	public GemHelmet(Properties props) {
-		super(ArmorItem.Type.HELMET, props);
+		super(ArmorItem.Type.HELMET, props.component(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT));
 	}
 
 	public static void toggleNightVision(ItemStack helm, Player player) {
-		boolean oldValue = helm.getData(PEAttachmentTypes.NIGHT_VISION);
-		helm.setData(PEAttachmentTypes.NIGHT_VISION, !oldValue);
+		boolean oldValue = helm.getOrDefault(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT);
+		helm.set(PEDataComponentTypes.NIGHT_VISION, !oldValue);
 		if (oldValue) {
 			player.sendSystemMessage(PELang.NIGHT_VISION.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
 		} else {
@@ -45,14 +48,14 @@ public class GemHelmet extends GemArmorBase {
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(PELang.GEM_LORE_HELM.translate());
-		tooltips.add(PELang.NIGHT_VISION_PROMPT.translate(ClientKeyHelper.getKeyName(PEKeybind.HELMET_TOGGLE)));
-		if (stack.getData(PEAttachmentTypes.NIGHT_VISION)) {
-			tooltips.add(PELang.NIGHT_VISION.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(PELang.GEM_LORE_HELM.translate());
+		tooltip.add(PELang.NIGHT_VISION_PROMPT.translate(ClientKeyHelper.getKeyName(PEKeybind.HELMET_TOGGLE)));
+		if (stack.getOrDefault(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT)) {
+			tooltip.add(PELang.NIGHT_VISION.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
 		} else {
-			tooltips.add(PELang.NIGHT_VISION.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
+			tooltip.add(PELang.NIGHT_VISION.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
 		}
 	}
 
@@ -66,7 +69,7 @@ public class GemHelmet extends GemArmorBase {
 				player.heal(2.0F);
 			}
 
-			if (stack.getData(PEAttachmentTypes.NIGHT_VISION)) {
+			if (stack.getOrDefault(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT)) {
 				player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 11 * SharedConstants.TICKS_PER_SECOND, 0, true, false));
 			} else {
 				player.removeEffect(MobEffects.NIGHT_VISION);

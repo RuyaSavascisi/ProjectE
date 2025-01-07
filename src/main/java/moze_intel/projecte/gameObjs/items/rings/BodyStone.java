@@ -7,6 +7,7 @@ import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.ICapabilityAware;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.handlers.InternalTimers;
 import moze_intel.projecte.integration.IntegrationHelper;
@@ -29,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 public class BodyStone extends PEToggleItem implements IPedestalItem, ICapabilityAware {
 
 	public BodyStone(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.STORED_EMC, 0L));
 	}
 
 	@Override
@@ -38,10 +39,10 @@ public class BodyStone extends PEToggleItem implements IPedestalItem, ICapabilit
 		if (level.isClientSide || !hotBarOrOffHand(slot) || !(entity instanceof Player player)) {
 			return;
 		}
-		if (stack.getData(PEAttachmentTypes.ACTIVE)) {
+		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			long itemEmc = getEmc(stack);
 			if (itemEmc < 64 && !consumeFuel(player, stack, 64, false)) {
-				stack.removeData(PEAttachmentTypes.ACTIVE);
+				stack.set(PEDataComponentTypes.ACTIVE, false);
 			} else {
 				InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
 				timers.activateFeed();

@@ -4,10 +4,13 @@ import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.gameObjs.EnumMatterType;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ToolHelper;
+import net.minecraft.core.Holder;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.HoeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -20,7 +23,10 @@ public class PEHoe extends HoeItem implements IItemCharge, IBarHelper {
 	private final int numCharges;
 
 	public PEHoe(EnumMatterType matterType, int numCharges, Properties props) {
-		super(matterType, (int) -matterType.getAttackDamageBonus(), matterType.getMatterTier(), props);
+		super(matterType, props.attributes(createAttributes(matterType, -matterType.getAttackDamageBonus(), matterType.getMatterTier()))
+				.component(PEDataComponentTypes.CHARGE, 0)
+				.component(PEDataComponentTypes.STORED_EMC, 0L)
+		);
 		this.matterType = matterType;
 		this.numCharges = numCharges;
 	}
@@ -36,12 +42,12 @@ public class PEHoe extends HoeItem implements IItemCharge, IBarHelper {
 	}
 
 	@Override
-	public boolean canApplyAtEnchantingTable(ItemStack stack, Enchantment enchantment) {
+	public boolean isPrimaryItemFor(ItemStack stack, Holder<Enchantment> enchantment) {
 		return false;
 	}
 
 	@Override
-	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<T> onBroken) {
+	public <T extends LivingEntity> int damageItem(ItemStack stack, int amount, T entity, Consumer<Item> onBroken) {
 		return 0;
 	}
 

@@ -5,6 +5,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +28,9 @@ import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
  */
 public record CustomConversion(int count, NormalizedSimpleStack output, Map<NormalizedSimpleStack, Integer> ingredients, boolean propagateTags) {
 
-	private static final CustomConversion INVALID = new CustomConversion(0, null, Map.of(), false);
+	private static final CustomConversion INVALID = new CustomConversion(0, null, Collections.emptyMap(), false);
 
-	private static final Codec<Integer> NON_ZERO_INT = ExtraCodecs.validate(
-			Codec.INT,
+	private static final Codec<Integer> NON_ZERO_INT = Codec.INT.validate(
 			value -> value == 0 ? DataResult.error(() -> "Value must not be zero: " + value) : DataResult.success(value)
 	);
 
@@ -49,11 +49,12 @@ public record CustomConversion(int count, NormalizedSimpleStack output, Map<Norm
 						}
 						return DataResult.success(list);
 					}
-			), IPECodecHelper.INSTANCE.modifiableMap(ExtraCodecs.validate(
+			), IPECodecHelper.INSTANCE.modifiableMap(
 					//Note: We need to use the legacy codec as map keys for json are required to be able to be converted to strings
-					Codec.unboundedMap(IPECodecHelper.INSTANCE.legacyNSSCodec(), NON_ZERO_INT),
-					map -> map.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(map)
-			))
+					Codec.unboundedMap(IPECodecHelper.INSTANCE.legacyNSSCodec(), NON_ZERO_INT).validate(
+							map -> map.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(map)
+					)
+			)
 	);
 
 	private static final MapCodec<CustomConversion> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(

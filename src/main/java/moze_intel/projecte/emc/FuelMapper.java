@@ -1,5 +1,6 @@
 package moze_intel.projecte.emc;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import moze_intel.projecte.PECore;
@@ -14,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 
 public final class FuelMapper {
 
-	private static List<Item> FUEL_MAP = List.of();
+	private static List<Item> FUEL_MAP = Collections.emptyList();
 
 	/**
 	 * Used on server to load the map based on the tag
@@ -23,9 +24,10 @@ public final class FuelMapper {
 		FUEL_MAP = BuiltInRegistries.ITEM.getTag(PETags.Items.COLLECTOR_FUEL)
 				.stream()
 				.flatMap(HolderSet::stream)
-				.map(Holder::value)
 				.filter(EMCHelper::doesItemHaveEmc)
 				.sorted(Comparator.comparingLong(EMCHelper::getEmcValue))
+				//TODO - 1.21: Do we want to make FuelMap be a HolderSet.ListBacked? Or at least be a list of holders?
+				.map(Holder::value)
 				.toList();
 	}
 

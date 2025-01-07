@@ -3,7 +3,6 @@ package moze_intel.projecte.gameObjs.container.slots;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -42,7 +41,7 @@ public interface IInsertableSlot {
 			//Fail if we are a full slot
 			return stack;
 		}
-		if (current.isEmpty() || ItemHandlerHelper.canItemStacksStack(current, stack)) {
+		if (current.isEmpty() || ItemStack.isSameItemSameComponents(current, stack)) {
 			int toAdd = Math.min(stack.getCount(), needed);
 			if (!simulate) {
 				//If we want to actually insert the item, then update the current item

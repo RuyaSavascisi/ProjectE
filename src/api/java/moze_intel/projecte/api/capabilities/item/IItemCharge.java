@@ -1,6 +1,6 @@
 package moze_intel.projecte.api.capabilities.item;
 
-import moze_intel.projecte.api.PEAttachments;
+import moze_intel.projecte.api.PEDataComponents;
 import moze_intel.projecte.api.PESounds;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -40,7 +40,7 @@ public interface IItemCharge {
 	 * @return The charge on the stack
 	 */
 	default int getCharge(@NotNull ItemStack stack) {
-		return stack.getData(PEAttachments.CHARGE);
+		return stack.getOrDefault(PEDataComponents.CHARGE, 0);
 	}
 
 	/**
@@ -60,13 +60,13 @@ public interface IItemCharge {
 			if (currentCharge > 0) {
 				player.level().playSound(null, player.getX(), player.getY(), player.getZ(), PESounds.UNCHARGE.value(), SoundSource.PLAYERS, 1.0F,
 						0.5F + ((0.5F / (float) numCharges) * currentCharge));
-				stack.setData(PEAttachments.CHARGE, currentCharge - 1);
+				stack.set(PEDataComponents.CHARGE, currentCharge - 1);
 				return true;
 			}
 		} else if (currentCharge < numCharges) {
 			player.level().playSound(null, player.getX(), player.getY(), player.getZ(), PESounds.CHARGE.value(), SoundSource.PLAYERS, 1.0F,
 					0.5F + ((0.5F / (float) numCharges) * currentCharge));
-			stack.setData(PEAttachments.CHARGE, currentCharge + 1);
+			stack.set(PEDataComponents.CHARGE, currentCharge + 1);
 			return true;
 		}
 		return false;

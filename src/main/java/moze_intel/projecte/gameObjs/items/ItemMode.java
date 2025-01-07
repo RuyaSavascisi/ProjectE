@@ -2,26 +2,26 @@ package moze_intel.projecte.gameObjs.items;
 
 import java.util.List;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public abstract class ItemMode<MODE extends Enum<MODE> & IModeEnum<MODE>> extends ItemPE implements IItemMode<MODE>, IItemCharge, IBarHelper {
 
 	private final int numCharge;
 
 	public ItemMode(Properties props, int numCharge) {
-		super(props);
+		super(props.component(PEDataComponentTypes.CHARGE, 0));
 		this.numCharge = numCharge;
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		tooltips.add(getToolTip(stack));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		tooltip.add(getToolTip(stack));
 	}
 
 	@Override

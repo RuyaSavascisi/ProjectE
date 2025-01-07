@@ -2,7 +2,7 @@ package moze_intel.projecte.gameObjs.items.rings;
 
 import moze_intel.projecte.api.capabilities.item.IModeChanger;
 import moze_intel.projecte.gameObjs.items.ItemPE;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class PEToggleItem extends ItemPE implements IModeChanger<Boolean> {
 
 	public PEToggleItem(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.ACTIVE, false));
 	}
 
 	@Override
@@ -23,14 +23,14 @@ public abstract class PEToggleItem extends ItemPE implements IModeChanger<Boolea
 
 	@Override
 	public Boolean getMode(@NotNull ItemStack stack) {
-		return stack.getData(PEAttachmentTypes.ACTIVE);
+		return stack.getOrDefault(PEDataComponentTypes.ACTIVE, false);
 	}
 
 	@Override
 	public boolean changeMode(@NotNull Player player, @NotNull ItemStack stack, InteractionHand hand) {
-		boolean isActive = stack.getData(PEAttachmentTypes.ACTIVE);
+		boolean isActive = getMode(stack);
 		player.level().playSound(null, player.getX(), player.getY(), player.getZ(), isActive ? PESoundEvents.UNCHARGE.get() : PESoundEvents.HEAL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
-		stack.setData(PEAttachmentTypes.ACTIVE, !isActive);
+		stack.set(PEDataComponentTypes.ACTIVE, !isActive);
 		return true;
 	}
 }

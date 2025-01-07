@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
@@ -15,27 +15,27 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class MindStone extends PEToggleItem implements IPedestalItem {
 
 	private static final int TRANSFER_RATE = 50;
 
 	public MindStone(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.STORED_EXP, 0));
 	}
 
 	@Override
 	public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean isHeld) {
 		super.inventoryTick(stack, level, entity, slot, isHeld);
 		if (!level.isClientSide && hotBarOrOffHand(slot) && entity instanceof Player player) {
-			if (stack.getData(PEAttachmentTypes.ACTIVE) && getXP(player) > 0) {
+			if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false) && getXP(player) > 0) {
 				int toAdd = Math.min(getXP(player), TRANSFER_RATE);
 				addStoredXP(stack, toAdd);
 				removeXP(player, TRANSFER_RATE);
@@ -47,7 +47,7 @@ public class MindStone extends PEToggleItem implements IPedestalItem {
 	@Override
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
-		if (!level.isClientSide && !stack.getData(PEAttachmentTypes.ACTIVE) && getStoredXP(stack) != 0) {
+		if (!level.isClientSide && !stack.getOrDefault(PEDataComponentTypes.ACTIVE, false) && getStoredXP(stack) != 0) {
 			int toAdd = removeStoredXP(stack, TRANSFER_RATE);
 			if (toAdd > 0) {
 				addXP(player, toAdd);
@@ -57,10 +57,10 @@ public class MindStone extends PEToggleItem implements IPedestalItem {
 	}
 
 	@Override
-	public void appendHoverText(@NotNull ItemStack stack, @Nullable Level level, @NotNull List<Component> tooltips, @NotNull TooltipFlag flags) {
-		super.appendHoverText(stack, level, tooltips, flags);
-		stack.getExistingData(PEAttachmentTypes.STORED_EXP)
-				.ifPresent(storedXp -> tooltips.add(PELang.TOOLTIP_STORED_XP.translateColored(ChatFormatting.DARK_GREEN, ChatFormatting.GREEN, String.format("%,d", storedXp))));
+	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
+		super.appendHoverText(stack, context, tooltip, flags);
+		int storedXp = stack.getOrDefault(PEDataComponentTypes.STORED_EXP, 0);
+		tooltip.add(PELang.TOOLTIP_STORED_XP.translateColored(ChatFormatting.DARK_GREEN, ChatFormatting.GREEN, String.format("%,d", storedXp)));
 	}
 
 
@@ -116,11 +116,11 @@ public class MindStone extends PEToggleItem implements IPedestalItem {
 	}
 
 	private int getStoredXP(ItemStack stack) {
-		return stack.getData(PEAttachmentTypes.STORED_EXP);
+		return stack.getOrDefault(PEDataComponentTypes.STORED_EXP, 0);
 	}
 
 	private void setStoredXP(ItemStack stack, int XP) {
-		stack.setData(PEAttachmentTypes.STORED_EXP, XP);
+		stack.set(PEDataComponentTypes.STORED_EXP, XP);
 	}
 
 	private void addStoredXP(ItemStack stack, int XP) {

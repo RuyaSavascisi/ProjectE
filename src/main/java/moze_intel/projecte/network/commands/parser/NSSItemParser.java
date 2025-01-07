@@ -11,10 +11,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.utils.text.PELang;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
@@ -27,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Customized version of {@link net.minecraft.commands.arguments.item.ItemParser} that does not support NBT on tags, and does not wrap it into a Predicate.
  */
-public class NSSItemParser {
+public class NSSItemParser {//TODO - 1.21: Update to be more like ItemParser and ResourceOrTagKeyArgument in terms of supporting components
 
 	//This error message is a copy of ItemParser ERROR_UNKNOWN_ITEM and ERROR_UNKNOWN_TAG
 	private static final DynamicCommandExceptionType UNKNOWN_ITEM = new DynamicCommandExceptionType(PELang.UNKNOWN_ITEM::translate);
@@ -37,24 +39,22 @@ public class NSSItemParser {
 	private static final char SYNTAX_TAG = '#';
 
 	private final HolderLookup<Item> items;
-	private final StringReader reader;
 	private Either<Holder<Item>, ResourceLocation> result;
 	@Nullable
 	private CompoundTag nbt;
 	/** Builder to be used when creating a list of suggestions */
 	private Function<SuggestionsBuilder, CompletableFuture<Suggestions>> suggestions = SUGGEST_NOTHING;
 
-	public NSSItemParser(HolderLookup<Item> items, StringReader readerIn) {
-		this.items = items;
-		this.reader = readerIn;
+	public NSSItemParser(CommandBuildContext context) {
+		this.items = context.lookupOrThrow(Registries.ITEM);
 	}
 
-	public static NSSItem parseResult(HolderLookup<Item> items, StringReader reader) throws CommandSyntaxException {
+	public NSSItem parseResult(StringReader reader) throws CommandSyntaxException {
 		int cursor = reader.getCursor();
 		try {
-			NSSItemParser nssItemParser = new NSSItemParser(items, reader);
-			nssItemParser.parse();
-			return nssItemParser.result.map(item -> NSSItem.createItem(item, nssItemParser.nbt), NSSItem::createTag);
+			parse(reader);
+			//TODO - 1.21: Figure out??
+			return result.map(item -> NSSItem.createItem(item, DataComponentPatch.EMPTY), NSSItem::createTag);
 		} catch (CommandSyntaxException e) {
 			reader.setCursor(cursor);
 			throw e;
@@ -66,44 +66,43 @@ public class NSSItemParser {
 	 *
 	 * @param builder Builder to create list of suggestions
 	 */
-	public static CompletableFuture<Suggestions> fillSuggestions(HolderLookup<Item> items, SuggestionsBuilder builder) {
+	public CompletableFuture<Suggestions> fillSuggestions(SuggestionsBuilder builder) {
 		StringReader reader = new StringReader(builder.getInput());
 		reader.setCursor(builder.getStart());
-		NSSItemParser parser = new NSSItemParser(items, reader);
 		try {
-			parser.parse();
+			parse(reader);
 		} catch (CommandSyntaxException ignored) {
 		}
-		return parser.suggestions.apply(builder.createOffset(reader.getCursor()));
+		return suggestions.apply(builder.createOffset(reader.getCursor()));
 	}
 
-	private void parse() throws CommandSyntaxException {
+	private void parse(StringReader reader) throws CommandSyntaxException {
 		this.suggestions = this::suggestTagOrItem;
-		int cursor = this.reader.getCursor();
-		if (this.reader.canRead() && this.reader.peek() == SYNTAX_TAG) {
+		int cursor = reader.getCursor();
+		if (reader.canRead() && reader.peek() == SYNTAX_TAG) {
 			//Read Tag
-			this.reader.expect(SYNTAX_TAG);
+			reader.expect(SYNTAX_TAG);
 			this.suggestions = this::suggestTag;
-			ResourceLocation name = ResourceLocation.read(this.reader);
+			ResourceLocation name = ResourceLocation.read(reader);
 			Optional<? extends HolderSet<Item>> tag = this.items.get(TagKey.create(Registries.ITEM, name));
 			tag.orElseThrow(() -> {
 				//If it isn't present reset and error
-				this.reader.setCursor(cursor);
-				return UNKNOWN_TAG.createWithContext(this.reader, name);
+				reader.setCursor(cursor);
+				return UNKNOWN_TAG.createWithContext(reader, name);
 			});
 			this.result = Either.right(name);
 		} else {
 			//Read Item
-			ResourceLocation name = ResourceLocation.read(this.reader);
+			ResourceLocation name = ResourceLocation.read(reader);
 			Optional<Holder.Reference<Item>> item = this.items.get(ResourceKey.create(Registries.ITEM, name));
 			this.result = Either.left(item.orElseThrow(() -> {
-				this.reader.setCursor(cursor);
-				return UNKNOWN_ITEM.createWithContext(this.reader, name);
+				reader.setCursor(cursor);
+				return UNKNOWN_ITEM.createWithContext(reader, name);
 			}));
 			this.suggestions = this::suggestOpenNbt;
-			if (this.reader.canRead() && this.reader.peek() == SYNTAX_START_NBT) {
+			if (reader.canRead() && reader.peek() == SYNTAX_START_NBT) {
 				this.suggestions = SUGGEST_NOTHING;
-				this.nbt = new TagParser(this.reader).readStruct();
+				this.nbt = new TagParser(reader).readStruct();
 			}
 		}
 	}

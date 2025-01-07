@@ -87,7 +87,7 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				PEItems.ZERO_RING.get()
 		);
 		//Vanilla/Forge Tags
-		tag(Tags.Items.SHEARS).add(
+		tag(Tags.Items.TOOLS_SHEAR).add(
 				PEItems.DARK_MATTER_SHEARS.get(),
 				PEItems.RED_MATTER_SHEARS.get(),
 				PEItems.RED_MATTER_KATAR.get()
@@ -159,7 +159,8 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				PEItems.RED_MATTER_LEGGINGS.get(),
 				PEItems.RED_MATTER_BOOTS.get()
 		);
-		tag(Tags.Items.ARMORS_HELMETS).add(
+		//TODO - 1.21: Re-evaluate
+		/*tag(Tags.Items.ARMORS_HELMETS).add(
 				PEItems.GEM_HELMET.get()
 		).addTags(
 				makeTag(PETags.Items.ARMORS_HELMETS_DARK_MATTER, PEItems.DARK_MATTER_HELMET),
@@ -182,7 +183,7 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 		).addTags(
 				makeTag(PETags.Items.ARMORS_BOOTS_DARK_MATTER, PEItems.DARK_MATTER_BOOTS),
 				makeTag(PETags.Items.ARMORS_BOOTS_RED_MATTER, PEItems.RED_MATTER_BOOTS)
-		);
+		);*/
 	}
 	
 	private TagKey<Item> makeTag(TagKey<Item> tag, ItemLike item) {

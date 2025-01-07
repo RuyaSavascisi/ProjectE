@@ -1,6 +1,7 @@
 package moze_intel.projecte.api.codec;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 
 /**
@@ -10,5 +11,5 @@ import moze_intel.projecte.api.nss.NormalizedSimpleStack;
  * @param legacy       Legacy codec capable of reading and writing a {@link NormalizedSimpleStack} to/from strings.
  * @param explicit     Explicit codec capable of reading and writing a {@link NormalizedSimpleStack}.
  */
-public record NSSCodecHolder<NSS extends NormalizedSimpleStack>(String legacyPrefix, Codec<NSS> legacy, Codec<NSS> explicit) {
+public record NSSCodecHolder<NSS extends NormalizedSimpleStack>(String legacyPrefix, Codec<NSS> legacy, MapCodec<NSS> explicit) {
 }

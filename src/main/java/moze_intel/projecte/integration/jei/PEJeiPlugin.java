@@ -6,7 +6,7 @@ import java.util.List;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
-import mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter;
+import mezz.jei.api.ingredients.subtypes.ISubtypeInterpreter;
 import mezz.jei.api.ingredients.subtypes.UidContext;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
@@ -35,20 +35,37 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @JeiPlugin
 public class PEJeiPlugin implements IModPlugin {
 
 	private static final ResourceLocation UID = PECore.rl("main");
 
-	private static final IIngredientSubtypeInterpreter<ItemStack> PROJECTE_INTERPRETER = (stack, context) -> {
-		if (context == UidContext.Ingredient) {
-			long stored = ItemPE.getEmc(stack);
-			if (stored > 0) {
-				return Long.toString(stored);
+	private static final ISubtypeInterpreter<ItemStack> PROJECTE_INTERPRETER = new ISubtypeInterpreter<>() {
+		@Nullable
+		@Override
+		public Object getSubtypeData(@NotNull ItemStack stack, @NotNull UidContext context) {
+			if (context == UidContext.Ingredient) {
+				long stored = ItemPE.getEmc(stack);
+				if (stored > 0) {
+					return stored;
+				}
 			}
+			return null;
 		}
-		return IIngredientSubtypeInterpreter.NONE;
+
+		@NotNull
+		@Override
+		public String getLegacyStringSubtypeInfo(@NotNull ItemStack stack, @NotNull UidContext context) {
+			if (context == UidContext.Ingredient) {
+				long stored = ItemPE.getEmc(stack);
+				if (stored > 0) {
+					return Long.toString(stored);
+				}
+			}
+			return "";
+		}
 	};
 
 	@NotNull

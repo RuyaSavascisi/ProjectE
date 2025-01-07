@@ -3,33 +3,32 @@ package moze_intel.projecte.utils;
 import com.google.common.collect.ImmutableBiMap;
 import com.mojang.blaze3d.platform.InputConstants;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.network.PacketHandler;
-import moze_intel.projecte.network.PacketUtils;
 import moze_intel.projecte.network.packets.to_server.KeyPressPKT;
 import moze_intel.projecte.utils.text.PELang;
 import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.settings.KeyConflictContext;
 import net.neoforged.neoforge.client.settings.KeyModifier;
-import net.neoforged.neoforge.event.TickEvent;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
-@Mod.EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT)
 public class ClientKeyHelper {
 
 	private static ImmutableBiMap<KeyMapping, PEKeybind> mcToPe = ImmutableBiMap.of();
 	private static ImmutableBiMap<PEKeybind, KeyMapping> peToMc = ImmutableBiMap.of();
 
 	@SubscribeEvent
-	public static void keyPress(TickEvent.ClientTickEvent event) {
+	public static void keyPress(ClientTickEvent.Pre event) {//TODO - 1.21: Should this be pre or post?
 		for (KeyMapping k : mcToPe.keySet()) {
 			while (k.consumeClick()) {
-				PacketUtils.sendToServer(new KeyPressPKT(mcToPe.get(k)));
+				PacketDistributor.sendToServer(new KeyPressPKT(mcToPe.get(k)));
 			}
 		}
 	}

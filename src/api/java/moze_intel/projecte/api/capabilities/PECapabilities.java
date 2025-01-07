@@ -23,7 +23,7 @@ public class PECapabilities {
 	}
 
 	private static ResourceLocation rl(String path) {
-		return new ResourceLocation(ProjectEAPI.PROJECTE_MODID, path);
+		return ResourceLocation.fromNamespaceAndPath(ProjectEAPI.PROJECTE_MODID, path);
 	}
 
 	/**

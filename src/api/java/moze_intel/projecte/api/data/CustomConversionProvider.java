@@ -39,7 +39,7 @@ public abstract class CustomConversionProvider implements DataProvider {
 			return registries;
 		}).thenCompose(registries -> CompletableFuture.allOf(
 				customConversions.entrySet().stream()
-						.map(entry -> DataProvider.saveStable(output, CustomConversionFile.CODEC, entry.getValue().build(), outputProvider.json(entry.getKey())))
+						.map(entry -> DataProvider.saveStable(output, registries, CustomConversionFile.CODEC, entry.getValue().build(), outputProvider.json(entry.getKey())))
 						.toArray(CompletableFuture[]::new)
 		));
 	}

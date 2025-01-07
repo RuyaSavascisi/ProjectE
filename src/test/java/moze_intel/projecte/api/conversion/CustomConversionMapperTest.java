@@ -4,17 +4,17 @@ import java.util.List;
 import java.util.Map;
 import moze_intel.projecte.api.ProjectEAPI;
 import moze_intel.projecte.api.nss.NSSFake;
+import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import moze_intel.projecte.api.nss.NormalizedSimpleStackTestHelper;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.Items;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Test Custom Conversion Mappers")
-class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
+class CustomConversionMapperTest {
 
 	private static CustomConversionFile parseJson(String json) {
 		return CodecTestHelper.parseJson(CustomConversionFile.CODEC, "custom conversion test", json);
@@ -66,28 +66,28 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 						"groupa": {
 							"conversions": [
 								{
-									"output": "out_a",
+									"output": "iron_ingot",
 									"ingredients": {
-										"ing1": 1,
-										"ing2": 2,
-										"ing3": 3
+										"stone": 1,
+										"granite": 2,
+										"diorite": 3
 									}
 								},
 								{
-									"output": "out_b",
+									"output": "gold_ingot",
 									"ingredients": [
-										"ing1",
-										"ing2",
-										"ing3"
+										"stone",
+										"granite",
+										"diorite"
 									]
 								},
 								{
-									"output": "out_c",
+									"output": "copper_ingot",
 									"count": 3,
 									"ingredients": [
-										"ing1",
-										"ing1",
-										"ing1"
+										"stone",
+										"stone",
+										"stone"
 									]
 								}
 							]
@@ -101,31 +101,31 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 		List<CustomConversion> conversions = group.conversions();
 		{
 			CustomConversion conversion = conversions.get(0);
-			Assertions.assertEquals(createItem("out_a"), conversion.output());
+			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(createItem("ing1")));
-			Assertions.assertEquals(2, ingredients.get(createItem("ing2")));
-			Assertions.assertEquals(3, ingredients.get(createItem("ing3")));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(1);
-			Assertions.assertEquals(createItem("out_b"), conversion.output());
+			Assertions.assertEquals(NSSItem.createItem(Items.GOLD_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(createItem("ing1")));
-			Assertions.assertEquals(1, ingredients.get(createItem("ing2")));
-			Assertions.assertEquals(1, ingredients.get(createItem("ing3")));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(2);
-			Assertions.assertEquals(createItem("out_c"), conversion.output());
+			Assertions.assertEquals(NSSItem.createItem(Items.COPPER_INGOT), conversion.output());
 			Assertions.assertEquals(3, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 			Assertions.assertEquals(1, ingredients.size());
-			Assertions.assertEquals(3, ingredients.get(createItem("ing1")));
+			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.STONE)));
 		}
 	}
 
@@ -136,20 +136,20 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 				{
 					"values": {
 						"before": {
-							"a": 1,
-							"b": 2,
-							"c": "free"
+							"stone": 1,
+							"granite": 2,
+							"diorite": "free"
 						},
 						"after": {
-							"d": 3
+							"andesite": 3
 						}
 					}
 				}""");
 		FixedValues values = conversionFile.values();
-		Assertions.assertEquals(1, values.setValueBefore().get(createItem("a")));
-		Assertions.assertEquals(2, values.setValueBefore().get(createItem("b")));
-		Assertions.assertEquals(ProjectEAPI.FREE_ARITHMETIC_VALUE, values.setValueBefore().get(createItem("c")));
-		Assertions.assertEquals(3, values.setValueAfter().get(createItem("d")));
+		Assertions.assertEquals(1, values.setValueBefore().get(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(2, values.setValueBefore().get(NSSItem.createItem(Items.GRANITE)));
+		Assertions.assertEquals(ProjectEAPI.FREE_ARITHMETIC_VALUE, values.setValueBefore().get(NSSItem.createItem(Items.DIORITE)));
+		Assertions.assertEquals(3, values.setValueAfter().get(NSSItem.createItem(Items.ANDESITE)));
 	}
 
 	@Test
@@ -159,16 +159,16 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 				{
 					"values": {
 						"before": {
-							"INVALID|a": 1,
-							"b": 2
+							"INVALID|stone": 1,
+							"granite": 2
 						},
 						"after": {
-							"INVALID|d": 3
+							"INVALID|andesite": 3
 						}
 					}
 				}""");
 		FixedValues values = conversionFile.values();
-		Assertions.assertEquals(2, values.setValueBefore().get(createItem("b")));
+		Assertions.assertEquals(2, values.setValueBefore().get(NSSItem.createItem(Items.GRANITE)));
 		Assertions.assertTrue(values.setValueAfter().isEmpty());
 	}
 
@@ -180,11 +180,11 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 					"values": {
 						"conversion": [
 							{
-								"output": "out_a",
+								"output": "iron_ingot",
 								"ingredients": {
-									"ing1": 1,
-									"ing2": 2,
-									"ing3": 3
+									"stone": 1,
+									"granite": 2,
+									"diorite": 3
 								}
 							}
 						]
@@ -192,13 +192,13 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 				}""");
 		Assertions.assertEquals(1, conversionFile.values().conversions().size());
 		CustomConversion conversion = conversionFile.values().conversions().get(0);
-		Assertions.assertEquals(createItem("out_a"), conversion.output());
+		Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 		Assertions.assertEquals(1, conversion.count());
 		Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 		Assertions.assertEquals(3, ingredients.size());
-		Assertions.assertEquals(1, ingredients.get(createItem("ing1")));
-		Assertions.assertEquals(2, ingredients.get(createItem("ing2")));
-		Assertions.assertEquals(3, ingredients.get(createItem("ing3")));
+		Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
+		Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
 	}
 
 	@Test
@@ -211,61 +211,63 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 							{
 								"output": {
 									"type": "projecte:item",
-									"id": "out_a"
+									"id": "iron_ingot"
 								},
 								"ingredients": {
-									"ing1": 1,
-									"ing2": 2,
-									"ing3": 3
+									"stone": 1,
+									"granite": 2,
+									"diorite": 3
 								}
 							},
 							{
 								"output": {
 									"type": "projecte:item",
-									"id": "out_b",
-									"nbt": {
-										"my": "tag"
+									"id": "gold_ingot",
+									"data": {
+										"custom_data": {
+											"my": "tag"
+										}
 									}
 								},
 								"ingredients": [
 									{
 										"type": "projecte:item",
-										"id": "ing1"
+										"id": "stone"
 									},
-									"ing2",
+									"granite",
 									{
 										"type": "projecte:item",
-										"id": "ing3",
-										"nbt": "{my: \\"tag\\"}"
+										"id": "diorite",
+										"data": {
+											"custom_data": "{my: \\"tag\\"}"
+										}
 									}
 								]
 							}
 						]
 					}
 				}""");
-		CompoundTag nbt = new CompoundTag();
-		nbt.putString("my", "tag");
 		List<CustomConversion> conversions = conversionFile.values().conversions();
 		Assertions.assertEquals(2, conversions.size());
 		{
 			CustomConversion conversion = conversions.get(0);
-			Assertions.assertEquals(createItem("out_a"), conversion.output());
+			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(createItem("ing1")));
-			Assertions.assertEquals(2, ingredients.get(createItem("ing2")));
-			Assertions.assertEquals(3, ingredients.get(createItem("ing3")));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(1);
-			Assertions.assertEquals(createItem("minecraft", "out_b", nbt), conversion.output());
+			Assertions.assertEquals(NSSItem.createItem(Items.GOLD_INGOT, CodecTestHelper.MY_TAG_PATCH), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(createItem("ing1")));
-			Assertions.assertEquals(1, ingredients.get(createItem("ing2")));
-			Assertions.assertEquals(1, ingredients.get(createItem("minecraft", "ing3", nbt)));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.DIORITE, CodecTestHelper.MY_TAG_PATCH)));
 		}
 	}
 
@@ -310,23 +312,23 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 						"groupa": {
 							"conversions": [
 								{
-									"output": "out_a",
+									"output": "iron_ingot",
 									"ingredients": {
-										"ing1": 1,
-										"ing2": 2,
-										"ing3": 3
+										"stone": 1,
+										"granite": 2,
+										"diorite": 3
 									}
 								},
 								{
-									"output": "out_b"
+									"output": "gold_ingot"
 								},
 								{
-									"output": "out_c",
+									"output": "copper_ingot",
 									"count": 3,
 									"ingredients": [
-										"ing1",
-										"ing1",
-										"ing1"
+										"stone",
+										"stone",
+										"stone"
 									]
 								}
 							]
@@ -340,21 +342,21 @@ class CustomConversionMapperTest extends NormalizedSimpleStackTestHelper {
 		List<CustomConversion> conversions = group.conversions();
 		{
 			CustomConversion conversion = conversions.get(0);
-			Assertions.assertEquals(createItem("out_a"), conversion.output());
+			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(createItem("ing1")));
-			Assertions.assertEquals(2, ingredients.get(createItem("ing2")));
-			Assertions.assertEquals(3, ingredients.get(createItem("ing3")));
+			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(1);
-			Assertions.assertEquals(createItem("out_c"), conversion.output());
+			Assertions.assertEquals(NSSItem.createItem(Items.COPPER_INGOT), conversion.output());
 			Assertions.assertEquals(3, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
 			Assertions.assertEquals(1, ingredients.size());
-			Assertions.assertEquals(3, ingredients.get(createItem("ing1")));
+			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.STONE)));
 		}
 	}
 }

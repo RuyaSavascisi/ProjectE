@@ -42,9 +42,9 @@ public class EntityHomingArrow extends Arrow {
 	}
 
 	@Override
-	public void defineSynchedData() {
-		super.defineSynchedData();
-		entityData.define(DW_TARGET_ID, NO_TARGET); // Target entity id
+	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
+		super.defineSynchedData(builder);
+		builder.define(DW_TARGET_ID, NO_TARGET); // Target entity id
 	}
 
 	@Override

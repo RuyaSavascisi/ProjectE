@@ -30,7 +30,7 @@ public final class CustomEMCParser {
 				//True legacy format where it only supported the legacy item representation
 				NSSItem.LEGACY_CODEC.fieldOf("item"),
 				//Extended legacy format to allow more explicit declaration of the item
-				NSSItem.EXPLICIT_MAP_CODEC
+				NSSItem.EXPLICIT_CODEC
 		), INVALID_ITEM, () -> "Unable to deserialize normalized item: {}");
 
 		private static final Codec<Entry<NSSItem, Long>> LEGACY_ENTRY_CODEC = RecordCodecBuilder.create(instance -> instance.group(

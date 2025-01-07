@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import java.util.function.Function;
 import net.minecraft.Util;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
@@ -16,6 +17,10 @@ public class PERenderType extends RenderType {
 		super(name, format, drawMode, bufferSize, useDelegate, needsSorting, setupTask, clearTask);
 	}
 
+	public static final RenderStateShard.ShaderStateShard POSITION_TEX_COLOR_SHADER = new RenderStateShard.ShaderStateShard(
+			GameRenderer::getPositionTexColorShader
+	);
+
 	public static final Function<ResourceLocation, RenderType> SPRITE_RENDERER = Util.memoize(resourceLocation -> {
 		RenderType.CompositeState state = RenderType.CompositeState.builder()
 				.setShaderState(RenderStateShard.POSITION_TEX_SHADER)
@@ -26,12 +31,12 @@ public class PERenderType extends RenderType {
 
 	public static final Function<ResourceLocation, RenderType> YEU_RENDERER = Util.memoize(resourceLocation -> {
 		RenderType.CompositeState state = RenderType.CompositeState.builder()
-				.setShaderState(RenderStateShard.POSITION_COLOR_TEX_SHADER)
+				.setShaderState(POSITION_TEX_COLOR_SHADER)
 				.setTextureState(new RenderStateShard.TextureStateShard(resourceLocation, false, false))
 				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
 				.setCullState(NO_CULL)
 				.createCompositeState(true);
-		return create("projecte_yeu_renderer", DefaultVertexFormat.POSITION_COLOR_TEX, Mode.QUADS, 256, true, false, state);
+		return create("projecte_yeu_renderer", DefaultVertexFormat.POSITION_TEX_COLOR, Mode.QUADS, 256, true, false, state);
 	});
 
 	public static final RenderType TRANSMUTATION_OVERLAY = create("projecte_transmutation_overlay", DefaultVertexFormat.POSITION_COLOR, Mode.QUADS, 256,

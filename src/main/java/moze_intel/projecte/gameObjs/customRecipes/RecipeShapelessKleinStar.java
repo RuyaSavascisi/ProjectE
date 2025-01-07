@@ -2,9 +2,9 @@ package moze_intel.projecte.gameObjs.customRecipes;
 
 import moze_intel.projecte.gameObjs.items.KleinStar;
 import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
 import org.jetbrains.annotations.NotNull;
@@ -23,11 +23,10 @@ public class RecipeShapelessKleinStar extends WrappedShapelessRecipe {
 
 	@NotNull
 	@Override
-	public ItemStack assemble(@NotNull CraftingContainer inv, @NotNull RegistryAccess registryAccess) {
+	public ItemStack assemble(@NotNull CraftingInput inv, @NotNull HolderLookup.Provider registryAccess) {
 		ItemStack result = getInternal().assemble(inv, registryAccess);
 		long storedEMC = 0;
-		for (int i = 0; i < inv.getContainerSize(); i++) {
-			ItemStack stack = inv.getItem(i);
+		for (ItemStack stack : inv.items()) {
 			if (!stack.isEmpty() && stack.getItem() instanceof KleinStar) {
 				storedEMC += KleinStar.getEmc(stack);
 			}

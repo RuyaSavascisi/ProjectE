@@ -15,7 +15,6 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.core.Registry;
-import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
 public interface IPECodecHelper {
@@ -93,7 +92,7 @@ public interface IPECodecHelper {
 	 * @param errorMessage Error message to produce if the element is null.
 	 */
 	default <T> Codec<T> validatePresent(Codec<T> codec, Supplier<String> errorMessage) {
-		return ExtraCodecs.validate(codec, t -> t == null ? DataResult.error(errorMessage) : DataResult.success(t));
+		return codec.validate(t -> t == null ? DataResult.error(errorMessage) : DataResult.success(t));
 	}
 
 	/**

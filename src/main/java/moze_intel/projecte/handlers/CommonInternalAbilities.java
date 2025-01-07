@@ -1,5 +1,6 @@
 package moze_intel.projecte.handlers;
 
+import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.PlayerHelper;
 import net.minecraft.tags.FluidTags;
@@ -14,8 +15,8 @@ import net.minecraft.world.level.material.FluidState;
 
 public class CommonInternalAbilities {
 
-	private static final AttributeModifier WATER_SPEED_BOOST = new AttributeModifier("Walk on water speed boost", 0.15, Operation.ADDITION);
-	private static final AttributeModifier LAVA_SPEED_BOOST = new AttributeModifier("Walk on lava speed boost", 0.15, Operation.ADDITION);
+	private static final AttributeModifier WATER_SPEED_BOOST = new AttributeModifier(PECore.rl("water_speed_boost"), 0.15, Operation.ADD_VALUE);
+	private static final AttributeModifier LAVA_SPEED_BOOST = new AttributeModifier(PECore.rl("lava_speed_boost"), 0.15, Operation.ADD_VALUE);
 
 	public void tick(Player player) {
 		boolean applyWaterSpeed = false;
@@ -23,14 +24,14 @@ public class CommonInternalAbilities {
 		WalkOnType waterWalkOnType = canWalkOnWater(player);
 		WalkOnType lavaWalkOnType = canWalkOnLava(player);
 		if (waterWalkOnType.canWalk() || lavaWalkOnType.canWalk()) {
-			FluidState below = player.level().getFluidState(player.blockPosition().below());
+			FluidState below = player.level().getFluidState(player.getOnPos());
 			boolean water = waterWalkOnType.canWalk() && below.is(FluidTags.WATER);
 			//Note: Technically we could probably only have lava be true if water is false, but given the
 			// fact vanilla uses tags for logic and technically (although it probably would cause lots of
 			// weirdness, the block we are standing on could be both water and lava, which would mean that
 			// we would want to apply both speed boosts).
 			boolean lava = lavaWalkOnType.canWalk() && below.is(FluidTags.LAVA);
-			if ((water || lava) && player.getFeetBlockState().isAir()) {
+			if ((water || lava) && player.getInBlockState().isAir()) {
 				if (!player.isShiftKeyDown()) {
 					player.setDeltaMovement(player.getDeltaMovement().multiply(1, 0, 1));
 					player.fallDistance = 0.0F;
@@ -56,11 +57,11 @@ public class CommonInternalAbilities {
 
 	private void updateSpeed(AttributeInstance attribute, boolean apply, AttributeModifier speedModifier) {
 		if (apply) {
-			if (!attribute.hasModifier(speedModifier)) {
+			if (!attribute.hasModifier(speedModifier.id())) {
 				attribute.addTransientModifier(speedModifier);
 			}
-		} else if (attribute.hasModifier(speedModifier)) {
-			attribute.removeModifier(speedModifier.getId());
+		} else if (attribute.hasModifier(speedModifier.id())) {
+			attribute.removeModifier(speedModifier.id());
 		}
 	}
 

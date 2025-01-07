@@ -8,7 +8,7 @@ import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.items.ICapabilityAware;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.MathUtils;
@@ -32,7 +32,7 @@ import org.jetbrains.annotations.NotNull;
 public class Zero extends PEToggleItem implements IPedestalItem, IItemCharge, IBarHelper, ICapabilityAware {
 
 	public Zero(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.CHARGE, 0));
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class Zero extends PEToggleItem implements IPedestalItem, IItemCharge, IB
 	@Override
 	public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean isHeld) {
 		super.inventoryTick(stack, level, entity, slot, isHeld);
-		if (!level.isClientSide && entity instanceof Player player && hotBarOrOffHand(slot) && stack.getData(PEAttachmentTypes.ACTIVE)) {
+		if (!level.isClientSide && entity instanceof Player player && hotBarOrOffHand(slot) && stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			WorldHelper.freezeInBoundingBox(level, player.getBoundingBox().inflate(3), player, true);
 		}
 	}

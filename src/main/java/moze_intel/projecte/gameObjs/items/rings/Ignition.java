@@ -9,7 +9,7 @@ import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
 import moze_intel.projecte.gameObjs.items.ICapabilityAware;
 import moze_intel.projecte.gameObjs.items.IFireProtector;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
@@ -34,7 +34,9 @@ import org.jetbrains.annotations.NotNull;
 public class Ignition extends PEToggleItem implements IPedestalItem, IFireProtector, IProjectileShooter, ICapabilityAware {
 
 	public Ignition(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.STORED_EMC, 0L)
+				.component(PEDataComponentTypes.UNPROCESSED_EMC, 0.0)
+		);
 	}
 
 	@Override
@@ -43,9 +45,9 @@ public class Ignition extends PEToggleItem implements IPedestalItem, IFireProtec
 		if (level.isClientSide || !hotBarOrOffHand(slot) || !(entity instanceof Player player)) {
 			return;
 		}
-		if (stack.getData(PEAttachmentTypes.ACTIVE)) {
+		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			if (getEmc(stack) == 0 && !consumeFuel(player, stack, 64, false)) {
-				stack.removeData(PEAttachmentTypes.ACTIVE);
+				stack.set(PEDataComponentTypes.ACTIVE, false);
 			} else {
 				WorldHelper.igniteNearby(level, player);
 				removeEmc(stack, EMCHelper.removeFractionalEMC(stack, 0.32F));
@@ -69,7 +71,7 @@ public class Ignition extends PEToggleItem implements IPedestalItem, IFireProtec
 				DamageSource fire = level.damageSources().inFire();
 				for (Mob living : level.getEntitiesOfClass(Mob.class, pedestal.getEffectBounds())) {
 					living.hurt(fire, 3.0F);
-					living.setSecondsOnFire(8);
+					living.igniteForSeconds(8);
 				}
 				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.ignition.get());
 			} else {

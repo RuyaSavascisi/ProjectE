@@ -51,7 +51,7 @@ public class TextComponentUtil {
 			} else if (component instanceof ItemStack stack) {
 				current = stack.getHoverName().copy();
 			} else if (component instanceof FluidStack stack) {
-				current = stack.getDisplayName().copy();
+				current = stack.getHoverName().copy();
 			} else if (component instanceof Fluid fluid) {
 				current = translate(fluid.getFluidType().getDescriptionId());
 			} else {
@@ -116,7 +116,7 @@ public class TextComponentUtil {
 			} else if (component instanceof ItemStack stack) {
 				current = stack.getHoverName().copy();
 			} else if (component instanceof FluidStack stack) {
-				current = stack.getDisplayName().copy();
+				current = stack.getHoverName().copy();
 			} else if (component instanceof Fluid fluid) {
 				current = translate(fluid.getFluidType().getDescriptionId());
 			}

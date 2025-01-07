@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class GUIDMFurnace<CONTAINER extends DMFurnaceContainer> extends PEContainerScreen<CONTAINER> {
 
 	//FurnaceScreen.LIT_PROGRESS_SPRITE
-	private static final ResourceLocation LIT_PROGRESS_SPRITE = new ResourceLocation("container/furnace/lit_progress");
+	private static final ResourceLocation LIT_PROGRESS_SPRITE = ResourceLocation.withDefaultNamespace("container/furnace/lit_progress");
 	private static final int LIT_SIZE = 14;
 
 	private static final ResourceLocation DM_FURNACE = PECore.rl("textures/gui/dmfurnace.png");

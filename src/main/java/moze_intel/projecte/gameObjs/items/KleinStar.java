@@ -2,7 +2,7 @@ package moze_intel.projecte.gameObjs.items;
 
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.integration.IntegrationHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -19,13 +19,13 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 	public final EnumKleinTier tier;
 
 	public KleinStar(Properties props, EnumKleinTier tier) {
-		super(props);
+		super(props.component(PEDataComponentTypes.STORED_EMC, 0L));
 		this.tier = tier;
 	}
 
 	@Override
 	public boolean isBarVisible(@NotNull ItemStack stack) {
-		return stack.hasData(PEAttachmentTypes.STORED_EMC);
+		return getEmc(stack) > 0;
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 		}
 		long toAdd = Math.min(getNeededEmc(stack), toInsert);
 		if (action.execute()) {
-			ItemPE.addEmcToStack(stack, toAdd);
+			addEmcToStack(stack, toAdd);
 		}
 		return toAdd;
 	}
@@ -97,7 +97,7 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 		long storedEmc = getStoredEmc(stack);
 		long toRemove = Math.min(storedEmc, toExtract);
 		if (action.execute()) {
-			ItemPE.setEmc(stack, storedEmc - toRemove);
+			setEmc(stack, storedEmc - toRemove);
 		}
 		return toRemove;
 	}

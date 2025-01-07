@@ -1,11 +1,12 @@
 package moze_intel.projecte.gameObjs.items.rings;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.WorldHelper;
@@ -16,26 +17,31 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.IPlantable;
+import net.minecraft.world.level.gameevent.GameEvent;
+import net.neoforged.neoforge.common.SpecialPlantable;
+import net.neoforged.neoforge.common.util.TriState;
 import org.jetbrains.annotations.NotNull;
 
 public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 
 	public HarvestGoddess(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.STORED_EMC, 0L)
+				.component(PEDataComponentTypes.UNPROCESSED_EMC, 0.0)
+		);
 	}
 
 	@Override
@@ -44,10 +50,10 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 		if (level.isClientSide || !hotBarOrOffHand(slot) || !(entity instanceof Player player)) {
 			return;
 		}
-		if (stack.getData(PEAttachmentTypes.ACTIVE)) {
+		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			long storedEmc = getEmc(stack);
 			if (storedEmc == 0 && !consumeFuel(player, stack, 64, true)) {
-				stack.removeData(PEAttachmentTypes.ACTIVE);
+				stack.set(PEDataComponentTypes.ACTIVE, false);
 			} else {
 				WorldHelper.growNearbyRandomly(true, level, player);
 				removeEmc(stack, EMCHelper.removeFractionalEMC(stack, 0.32F));
@@ -119,15 +125,37 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 			}
 			//Ensure we are immutable so that changing blocks doesn't act weird
 			currentPos = currentPos.immutable();
-			for (int i = 0; i < seeds.size(); i++) {
-				StackWithSlot s = seeds.get(i);
-				if (state.canSustainPlant(level, currentPos, Direction.UP, s.plantable) && level.isEmptyBlock(currentPos.above())) {
-					level.setBlockAndUpdate(currentPos.above(), s.plantable.getPlant(level, currentPos.above()));
+			BlockPos plantPos = currentPos.above();
+			for (Iterator<StackWithSlot> iterator = seeds.iterator(); iterator.hasNext(); ) {
+				StackWithSlot s = iterator.next();
+				//TODO - 1.21: Figure this out
+				ItemStack stack = player.getInventory().getItem(s.slot);
+				if (stack.isEmpty()) {
+					iterator.remove();
+					continue;
+				}
+				boolean planted = false;
+				if (stack.getItem() instanceof SpecialPlantable plantable && plantable.canPlacePlantAtPosition(stack, level, plantPos, Direction.DOWN)) {
+					plantable.spawnPlantAtPosition(stack, level, plantPos, Direction.DOWN);
+					planted = true;
+				} else if (!stack.isEmpty() && stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) && stack.getItem() instanceof BlockItem blockItem && level.isEmptyBlock(plantPos)) {
+					//TODO - 1.21: Which way should we get the state for placement
+					BlockState plantState = blockItem.getBlock().defaultBlockState();
+					/*plantState = blockItem.getBlock().getStateForPlacement(new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND,
+							new BlockHitResult(Vec3.ZERO, Direction.UP, pos, false))));*/
+					TriState canSustain = state.canSustainPlant(level, currentPos, Direction.UP, plantState);
+					//TODO - 1.21: Support the case when canSustain is default
+					if (canSustain.isTrue()) {
+						level.setBlockAndUpdate(plantPos, plantState);
+						level.gameEvent(GameEvent.BLOCK_PLACE, plantPos, GameEvent.Context.of(player, plantState));
+						planted = true;
+					}
+				}
+				if (planted) {
 					player.getInventory().removeItem(s.slot, 1);
 					player.inventoryMenu.broadcastChanges();
-					s.count--;
-					if (s.count == 0) {
-						seeds.remove(i);
+					if (--s.count == 0) {
+						iterator.remove();
 						if (seeds.isEmpty()) {
 							//If we are out of seeds, hard exit the method
 							return true;
@@ -150,13 +178,11 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 			ItemStack stack = inv.get(i);
 			if (!stack.isEmpty()) {
 				Item item = stack.getItem();
-				if (item instanceof IPlantable) {
-					result.add(new StackWithSlot(stack, i, (IPlantable) item));
-				} else {
-					Block block = Block.byItem(item);
-					if (block instanceof IPlantable) {
-						result.add(new StackWithSlot(stack, i, (IPlantable) block));
-					}
+				if (item instanceof SpecialPlantable) {
+					result.add(new StackWithSlot(stack, i));
+				} else if (item instanceof BlockItem && stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
+					//TODO - 1.21: Re-evaluate how we want to handle this check. Do we want a wider tag than just villager plantable seeds?
+					result.add(new StackWithSlot(stack, i));
 				}
 			}
 		}
@@ -191,14 +217,12 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 
 	private static class StackWithSlot {
 
-		public final IPlantable plantable;
 		public final int slot;
 		public int count;
 
-		public StackWithSlot(ItemStack stack, int slot, IPlantable plantable) {
+		public StackWithSlot(ItemStack stack, int slot) {
 			this.slot = slot;
 			this.count = stack.getCount();
-			this.plantable = plantable;
 		}
 	}
 }

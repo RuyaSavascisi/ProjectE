@@ -49,10 +49,10 @@ public class LayerYue extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
 			matrix.translate(-0.5, yShift, -0.5);
 			VertexConsumer builder = renderer.getBuffer(PERenderType.YEU_RENDERER.apply(CLAR_UUID.equals(player.getUUID()) ? HEART_LOC : YUE_LOC));
 			Matrix4f matrix4f = matrix.last().pose();
-			builder.vertex(matrix4f, 0, 0, 0).color(0, 255, 0, 255).uv(0, 0).endVertex();
-			builder.vertex(matrix4f, 0, 0, 1).color(0, 255, 0, 255).uv(0, 1).endVertex();
-			builder.vertex(matrix4f, 1, 0, 1).color(0, 255, 0, 255).uv(1, 1).endVertex();
-			builder.vertex(matrix4f, 1, 0, 0).color(0, 255, 0, 255).uv(1, 0).endVertex();
+			builder.addVertex(matrix4f, 0, 0, 0).setUv(0, 0).setColor(0, 255, 0, 255);
+			builder.addVertex(matrix4f, 0, 0, 1).setUv(0, 1).setColor(0, 255, 0, 255);
+			builder.addVertex(matrix4f, 1, 0, 1).setUv(1, 1).setColor(0, 255, 0, 255);
+			builder.addVertex(matrix4f, 1, 0, 0).setUv(1, 0).setColor(0, 255, 0, 255);
 			matrix.popPose();
 		}
 	}

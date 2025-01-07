@@ -15,10 +15,10 @@ import moze_intel.projecte.gameObjs.gui.GUIRelay.GUIRelayMK2;
 import moze_intel.projecte.gameObjs.gui.GUIRelay.GUIRelayMK3;
 import moze_intel.projecte.gameObjs.gui.GUITransmutation;
 import moze_intel.projecte.gameObjs.gui.PEContainerScreen;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEContainerTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.rendering.ChestRenderer;
@@ -39,17 +39,17 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
-import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiOverlaysEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
-import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
 
-@Mod.EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = PECore.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class ClientRegistration {
 
 	public static final ResourceLocation ACTIVE_OVERRIDE = PECore.rl("active");
@@ -93,12 +93,14 @@ public class ClientRegistration {
 
 		evt.enqueueWork(() -> {
 			//Property Overrides
-			addPropertyOverrides(ACTIVE_OVERRIDE, (stack, level, entity, seed) -> stack.getData(PEAttachmentTypes.ACTIVE) ? 1F : 0F,
+			addPropertyOverrides(ACTIVE_OVERRIDE, (stack, level, entity, seed) -> stack.getOrDefault(PEDataComponentTypes.ACTIVE, false) ? 1F : 0F,
 					PEItems.GEM_OF_ETERNAL_DENSITY, PEItems.VOID_RING, PEItems.ARCANA_RING, PEItems.ARCHANGEL_SMITE, PEItems.BLACK_HOLE_BAND, PEItems.BODY_STONE,
 					PEItems.HARVEST_GODDESS_BAND, PEItems.IGNITION_RING, PEItems.LIFE_STONE, PEItems.MIND_STONE, PEItems.SOUL_STONE, PEItems.WATCH_OF_FLOWING_TIME,
 					PEItems.ZERO_RING);
-			addPropertyOverrides(MODE_OVERRIDE, (stack, level, entity, seed) -> stack.getData(PEAttachmentTypes.ARCANA_MODE).ordinal(), PEItems.ARCANA_RING);
-			addPropertyOverrides(MODE_OVERRIDE, (stack, level, entity, seed) -> stack.getData(PEAttachmentTypes.SWRG_MODE).ordinal(), PEItems.SWIFTWOLF_RENDING_GALE);
+			addPropertyOverrides(MODE_OVERRIDE, (stack, level, entity, seed) ->
+					stack.getOrDefault(PEDataComponentTypes.ARCANA_MODE, PEItems.ARCANA_RING.asItem().getDefaultMode()).ordinal(), PEItems.ARCANA_RING);
+			addPropertyOverrides(MODE_OVERRIDE, (stack, level, entity, seed) ->
+					stack.getOrDefault(PEDataComponentTypes.SWRG_MODE, PEItems.ARCANA_RING.asItem().getDefaultMode()).ordinal(), PEItems.SWIFTWOLF_RENDING_GALE);
 		});
 	}
 
@@ -108,8 +110,8 @@ public class ClientRegistration {
 	}
 
 	@SubscribeEvent
-	public static void registerOverlays(RegisterGuiOverlaysEvent event) {
-		event.registerAbove(VanillaGuiOverlay.CROSSHAIR.id(), PECore.rl("transmutation_result"), new TransmutationRenderingOverlay());
+	public static void registerOverlays(RegisterGuiLayersEvent event) {
+		event.registerAbove(VanillaGuiLayers.CROSSHAIR, PECore.rl("transmutation_result"), new TransmutationRenderingOverlay());
 	}
 
 	@SubscribeEvent

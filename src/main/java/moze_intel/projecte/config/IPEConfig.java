@@ -18,6 +18,8 @@ public interface IPEConfig {
 
 	void clearCache(boolean unloading);
 
+	void save();
+
 	<T> void addCachedValue(CachedValue<T> configValue);
 
 	/**

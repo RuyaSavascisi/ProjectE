@@ -13,19 +13,20 @@ import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.event.PlayerKnowledgeChangeEvent;
 import moze_intel.projecte.emc.EMCMappingHandler;
-import moze_intel.projecte.emc.nbt.NBTManager;
-import moze_intel.projecte.gameObjs.items.Tome;
-import moze_intel.projecte.gameObjs.registration.impl.AttachmentTypeDeferredRegister;
+import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
-import moze_intel.projecte.network.PacketUtils;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncChangePKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncInputsAndLocksPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncPKT;
 import moze_intel.projecte.utils.EMCHelper;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -34,6 +35,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,13 +96,13 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 
 	@Nullable
 	private ItemInfo getIfPersistent(@NotNull ItemInfo info) {
-		if (!info.hasNBT() || EMCMappingHandler.hasEmcValue(info)) {
+		if (!info.hasModifiedData() || EMCMappingHandler.hasEmcValue(info)) {
 			//If we have no NBT or the base mapping has an emc value for our item with the given NBT
 			// then we don't have an extended state
 			return null;
 		}
-		ItemInfo cleanedInfo = NBTManager.getPersistentInfo(info);
-		if (cleanedInfo.hasNBT() && !EMCMappingHandler.hasEmcValue(cleanedInfo)) {
+		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
+		if (cleanedInfo.hasModifiedData() && !EMCMappingHandler.hasEmcValue(cleanedInfo)) {
 			//If we still have NBT after unimportant parts being stripped, and it doesn't
 			// directly have an EMC value, then we know it has some persistent information
 			return cleanedInfo;
@@ -117,7 +119,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			ItemInfo persistentInfo = getIfPersistent(info);
 			return persistentInfo == null || attachment.knowledge.contains(persistentInfo);
 		}
-		return attachment.knowledge.contains(NBTManager.getPersistentInfo(info));
+		return attachment.knowledge.contains(DataComponentManager.getPersistentInfo(info));
 	}
 
 	@Override
@@ -133,8 +135,8 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			// Note: We ignore the tome here being a separate entity because it should not have any persistent item
 			return tryAdd(attachment, persistentInfo);
 		}
-		if (info.getItem() instanceof Tome) {
-			if (info.hasNBT()) {
+		if (info.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
+			if (info.hasModifiedData()) {
 				//Make sure we don't have any NBT as it doesn't have any effect for the tome
 				info = ItemInfo.fromItem(info.getItem());
 			}
@@ -146,7 +148,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			fireChangedEvent();
 			return true;
 		}
-		return tryAdd(attachment, NBTManager.getPersistentInfo(info));
+		return tryAdd(attachment, DataComponentManager.getPersistentInfo(info));
 	}
 
 	private boolean tryAdd(@NotNull KnowledgeAttachment attachment, @NotNull ItemInfo cleanedInfo) {
@@ -161,9 +163,9 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 	public boolean removeKnowledge(@NotNull ItemInfo info) {
 		KnowledgeAttachment attachment = attachment();
 		if (attachment.fullKnowledge) {
-			if (info.getItem() instanceof Tome) {
+			if (info.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
 				//If we have full knowledge and are trying to remove the tome allow it
-				if (info.hasNBT()) {
+				if (info.hasModifiedData()) {
 					//Make sure we don't have any NBT as it doesn't have any effect for the tome
 					info = ItemInfo.fromItem(info.getItem());
 				}
@@ -177,7 +179,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			ItemInfo persistentInfo = getIfPersistent(info);
 			return persistentInfo != null && tryRemove(attachment, persistentInfo);
 		}
-		return tryRemove(attachment, NBTManager.getPersistentInfo(info));
+		return tryRemove(attachment, DataComponentManager.getPersistentInfo(info));
 	}
 
 	private boolean tryRemove(@NotNull KnowledgeAttachment attachment, @NotNull ItemInfo cleanedInfo) {
@@ -220,17 +222,17 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 	@Override
 	public void sync(@NotNull ServerPlayer player) {
 		KnowledgeAttachment attachment = attachment();
-		PacketUtils.sendTo(new KnowledgeSyncPKT(attachment.serializeNBT()), player);
+		PacketDistributor.sendToPlayer(player, new KnowledgeSyncPKT(attachment.serializeNBT(player.registryAccess())));
 	}
 
 	@Override
 	public void syncEmc(@NotNull ServerPlayer player) {
-		PacketUtils.sendTo(new KnowledgeSyncEmcPKT(getEmc()), player);
+		PacketDistributor.sendToPlayer(player, new KnowledgeSyncEmcPKT(getEmc()));
 	}
 
 	@Override
 	public void syncKnowledgeChange(@NotNull ServerPlayer player, ItemInfo change, boolean learned) {
-		PacketUtils.sendTo(new KnowledgeSyncChangePKT(change, learned), player);
+		PacketDistributor.sendToPlayer(player, new KnowledgeSyncChangePKT(change, learned));
 	}
 
 	@Override
@@ -247,7 +249,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			}
 			if (!stacksToSync.isEmpty()) {
 				//Validate it is not empty in case we were fed bad indices
-				PacketUtils.sendTo(new KnowledgeSyncInputsAndLocksPKT(stacksToSync, updateTargets), player);
+				PacketDistributor.sendToPlayer(player, new KnowledgeSyncInputsAndLocksPKT(stacksToSync, updateTargets));
 			}
 		}
 	}
@@ -271,7 +273,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		KnowledgeAttachment attachment = attachment();
 		List<ItemInfo> toAdd = new ArrayList<>();
 		boolean hasRemoved = attachment.knowledge.removeIf(info -> {
-			ItemInfo persistentInfo = NBTManager.getPersistentInfo(info);
+			ItemInfo persistentInfo = DataComponentManager.getPersistentInfo(info);
 			if (!info.equals(persistentInfo)) {
 				//If the new persistent variant has an EMC value though we add it because that is what they would have learned
 				// had they tried to consume the item now instead of before
@@ -307,51 +309,42 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		}
 
 		@Nullable
-		public KnowledgeAttachment copy(IAttachmentHolder holder) {
+		public KnowledgeAttachment copy(IAttachmentHolder holder, HolderLookup.Provider registries) {
 			//Note: ItemInfo and BigInteger are both immutable, so we can just add them directly
-			return new KnowledgeAttachment(new HashSet<>(knowledge), AttachmentTypeDeferredRegister.copyHandler(inputLocks, ItemStackHandler::new), emc, fullKnowledge);
-		}
-
-		public boolean isCompatible(KnowledgeAttachment other) {
-			if (other == this) {
-				return true;
-			}
-			return fullKnowledge == other.fullKnowledge && emc.equals(other.emc) && knowledge.equals(other.knowledge) && AttachmentTypeDeferredRegister.HANDLER_COMPARATOR.areCompatible(inputLocks, other.inputLocks);
+			return new KnowledgeAttachment(new HashSet<>(knowledge), PEAttachmentTypes.copyHandler(inputLocks, ItemStackHandler::new), emc, fullKnowledge);
 		}
 
 		@Override
-		public CompoundTag serializeNBT() {
+		public CompoundTag serializeNBT(@NotNull HolderLookup.Provider registries) {
+			RegistryOps<Tag> serializationContext = registries.createSerializationContext(NbtOps.INSTANCE);
 			CompoundTag properties = new CompoundTag();
 			properties.putString("transmutationEmc", emc.toString());
 
 			ListTag knowledgeWrite = new ListTag();
 			for (ItemInfo i : knowledge) {
-				knowledgeWrite.add(i.write(new CompoundTag()));
+				ItemInfo.EXPLICIT_CODEC.encodeStart(serializationContext, i).result().ifPresent(knowledgeWrite::add);
 			}
 
 			properties.put("knowledge", knowledgeWrite);
-			properties.put("inputlock", inputLocks.serializeNBT());
+			properties.put("inputlock", inputLocks.serializeNBT(registries));
 			properties.putBoolean("fullknowledge", fullKnowledge);
 			return properties;
 		}
 
 		@Override
-		public void deserializeNBT(CompoundTag properties) {
+		public void deserializeNBT(@NotNull HolderLookup.Provider registries, CompoundTag properties) {
+			RegistryOps<Tag> serializationContext = registries.createSerializationContext(NbtOps.INSTANCE);
 			String transmutationEmc = properties.getString("transmutationEmc");
 			emc = transmutationEmc.isEmpty() ? BigInteger.ZERO : new BigInteger(transmutationEmc);
 
-			ListTag list = properties.getList("knowledge", Tag.TAG_COMPOUND);
-			for (int i = 0; i < list.size(); i++) {
-				ItemInfo info = ItemInfo.read(list.getCompound(i));
-				if (info != null) {
-					knowledge.add(info);
-				}
+			for (Tag tag : properties.getList("knowledge", Tag.TAG_COMPOUND)) {
+				ItemInfo.EXPLICIT_CODEC.parse(serializationContext, tag).result().ifPresent(knowledge::add);
 			}
 
 			for (int i = 0; i < inputLocks.getSlots(); i++) {
 				inputLocks.setStackInSlot(i, ItemStack.EMPTY);
 			}
-			inputLocks.deserializeNBT(properties.getCompound("inputlock"));
+			inputLocks.deserializeNBT(registries, properties.getCompound("inputlock"));
 			fullKnowledge = properties.getBoolean("fullknowledge");
 		}
 	}

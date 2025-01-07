@@ -10,6 +10,7 @@ import moze_intel.projecte.api.capabilities.item.IAlchChestItem;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.handlers.InternalTimers;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.ItemHelper;
@@ -38,7 +39,7 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 																		 ItemHelper.isRepairableDamagedItem(stack);
 
 	public RepairTalisman(Properties props) {
-		super(props);
+		super(props.component(PEDataComponentTypes.COOLDOWN, (byte) 0));
 	}
 
 	@Override
@@ -95,12 +96,12 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 	}
 
 	private boolean updateInHandler(@NotNull IItemHandler inv, @NotNull ItemStack stack) {
-		byte coolDown = stack.getData(PEAttachmentTypes.COOLDOWN);
+		byte coolDown = stack.getOrDefault(PEDataComponentTypes.COOLDOWN, (byte) 0);
 		if (coolDown > 0) {
-			stack.setData(PEAttachmentTypes.COOLDOWN, (byte) (coolDown - 1));
+			stack.set(PEDataComponentTypes.COOLDOWN, (byte) (coolDown - 1));
 			return true;
 		} else if (repairAllItems(inv, CAN_REPAIR_ITEM)) {
-			stack.setData(PEAttachmentTypes.COOLDOWN, (byte) 19);
+			stack.set(PEDataComponentTypes.COOLDOWN, (byte) 19);
 			return true;
 		}
 		return false;

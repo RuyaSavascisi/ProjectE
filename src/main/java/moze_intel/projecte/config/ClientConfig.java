@@ -21,8 +21,6 @@ public class ClientConfig extends BasePEConfig {
 
 	ClientConfig() {
 		ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-		//We push as client in case we ever want to add an overarching comment to the client config
-		builder.push("client");
 		tagToolTips = CachedBooleanValue.wrap(this, builder
 				.comment("Show item tags in tooltips (useful for custom EMC registration)")
 				.define("tagToolTips", false));
@@ -44,7 +42,6 @@ public class ClientConfig extends BasePEConfig {
 		pulsatingOverlay = CachedBooleanValue.wrap(this, builder
 				.comment("The Philosopher's Stone overlay softly pulsates")
 				.define("pulsatingOverlay", false));
-		builder.pop();
 		configSpec = builder.build();
 	}
 

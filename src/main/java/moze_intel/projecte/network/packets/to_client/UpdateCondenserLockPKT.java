@@ -1,40 +1,37 @@
 package moze_intel.projecte.network.packets.to_client;
 
+import java.util.Optional;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.gameObjs.container.CondenserContainer;
-import moze_intel.projecte.network.PacketUtils;
 import moze_intel.projecte.network.packets.IPEPacket;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public record UpdateCondenserLockPKT(short windowId, @Nullable ItemInfo lockInfo) implements IPEPacket<PlayPayloadContext> {
+public record UpdateCondenserLockPKT(short windowId, @Nullable ItemInfo lockInfo) implements IPEPacket {
 
-	public static final ResourceLocation ID = PECore.rl("update_condenser_lock");
-
-	public UpdateCondenserLockPKT(FriendlyByteBuf buffer) {
-		this(buffer.readShort(), buffer.readNullable(ItemInfo::read));
-	}
+	public static final CustomPacketPayload.Type<UpdateCondenserLockPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("update_condenser_lock"));
+	public static final StreamCodec<RegistryFriendlyByteBuf, UpdateCondenserLockPKT> STREAM_CODEC = StreamCodec.composite(
+			ByteBufCodecs.SHORT, UpdateCondenserLockPKT::windowId,
+			ByteBufCodecs.optional(ItemInfo.STREAM_CODEC), pkt -> Optional.ofNullable(pkt.lockInfo()),
+			(windowId, lockInfo) -> new UpdateCondenserLockPKT(windowId, lockInfo.orElse(null))
+	);
 
 	@NotNull
 	@Override
-	public ResourceLocation id() {
-		return ID;
+	public CustomPacketPayload.Type<UpdateCondenserLockPKT> type() {
+		return TYPE;
 	}
 
 	@Override
-	public void handle(PlayPayloadContext context) {
-		PacketUtils.container(context, CondenserContainer.class)
-				.filter(container -> container.containerId == windowId)
-				.ifPresent(container -> container.updateLockInfo(lockInfo));
-	}
-
-	@Override
-	public void write(@NotNull FriendlyByteBuf buffer) {
-		buffer.writeShort(windowId);
-		buffer.writeNullable(lockInfo, (buf, info) -> info.write(buf));
+	public void handle(IPayloadContext context) {
+		if (context.player().containerMenu instanceof CondenserContainer container && container.containerId == windowId) {
+			container.updateLockInfo(lockInfo);
+		}
 	}
 }

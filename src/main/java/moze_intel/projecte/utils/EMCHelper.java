@@ -9,15 +9,17 @@ import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.FuelMapper;
-import moze_intel.projecte.emc.nbt.NBTManager;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.emc.components.DataComponentManager;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.text.ILangEntry;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
@@ -127,13 +129,18 @@ public final class EMCHelper {
 		return getEmcValue(stack) > 0;
 	}
 
-	public static boolean doesItemHaveEmc(ItemLike item) {
+	public static boolean doesItemHaveEmc(Holder<Item> item) {
 		return getEmcValue(item) > 0;
 	}
 
 	@Range(from = 0, to = Long.MAX_VALUE)
+	public static long getEmcValue(Holder<Item> item) {
+		return item.isBound() ? getEmcValue(ItemInfo.fromItem(item)) : 0;
+	}
+
+	@Range(from = 0, to = Long.MAX_VALUE)
 	public static long getEmcValue(ItemLike item) {
-		return item == null ? 0 : getEmcValue(ItemInfo.fromItem(item));
+		return item == null ? 0 : getEmcValue(item.asItem().builtInRegistryHolder());
 	}
 
 	/**
@@ -146,7 +153,7 @@ public final class EMCHelper {
 
 	@Range(from = 0, to = Long.MAX_VALUE)
 	public static long getEmcValue(ItemInfo info) {
-		return NBTManager.getEmcValue(info);
+		return DataComponentManager.getEmcValue(info);
 	}
 
 	@Range(from = 0, to = Long.MAX_VALUE)
@@ -229,11 +236,11 @@ public final class EMCHelper {
 	 * @return The amount of non fractional EMC no longer being stored in UnprocessedEMC.
 	 */
 	public static long removeFractionalEMC(ItemStack stack, double amount) {
-		double unprocessedEMC = stack.getData(PEAttachmentTypes.UNPROCESSED_EMC);
+		double unprocessedEMC = stack.getOrDefault(PEDataComponentTypes.UNPROCESSED_EMC, 0.0);
 		unprocessedEMC += amount;
 		long toRemove = (long) unprocessedEMC;
 		unprocessedEMC -= toRemove;
-		stack.setData(PEAttachmentTypes.UNPROCESSED_EMC, unprocessedEMC);
+		stack.set(PEDataComponentTypes.UNPROCESSED_EMC, unprocessedEMC);
 		return toRemove;
 	}
 }

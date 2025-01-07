@@ -9,7 +9,6 @@ import java.util.Map;
 import moze_intel.projecte.api.ProjectEAPI;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 
 /**
@@ -24,7 +23,7 @@ public record FixedValues(Map<NormalizedSimpleStack, Long> setValueBefore, Map<N
 			//Note: We need to use the legacy codec as map keys for json are required to be able to be converted to strings
 			IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(IPECodecHelper.INSTANCE.legacyNSSCodec(), NeoForgeExtraCodecs.withAlternative(
 					IPECodecHelper.INSTANCE.positiveLong(),
-					ExtraCodecs.stringResolverCodec(
+					Codec.stringResolver(
 							val -> val == ProjectEAPI.FREE_ARITHMETIC_VALUE ? "free" : null,
 							str -> str.equalsIgnoreCase("free") ? ProjectEAPI.FREE_ARITHMETIC_VALUE : null
 					)

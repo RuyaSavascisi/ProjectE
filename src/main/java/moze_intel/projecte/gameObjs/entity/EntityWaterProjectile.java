@@ -5,6 +5,7 @@ import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
@@ -37,7 +38,7 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 	}
 
 	@Override
-	protected void defineSynchedData() {
+	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
 	}
 
 	@Override

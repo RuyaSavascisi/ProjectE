@@ -4,12 +4,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
-import moze_intel.projecte.api.PEAttachments;
 import moze_intel.projecte.api.codec.NSSCodecHolder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -18,28 +17,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.common.crafting.CraftingHelper;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Implementation of {@link NormalizedSimpleStack} and {@link NSSTag} for representing {@link Item}s.
  */
-public final class NSSItem extends AbstractNBTNSSTag<Item> {
-
-	private static Registry<Item> registry() {
-		try {
-			return BuiltInRegistries.ITEM;
-		} catch (Throwable throwable) {
-			if (FMLEnvironment.production) {
-				throw throwable;
-			}
-			//TODO: Come up with a better way to detect this, but when we are in dev if we can't initialize the registry
-			// skip it and don't do the extra element is registered validation
-			return null;
-		}
-	}
+public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 
 	private static final boolean ALLOW_DEFAULT = false;
 
@@ -53,15 +36,14 @@ public final class NSSItem extends AbstractNBTNSSTag<Item> {
 	/**
 	 * Codec for encoding NSSItems to and from strings.
 	 */
-	public static final Codec<NSSItem> LEGACY_CODEC = createLegacyCodec(registry(), ALLOW_DEFAULT, OPTIONAL_PREFIX_CODEC, NSSItem::new);
+	public static final Codec<NSSItem> LEGACY_CODEC = createLegacyCodec(BuiltInRegistries.ITEM, ALLOW_DEFAULT, OPTIONAL_PREFIX_CODEC, NSSItem::new);
 
-	public static final MapCodec<NSSItem> EXPLICIT_MAP_CODEC = createExplicitCodec(registry(), ALLOW_DEFAULT, NSSItem::new);
-	public static final Codec<NSSItem> EXPLICIT_CODEC = EXPLICIT_MAP_CODEC.codec();
+	public static final MapCodec<NSSItem> EXPLICIT_CODEC = createExplicitCodec(BuiltInRegistries.ITEM, ALLOW_DEFAULT, NSSItem::new);
 
 	public static final NSSCodecHolder<NSSItem> CODECS = new NSSCodecHolder<>("ITEM", LEGACY_CODEC, EXPLICIT_CODEC);
 
-	private NSSItem(@NotNull ResourceLocation resourceLocation, boolean isTag, @Nullable CompoundTag nbt) {
-		super(resourceLocation, isTag, nbt);
+	private NSSItem(@NotNull ResourceLocation resourceLocation, boolean isTag, @NotNull DataComponentPatch componentsPatch) {
+		super(resourceLocation, isTag, componentsPatch);
 	}
 
 	/**
@@ -72,8 +54,7 @@ public final class NSSItem extends AbstractNBTNSSTag<Item> {
 		if (stack.isEmpty()) {
 			throw new IllegalArgumentException("Can't make NSSItem with empty stack");
 		}
-		//Skip adding any nbt that will be added by default, but make sure to include the attachments as nbt
-		return createItem(stack.getItem(), PEAttachments.addAttachmentsToNbt(CraftingHelper.getTagForWriting(stack), stack.serializeAttachments()));
+		return createItem(stack.getItem(), stack.getComponentsPatch());
 	}
 
 	/**
@@ -81,22 +62,22 @@ public final class NSSItem extends AbstractNBTNSSTag<Item> {
 	 */
 	@NotNull
 	public static NSSItem createItem(@NotNull ItemLike itemProvider) {
-		return createItem(itemProvider, null);
+		return createItem(itemProvider, DataComponentPatch.EMPTY);
 	}
 
 	/**
-	 * Helper method to create an {@link NSSItem} representing an item from a {@link Holder} and an optional {@link CompoundTag}
+	 * Helper method to create an {@link NSSItem} representing an item from a {@link Holder} and an optional {@link DataComponentPatch}
 	 */
 	@NotNull
-	public static NSSItem createItem(@NotNull Holder<Item> item, @Nullable CompoundTag nbt) {
-		return createItem(item.value(), nbt);
+	public static NSSItem createItem(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
+		return createItem(item.value(), componentsPatch);
 	}
 
 	/**
-	 * Helper method to create an {@link NSSItem} representing an item from an {@link ItemLike} and an optional {@link CompoundTag}
+	 * Helper method to create an {@link NSSItem} representing an item from an {@link ItemLike} and an optional {@link DataComponentPatch}
 	 */
 	@NotNull
-	public static NSSItem createItem(@NotNull ItemLike itemProvider, @Nullable CompoundTag nbt) {
+	public static NSSItem createItem(@NotNull ItemLike itemProvider, @NotNull DataComponentPatch componentsPatch) {
 		Item item = itemProvider.asItem();
 		if (item == Items.AIR) {
 			throw new IllegalArgumentException("Can't make NSSItem with empty stack");
@@ -106,7 +87,7 @@ public final class NSSItem extends AbstractNBTNSSTag<Item> {
 			throw new IllegalArgumentException("Can't make an NSSItem with an unregistered item");
 		}
 		//This should never be null, or it would have crashed on being registered
-		return createItem(registryKey.get().location(), nbt);
+		return createItem(registryKey.get().location(), componentsPatch);
 	}
 
 	/**
@@ -114,15 +95,23 @@ public final class NSSItem extends AbstractNBTNSSTag<Item> {
 	 */
 	@NotNull
 	public static NSSItem createItem(@NotNull ResourceLocation itemID) {
-		return createItem(itemID, null);
+		return createItem(itemID, DataComponentPatch.EMPTY);
 	}
 
 	/**
-	 * Helper method to create an {@link NSSItem} representing an item from a {@link ResourceLocation} and an optional {@link CompoundTag}
+	 * Helper method to create an {@link NSSItem} representing an item from a {@link ResourceKey}
 	 */
 	@NotNull
-	public static NSSItem createItem(@NotNull ResourceLocation itemID, @Nullable CompoundTag nbt) {
-		return new NSSItem(itemID, false, nbt);
+	public static NSSItem createItem(@NotNull ResourceKey<Item> itemID) {
+		return createItem(itemID.location());
+	}
+
+	/**
+	 * Helper method to create an {@link NSSItem} representing an item from a {@link ResourceLocation} and an optional {@link DataComponentPatch}
+	 */
+	@NotNull
+	public static NSSItem createItem(@NotNull ResourceLocation itemID, @NotNull DataComponentPatch componentsPatch) {
+		return new NSSItem(itemID, false, componentsPatch);
 	}
 
 	/**
@@ -130,7 +119,7 @@ public final class NSSItem extends AbstractNBTNSSTag<Item> {
 	 */
 	@NotNull
 	public static NSSItem createTag(@NotNull ResourceLocation tagId) {
-		return new NSSItem(tagId, true, null);
+		return new NSSItem(tagId, true, DataComponentPatch.EMPTY);
 	}
 
 	/**
