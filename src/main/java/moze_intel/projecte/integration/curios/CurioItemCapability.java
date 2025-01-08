@@ -1,5 +1,11 @@
 package moze_intel.projecte.integration.curios;
 
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -21,6 +27,16 @@ public record CurioItemCapability(ItemStack stack) implements ICurio {
 			//Note: We act as if curios are being held by the offhand when it comes to ticking
 			getStack().inventoryTick(context.entity().level(), context.entity(), Inventory.SLOT_OFFHAND, false);
 		}
+	}
+
+	@Override
+	public Multimap<Holder<Attribute>, AttributeModifier> getAttributeModifiers(SlotContext slotContext, ResourceLocation id) {
+		if (!slotContext.cosmetic() && stack.getItem() instanceof IExposesCurioAttributes exposesCurioAttributes) {
+			Multimap<Holder<Attribute>, AttributeModifier> attributes = LinkedHashMultimap.create();
+			exposesCurioAttributes.addAttributes(attributes);
+			return attributes;
+		}
+		return ICurio.super.getAttributeModifiers(slotContext, id);
 	}
 
 	public static void register(RegisterCapabilitiesEvent event, Item item) {

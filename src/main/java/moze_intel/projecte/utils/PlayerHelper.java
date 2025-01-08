@@ -70,10 +70,6 @@ public final class PlayerHelper {
 		return player.getInventory().items.stream().filter(s -> !s.isEmpty() && s.is(consumeFrom)).findFirst().orElse(ItemStack.EMPTY);
 	}
 
-	public static boolean checkArmorHotbarCurios(Player player, Predicate<ItemStack> checker) {
-		return player.getInventory().armor.stream().anyMatch(checker) || checkHotbarCurios(player, checker);
-	}
-
 	public static boolean checkHotbarCurios(Player player, Predicate<ItemStack> checker) {
 		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
 			if (checker.test(player.getInventory().getItem(i))) {

@@ -1,17 +1,20 @@
 package moze_intel.projecte.gameObjs.items.rings;
 
+import com.google.common.base.Suppliers;
+import com.google.common.collect.Multimap;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
+import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
 import moze_intel.projecte.gameObjs.entity.EntityFireProjectile;
 import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
 import moze_intel.projecte.gameObjs.items.ICapabilityAware;
 import moze_intel.projecte.gameObjs.items.IFireProtector;
-import moze_intel.projecte.gameObjs.items.IFlightProvider;
 import moze_intel.projecte.gameObjs.items.IItemMode;
 import moze_intel.projecte.gameObjs.items.IModeEnum;
 import moze_intel.projecte.gameObjs.items.ItemPE;
@@ -19,12 +22,14 @@ import moze_intel.projecte.gameObjs.items.rings.Arcana.ArcanaMode;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.integration.IntegrationHelper;
+import moze_intel.projecte.integration.curios.IExposesCurioAttributes;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.IHasTranslationKey;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -39,25 +44,49 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.Snowball;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.NeoForgeMod;
 import org.jetbrains.annotations.NotNull;
 
-public class Arcana extends ItemPE implements IItemMode<ArcanaMode>, IFlightProvider, IFireProtector, IExtraFunction, IProjectileShooter, ICapabilityAware {
+public class Arcana extends ItemPE implements IItemMode<ArcanaMode>, IFireProtector, IExtraFunction, IProjectileShooter, ICapabilityAware, IExposesCurioAttributes {
+
+	private static final AttributeModifier FLIGHT = new AttributeModifier(PECore.rl("arcana_flight"), 1, Operation.ADD_VALUE);
+	private final Supplier<ItemAttributeModifiers> defaultModifiers;
 
 	public Arcana(Properties props) {
 		super(props.component(PEDataComponentTypes.ACTIVE, false)
 				.component(PEDataComponentTypes.ARCANA_MODE, ArcanaMode.ZERO)
 				.component(PEDataComponentTypes.STORED_EMC, 0L)
 		);
+		this.defaultModifiers = Suppliers.memoize(() -> ItemAttributeModifiers.builder()
+				.add(NeoForgeMod.CREATIVE_FLIGHT, FLIGHT, EquipmentSlotGroup.ANY)
+				.build());
+	}
+
+	@NotNull
+	@Override
+	@Deprecated
+	public ItemAttributeModifiers getDefaultAttributeModifiers() {
+		return this.defaultModifiers.get();
+	}
+
+	@Override
+	public void addAttributes(Multimap<Holder<Attribute>, AttributeModifier> attributes) {
+		attributes.put(NeoForgeMod.CREATIVE_FLIGHT, FLIGHT);
 	}
 
 	@Override
@@ -178,11 +207,6 @@ public class Arcana extends ItemPE implements IItemMode<ArcanaMode>, IFlightProv
 
 	@Override
 	public boolean canProtectAgainstFire(ItemStack stack, Player player) {
-		return true;
-	}
-
-	@Override
-	public boolean canProvideFlight(ItemStack stack, Player player) {
 		return true;
 	}
 

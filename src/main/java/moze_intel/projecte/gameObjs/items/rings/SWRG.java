@@ -12,9 +12,7 @@ import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
 import moze_intel.projecte.gameObjs.items.ICapabilityAware;
-import moze_intel.projecte.gameObjs.items.IFlightProvider;
 import moze_intel.projecte.gameObjs.items.ItemPE;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.integration.IntegrationHelper;
@@ -45,7 +43,7 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IProjectileShooter, ICapabilityAware {
+public class SWRG extends ItemPE implements IPedestalItem, IProjectileShooter, ICapabilityAware {
 
 	public SWRG(Properties props) {
 		super(props.component(PEDataComponentTypes.SWRG_MODE, SWRGMode.OFF)
@@ -66,39 +64,25 @@ public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IPro
 		if (getEmc(stack) == 0 && !consumeFuel(player, stack, 64, false)) {
 			//If it is already off changeMode will just NO-OP
 			changeMode(player, stack, mode, SWRGMode.OFF);
-			if (player.getAbilities().mayfly) {
-				player.getData(PEAttachmentTypes.INTERNAL_ABILITIES).disableSwrgFlightOverride();
-			}
 			return;
-		}
-
-		if (!player.getAbilities().mayfly) {
-			player.getData(PEAttachmentTypes.INTERNAL_ABILITIES).enableSwrgFlightOverride();
 		}
 
 		if (player.getAbilities().flying) {
 			if (!mode.hasFlight()) {
-				mode = changeMode(player, stack, mode, mode == SWRGMode.OFF ? SWRGMode.FLIGHT : SWRGMode.SHIELDED_FLIGHT);
+				mode = changeMode(player, stack, mode, mode.toggleFlight());
 			}
 		} else if (mode.hasFlight()) {
-			mode = changeMode(player, stack, mode, mode == SWRGMode.FLIGHT ? SWRGMode.OFF : SWRGMode.SHIELD);
+			mode = changeMode(player, stack, mode, mode.toggleFlight());
 		}
 
-		float toRemove = 0;
-
-		if (player.getAbilities().flying) {
-			toRemove = 0.32F;
-		}
-
-		if (mode == SWRGMode.SHIELD) {
-			toRemove = 0.32F;
-		} else if (mode == SWRGMode.SHIELDED_FLIGHT) {
-			toRemove = 0.64F;
+		float toRemove = mode.hasShield() ? 0.32F : 0;
+		if (mode.hasFlight() && player.getAbilities().flying) {
+			toRemove += 0.32F;
 		}
 
 		removeEmc(stack, EMCHelper.removeFractionalEMC(stack, toRemove));
-
-		player.fallDistance = 0;
+		//TODO - 1.21: Re-evaluate the calls to resetFallDistance
+		player.resetFallDistance();
 	}
 
 	@Override
@@ -142,12 +126,6 @@ public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IPro
 		}
 		//Doesn't handle going from mode 1 to 2 or 2 to 1
 		return mode;
-	}
-
-	@Override
-	public boolean canProvideFlight(ItemStack stack, Player player) {
-		// Dummy result - swrg needs special-casing
-		return false;
 	}
 
 	@Override
@@ -228,6 +206,15 @@ public class SWRG extends ItemPE implements IPedestalItem, IFlightProvider, IPro
 
 		public boolean hasShield() {
 			return this == SHIELD || this == SHIELDED_FLIGHT;
+		}
+
+		public SWRGMode toggleFlight() {
+			return switch (this) {
+				case OFF -> FLIGHT;
+				case SHIELD -> SHIELDED_FLIGHT;
+				case FLIGHT -> OFF;
+				case SHIELDED_FLIGHT -> SHIELD;
+			};
 		}
 
 		public SWRGMode next() {

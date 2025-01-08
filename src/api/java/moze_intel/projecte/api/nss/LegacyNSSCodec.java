@@ -39,7 +39,7 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 		if (!registry.containsKey(id)) {
 			return DataResult.error(() -> "Registry " + registry.key().location() + " does not contain element " + id);
 		} else if (!allowDefault && registry instanceof DefaultedRegistry<?> defaultedRegistry && id.equals(defaultedRegistry.getDefaultKey())) {
-			return DataResult.error(() -> "NormalizedSimpleStack cannot be created for registry " + registry.key().location() + " with the default element " + id);
+			return DataResult.error(() -> "Default element " + id + " in registry " + registry.key().location() + " is not valid");
 		}
 		return DataResult.success(id);
 	}
@@ -174,6 +174,8 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 				DataComponentType<?> componentType = BuiltInRegistries.DATA_COMPONENT_TYPE.get(componentName);
 				if (componentType == null || componentType.isTransient()) {
 					return DataResult.error(() -> "Unknown data component '" + componentName + "'");
+				} else if (componentType.isTransient()) {
+					return DataResult.error(() -> componentType + " is not a persistent component");
 				} else if (!knownTypes.add(componentType)) {
 					return DataResult.error(() -> "Data component '" + componentType + "' was repeated, but only one value can be specified");
 				}
@@ -224,13 +226,10 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 			} catch (CommandSyntaxException e) {
 				return DataResult.error(e::getMessage);
 			}
-			Codec<COMPONENT> componentCodec = componentType.codec();
-			if (componentCodec == null) {
-				return DataResult.error(() -> componentType + " is not a persistent component");
-			}
 			//DataResult<Pair<COMPONENT, T>> dataResult = componentCodec.decode(ItemParser.this.registryOps, tag);
 			//TODO - 1.21: Re-evaluate if this is even correct for how do decode it
-			DataResult<Pair<COMPONENT, T>> dataResult = componentCodec.decode(ops, NbtOps.INSTANCE.convertTo(ops, tag));
+			//Note: We use codecOrThrow as we validate that there is a codec before calling this method
+			DataResult<Pair<COMPONENT, T>> dataResult = componentType.codecOrThrow().decode(ops, NbtOps.INSTANCE.convertTo(ops, tag));
 
 			/*dataResult.error().ifPresent(error -> {
 				failed.add(value);

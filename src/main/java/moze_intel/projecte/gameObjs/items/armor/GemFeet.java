@@ -4,8 +4,7 @@ import com.google.common.base.Suppliers;
 import java.util.List;
 import java.util.function.Supplier;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.gameObjs.items.IFlightProvider;
-import moze_intel.projecte.gameObjs.items.IStepAssister;
+import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
@@ -14,7 +13,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
@@ -28,10 +26,12 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssister {
+public class GemFeet extends GemArmorBase implements IHasConditionalAttributes {
 
+	private static final AttributeModifier STEP_ASSIST = new AttributeModifier(PECore.rl("gem_step_assist"), 0.4, Operation.ADD_VALUE);
 	private static final Vec3 VERTICAL_MOVEMENT = new Vec3(0, 0.1, 0);
 	private static final boolean STEP_ASSIST_DEFAULT = false;
 
@@ -53,9 +53,8 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 	}
 
 	public void toggleStepAssist(ItemStack boots, Player player) {
-		//TODO - 1.21: Re-evaluate this, it seems wrong
 		boolean oldValue = boots.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT);
-		boots.set(PEDataComponentTypes.STEP_ASSIST, oldValue);
+		boots.set(PEDataComponentTypes.STEP_ASSIST, !oldValue);
 		if (oldValue) {
 			player.sendSystemMessage(PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
 		} else {
@@ -75,7 +74,7 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 		super.inventoryTick(stack, level, entity, slot, isHeld);
 		if (isArmorSlot(slot) && entity instanceof Player player) {
 			if (!level.isClientSide) {
-				player.fallDistance = 0;
+				player.resetFallDistance();
 			} else {
 				boolean flying = player.getAbilities().flying;
 				if (!flying && isJumpPressed()) {
@@ -110,12 +109,9 @@ public class GemFeet extends GemArmorBase implements IFlightProvider, IStepAssis
 	}
 
 	@Override
-	public boolean canProvideFlight(ItemStack stack, Player player) {
-		return player.getItemBySlot(EquipmentSlot.FEET) == stack;
-	}
-
-	@Override
-	public boolean canAssistStep(ItemStack stack, Player player) {
-		return player.getItemBySlot(EquipmentSlot.FEET) == stack && stack.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT);
+	public void adjustAttributes(ItemAttributeModifierEvent event) {
+		if (event.getItemStack().getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT)) {
+			event.replaceModifier(Attributes.STEP_HEIGHT, STEP_ASSIST, EquipmentSlotGroup.FEET);
+		}
 	}
 }

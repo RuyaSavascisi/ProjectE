@@ -6,8 +6,6 @@ import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.armor.PEArmor;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
-import moze_intel.projecte.handlers.InternalAbilities;
 import moze_intel.projecte.impl.TransmutationOffline;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.text.PELang;
@@ -70,10 +68,6 @@ public class PlayerEvents {
 			if (bagProvider != null) {
 				bagProvider.sync(null, serverPlayer);
 			}
-		}
-		InternalAbilities internalAbilities = player.getData(PEAttachmentTypes.INTERNAL_ABILITIES);
-		if (internalAbilities != null) {
-			internalAbilities.onDimensionChange(player);
 		}
 	}
 

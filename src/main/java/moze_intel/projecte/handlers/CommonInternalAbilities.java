@@ -34,7 +34,7 @@ public class CommonInternalAbilities {
 			if ((water || lava) && player.getInBlockState().isAir()) {
 				if (!player.isShiftKeyDown()) {
 					player.setDeltaMovement(player.getDeltaMovement().multiply(1, 0, 1));
-					player.fallDistance = 0.0F;
+					player.resetFallDistance();
 					player.setOnGround(true);
 				}
 				applyWaterSpeed = waterWalkOnType.applySpeed(water);
