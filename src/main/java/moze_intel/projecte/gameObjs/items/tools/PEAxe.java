@@ -2,7 +2,7 @@ package moze_intel.projecte.gameObjs.items.tools;
 
 import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ToolHelper;
@@ -22,10 +22,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class PEAxe extends AxeItem implements IItemCharge, IBarHelper {
 
-	private final EnumMatterType matterType;
+	private final IMatterType matterType;
 	private final int numCharges;
 
-	public PEAxe(EnumMatterType matterType, int numCharges, Properties props) {
+	public PEAxe(IMatterType matterType, int numCharges, Properties props) {
 		super(matterType, props.attributes(createAttributes(matterType, 5, -3))
 				.component(PEDataComponentTypes.CHARGE, 0)
 				.component(PEDataComponentTypes.STORED_EMC, 0L)

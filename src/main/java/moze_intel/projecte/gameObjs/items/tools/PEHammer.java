@@ -1,6 +1,6 @@
 package moze_intel.projecte.gameObjs.items.tools;
 
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.utils.ToolHelper;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class PEHammer extends PETool implements IHasConditionalAttributes {
 
-	public PEHammer(EnumMatterType matterType, int numCharges, Properties props) {
+	public PEHammer(IMatterType matterType, int numCharges, Properties props) {
 		super(matterType, PETags.Blocks.MINEABLE_WITH_PE_HAMMER, numCharges, props.attributes(createAttributes(matterType, 10, -3)));
 	}
 

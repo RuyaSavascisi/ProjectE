@@ -3,7 +3,7 @@ package moze_intel.projecte.gameObjs.items.tools;
 import java.util.List;
 import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
@@ -31,10 +31,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class PEShears extends ShearsItem implements IItemCharge, IBarHelper {
 
-	private final EnumMatterType matterType;
+	private final IMatterType matterType;
 	private final int numCharges;
 
-	public PEShears(EnumMatterType matterType, int numCharges, Properties props) {
+	public PEShears(IMatterType matterType, int numCharges, Properties props) {
 		super(props.component(PEDataComponentTypes.CHARGE, 0)
 						.component(PEDataComponentTypes.STORED_EMC, 0L)
 						.component(DataComponents.TOOL, new Tool(List.of(

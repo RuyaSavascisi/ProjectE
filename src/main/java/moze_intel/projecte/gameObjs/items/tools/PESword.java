@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
@@ -30,10 +30,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class PESword extends SwordItem implements IExtraFunction, IItemCharge, IBarHelper, IHasConditionalAttributes {
 
-	private final EnumMatterType matterType;
+	private final IMatterType matterType;
 	private final int numCharges;
 
-	public PESword(EnumMatterType matterType, int numCharges, int damage, Properties props) {
+	public PESword(IMatterType matterType, int numCharges, int damage, Properties props) {
 		super(matterType, props.attributes(createAttributes(matterType, damage, -2.4F))
 				.component(PEDataComponentTypes.CHARGE, 0)
 				.component(PEDataComponentTypes.STORED_EMC, 0L),

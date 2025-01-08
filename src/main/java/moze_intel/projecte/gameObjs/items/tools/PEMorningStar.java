@@ -2,7 +2,7 @@ package moze_intel.projecte.gameObjs.items.tools;
 
 import java.util.List;
 import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.IItemMode;
@@ -36,7 +36,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class PEMorningStar extends PETool implements IItemMode<PickaxeMode>, IHasConditionalAttributes {
 
-	public PEMorningStar(EnumMatterType matterType, int numCharges, Properties props) {
+	public PEMorningStar(IMatterType matterType, int numCharges, Properties props) {
 		super(matterType, PETags.Blocks.MINEABLE_WITH_PE_MORNING_STAR, numCharges, props.attributes(createAttributes(matterType, 16, -3))
 				.component(PEDataComponentTypes.PICKAXE_MODE, PickaxeMode.STANDARD)
 		);

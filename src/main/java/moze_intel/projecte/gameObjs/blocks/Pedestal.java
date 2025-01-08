@@ -4,6 +4,7 @@ import java.util.List;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.block_entities.DMPedestalBlockEntity;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
@@ -229,7 +230,7 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 	}
 
 	@Override
-	public EnumMatterType getMatterType() {
+	public IMatterType getMatterType() {
 		return EnumMatterType.DARK_MATTER;
 	}
 }

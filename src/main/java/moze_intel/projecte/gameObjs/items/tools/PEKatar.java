@@ -7,7 +7,7 @@ import java.util.Locale;
 import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.IItemMode;
@@ -50,7 +50,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunction, IHasConditionalAttributes {
 
-	public PEKatar(EnumMatterType matterType, int numCharges, Properties props) {
+	public PEKatar(IMatterType matterType, int numCharges, Properties props) {
 		super(matterType, PETags.Blocks.MINEABLE_WITH_PE_KATAR, numCharges, props.attributes(createAttributes(matterType, 19, -2.4F))
 				.component(PEDataComponentTypes.KATAR_MODE, KatarMode.SLAY_HOSTILE)
 		);

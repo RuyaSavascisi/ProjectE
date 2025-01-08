@@ -3,13 +3,12 @@ package moze_intel.projecte.gameObjs;
 import com.mojang.serialization.Codec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.item.Tier;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.NotNull;
 
-public enum EnumMatterType implements StringRepresentable, Tier {
+public enum EnumMatterType implements StringRepresentable, IMatterType {
 	DARK_MATTER("dark_matter", 3, 14, 12, PETags.Blocks.INCORRECT_FOR_DARK_MATTER_TOOL, MapColor.COLOR_BLACK),
 	RED_MATTER("red_matter", 4, 16, 14, PETags.Blocks.INCORRECT_FOR_RED_MATTER_TOOL, MapColor.COLOR_RED);
 
@@ -47,6 +46,7 @@ public enum EnumMatterType implements StringRepresentable, Tier {
 		return 0;
 	}
 
+	@Override
 	public float getChargeModifier() {
 		return chargeModifier;
 	}
@@ -82,6 +82,7 @@ public enum EnumMatterType implements StringRepresentable, Tier {
 		return mapColor;
 	}
 
+	@Override
 	public int getMatterTier() {
 		return ordinal();
 	}

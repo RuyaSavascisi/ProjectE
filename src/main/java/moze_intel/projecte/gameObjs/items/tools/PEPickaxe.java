@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.items.IItemMode;
 import moze_intel.projecte.gameObjs.items.IModeEnum;
@@ -43,10 +43,10 @@ import org.jetbrains.annotations.NotNull;
 
 public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<PickaxeMode>, IBarHelper {
 
-	private final EnumMatterType matterType;
+	private final IMatterType matterType;
 	private final int numCharges;
 
-	public PEPickaxe(EnumMatterType matterType, int numCharges, Properties props) {
+	public PEPickaxe(IMatterType matterType, int numCharges, Properties props) {
 		super(matterType, props.attributes(createAttributes(matterType, 4, -2.8F))
 				.component(PEDataComponentTypes.PICKAXE_MODE, PickaxeMode.STANDARD)
 				.component(PEDataComponentTypes.CHARGE, 0)

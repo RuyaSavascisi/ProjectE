@@ -14,7 +14,7 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.blocks.IMatterBlock;
 import moze_intel.projecte.gameObjs.items.ItemPE;
@@ -553,7 +553,7 @@ public class ToolHelper {
 		return InteractionResult.PASS;
 	}
 
-	public static float getDestroySpeed(float parentDestroySpeed, EnumMatterType matterType, int charge) {
+	public static float getDestroySpeed(float parentDestroySpeed, IMatterType matterType, int charge) {
 		if (parentDestroySpeed == 1) {
 			//If we cannot harvest the block leave the value be
 			return parentDestroySpeed;
@@ -561,7 +561,7 @@ public class ToolHelper {
 		return parentDestroySpeed + matterType.getChargeModifier() * charge;
 	}
 
-	public static boolean canMatterMine(EnumMatterType matterType, Block block) {
+	public static boolean canMatterMine(IMatterType matterType, Block block) {
 		return block instanceof IMatterBlock matterBlock && matterBlock.getMatterType().getMatterTier() <= matterType.getMatterTier();
 	}
 

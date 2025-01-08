@@ -2,7 +2,7 @@ package moze_intel.projecte.gameObjs.items.tools;
 
 import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
-import moze_intel.projecte.gameObjs.EnumMatterType;
+import moze_intel.projecte.gameObjs.IMatterType;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ToolHelper;
@@ -19,10 +19,10 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class PETool extends DiggerItem implements IItemCharge, IBarHelper {
 
-	protected final EnumMatterType matterType;
+	protected final IMatterType matterType;
 	private final int numCharges;
 
-	public PETool(EnumMatterType matterType, TagKey<Block> blocks, int numCharges, Properties props) {
+	public PETool(IMatterType matterType, TagKey<Block> blocks, int numCharges, Properties props) {
 		super(matterType, blocks, props.component(PEDataComponentTypes.CHARGE, 0)
 				.component(PEDataComponentTypes.STORED_EMC, 0L)
 		);
