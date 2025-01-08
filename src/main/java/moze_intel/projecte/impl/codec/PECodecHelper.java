@@ -190,8 +190,7 @@ public class PECodecHelper implements IPECodecHelper {
 
 			@Override
 			public String toString() {
-				//TODO: Once junit is supported by Neo we should make this also include the fallback in the toString similar to the base MapCodec#orElse
-				return "projecte:OrElseWithLog[" + onError + "]";
+				return "projecte:OrElseWithLog[" + onError + " " + fallback + "]";
 			}
 		});
 	}

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.imc.IMCMethods;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.neoforged.fml.InterModComms;
 import org.jetbrains.annotations.Nullable;
 
@@ -143,8 +141,8 @@ public final class WorldTransmutations {
 		ImmutableList<BlockState> validStates = stateContainer.getPossibleStates();
 		for (BlockState validState : validStates) {
 			try {
-				BlockState resultState = copyProperties(validState, result.defaultBlockState());
-				BlockState altResultState = altResult == null ? null : copyProperties(validState, altResult.defaultBlockState());
+				BlockState resultState = result.withPropertiesOf(validState);
+				BlockState altResultState = altResult == null ? null : altResult.withPropertiesOf(validState);
 				registerIMC(validState, resultState, altResultState);
 			} catch (IllegalArgumentException e) {
 				//Something went wrong skip adding a conversion for this but log that we failed
@@ -157,18 +155,6 @@ public final class WorldTransmutations {
 				PECore.LOGGER.error("Something went wrong registering conversions for {}", BuiltInRegistries.BLOCK.getKey(from), e);
 			}
 		}
-	}
-
-	private static BlockState copyProperties(BlockState source, BlockState target) {
-		for (Map.Entry<Property<?>, Comparable<?>> entry : source.getValues().entrySet()) {
-			target = applyProperty(target, entry.getKey(), entry.getValue());
-		}
-		return target;
-	}
-
-	private static <T extends Comparable<T>, V extends T> BlockState applyProperty(BlockState target, Property<T> property, Comparable<?> value) {
-		//TODO - 1.21: Evaluate callers to setValue and see if we should instead use about trySetValue
-		return target.setValue(property, (V) value);
 	}
 
 	private static void registerBackAndForth(Block first, Block second) {
