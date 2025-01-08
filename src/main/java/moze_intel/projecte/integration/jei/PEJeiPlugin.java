@@ -124,7 +124,7 @@ public class PEJeiPlugin implements IModPlugin {
 	@Override
 	public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime) {
 		List<FuelUpgradeRecipe> recipes = new ArrayList<>();
-		for (Item i : FuelMapper.getFuelMap()) {
+		for (Holder<Item> i : FuelMapper.getFuelMap()) {
 			ItemStack stack = new ItemStack(i);
 			ItemStack fuelUpgrade = FuelMapper.getFuelUpgrade(stack);
 			if (EMCHelper.getEmcValue(stack) <= EMCHelper.getEmcValue(fuelUpgrade)) {

@@ -89,7 +89,6 @@ import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -155,7 +154,6 @@ public class PECore {
 		PERecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
 		PESoundEvents.SOUND_EVENTS.register(modEventBus);
 		NeoForge.EVENT_BUS.addListener(this::addReloadListeners);
-		NeoForge.EVENT_BUS.addListener(this::tagsUpdated);
 		NeoForge.EVENT_BUS.addListener(this::dataPackSync);
 		NeoForge.EVENT_BUS.addListener(this::registerCommands);
 		NeoForge.EVENT_BUS.addListener(this::serverStarting);
@@ -260,26 +258,6 @@ public class PECore {
 		IntegrationHelper.sendIMCMessages(event);
 	}
 
-	@Deprecated(forRemoval = true)
-	private void tagsUpdated(TagsUpdatedEvent event) {
-		/*if (emcUpdateResourceManager != null) {
-			long start = System.currentTimeMillis();
-			//Clear the cached created tags
-			AbstractNSSTag.clearCreatedTags();
-			CustomEMCParser.init();
-			try {
-				EMCMappingHandler.map(emcUpdateResourceManager.serverResources(), emcUpdateResourceManager.registryAccess(), emcUpdateResourceManager.resourceManager());
-				PECore.LOGGER.info("Registered {} EMC values. (took {} ms)", EMCMappingHandler.getEmcMapSize(), System.currentTimeMillis() - start);
-				//TODO - 1.21: Re-evaluate if we should be doing this here, and also make sure that data pack sync properly has all this data
-				// Maybe we want to move all of this check into the initial onDatapackSyncEvent check?
-				//PacketUtils.sendFragmentedEmcPacketToAll();
-			} catch (Throwable t) {
-				PECore.LOGGER.error("Error calculating EMC values", t);
-			}
-			emcUpdateResourceManager = null;
-		}*/
-	}
-
 	private void dataPackSync(OnDatapackSyncEvent event) {
 		if (emcUpdateResourceManager != null) {
 			long start = System.currentTimeMillis();
@@ -289,9 +267,6 @@ public class PECore {
 			try {
 				EMCMappingHandler.map(emcUpdateResourceManager.serverResources(), emcUpdateResourceManager.registryAccess(), emcUpdateResourceManager.resourceManager());
 				PECore.LOGGER.info("Registered {} EMC values. (took {} ms)", EMCMappingHandler.getEmcMapSize(), System.currentTimeMillis() - start);
-				//TODO - 1.21: Re-evaluate if we should be doing this here, and also make sure that data pack sync properly has all this data
-				// Maybe we want to move all of this check into the initial onDatapackSyncEvent check?
-				//PacketUtils.sendFragmentedEmcPacketToAll();
 			} catch (Throwable t) {
 				PECore.LOGGER.error("Error calculating EMC values", t);
 			}
