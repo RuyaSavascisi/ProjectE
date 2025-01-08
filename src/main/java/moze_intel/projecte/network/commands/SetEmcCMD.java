@@ -25,16 +25,13 @@ import net.minecraft.world.item.Item;
 public class SetEmcCMD {
 
 	static final DynamicCommandExceptionType ERROR_INVALID_ITEM = new DynamicCommandExceptionType(
-			//TODO - 1.21: Fix error message
-			p_304258_ -> Component.translatableEscape("commands.locate.structure.invalid", p_304258_)
+			item -> Component.translatableEscape("argument.item.id.invalid", item)
 	);
 
 	public static LiteralArgumentBuilder<CommandSourceStack> register(CommandBuildContext context) {
 		return Commands.literal("setemc")
 				.requires(PEPermissions.COMMAND_SET_EMC)
 				.then(Commands.argument("emc", LongArgumentType.longArg(0, Long.MAX_VALUE))
-						/*.then(Commands.argument("item", NSSItemArgument.nss(context))
-								.executes(ctx -> setEmc(ctx, NSSItemArgument.getNSS(ctx, "item"), LongArgumentType.getLong(ctx, "emc"))))*/
 						.then(Commands.argument("item", ItemArgument.item(context))
 								.executes(ctx -> {
 									ItemInput itemInput = ItemArgument.getItem(ctx, "item");

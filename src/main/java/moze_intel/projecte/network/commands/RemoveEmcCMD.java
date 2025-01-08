@@ -30,8 +30,6 @@ public class RemoveEmcCMD {
 	public static LiteralArgumentBuilder<CommandSourceStack> register(CommandBuildContext context) {
 		return Commands.literal("removeemc")
 				.requires(PEPermissions.COMMAND_REMOVE_EMC)
-				/*.then(Commands.argument("item", NSSItemArgument.nss(context))
-						.executes(ctx -> removeEmc(ctx, NSSItemArgument.getNSS(ctx, "item"))))*/
 				.then(Commands.argument("item", ItemArgument.item(context))
 						.executes(ctx -> {
 							ItemInput itemInput = ItemArgument.getItem(ctx, "item");

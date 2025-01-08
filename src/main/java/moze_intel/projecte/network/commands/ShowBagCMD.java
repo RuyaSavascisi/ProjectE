@@ -20,7 +20,6 @@ import moze_intel.projecte.gameObjs.container.AlchBagContainer;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.impl.capability.AlchBagImpl.AlchemicalBagAttachment;
-import moze_intel.projecte.network.commands.argument.ColorArgument;
 import moze_intel.projecte.utils.text.PELang;
 import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.commands.CommandBuildContext;
@@ -45,6 +44,7 @@ import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.server.command.EnumArgument;
 import org.jetbrains.annotations.NotNull;
 
 public class ShowBagCMD {
@@ -54,12 +54,11 @@ public class ShowBagCMD {
 	public static LiteralArgumentBuilder<CommandSourceStack> register(CommandBuildContext context) {
 		return Commands.literal("showbag")
 				.requires(PEPermissions.COMMAND_SHOW_BAG)
-				//TODO - 1.21: Evaluate replacing this with EnumArgument.enumArgument(DyeColor.class)
-				.then(Commands.argument("color", ColorArgument.color())
+				.then(Commands.argument("color", EnumArgument.enumArgument(DyeColor.class))
 						.then(Commands.argument("target", EntityArgument.player())
-								.executes(ctx -> showBag(ctx, ColorArgument.getColor(ctx, "color"), EntityArgument.getPlayer(ctx, "target"))))
+								.executes(ctx -> showBag(ctx, ctx.getArgument("color", DyeColor.class), EntityArgument.getPlayer(ctx, "target"))))
 						.then(Commands.argument("uuid", UuidArgument.uuid())
-								.executes(ctx -> showBag(ctx, ColorArgument.getColor(ctx, "color"), UuidArgument.getUuid(ctx, "uuid")))));
+								.executes(ctx -> showBag(ctx, ctx.getArgument("color", DyeColor.class), UuidArgument.getUuid(ctx, "uuid")))));
 	}
 
 	private static int showBag(CommandContext<CommandSourceStack> ctx, DyeColor color, ServerPlayer player) throws CommandSyntaxException {

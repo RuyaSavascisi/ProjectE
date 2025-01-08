@@ -18,7 +18,6 @@ import moze_intel.projecte.emc.mappers.recipe.CraftingMapper;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.rings.Arcana;
 import moze_intel.projecte.gameObjs.items.rings.Arcana.ArcanaMode;
-import moze_intel.projecte.gameObjs.registries.PEArgumentTypes;
 import moze_intel.projecte.gameObjs.registries.PEArmorMaterials;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
@@ -142,7 +141,6 @@ public class PECore {
 		modEventBus.addListener(this::registerCapabilities);
 		modEventBus.addListener(this::registerRegistries);
 		PEAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
-		PEArgumentTypes.ARGUMENT_TYPES.register(modEventBus);
 		PEArmorMaterials.ARMOR_MATERIALS.register(modEventBus);
 		PEBlockEntityTypes.BLOCK_ENTITY_TYPES.register(modEventBus);
 		PEBlocks.BLOCKS.register(modEventBus);

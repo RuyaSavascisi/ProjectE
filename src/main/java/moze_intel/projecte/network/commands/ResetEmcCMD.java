@@ -28,8 +28,6 @@ public class ResetEmcCMD {
 	public static LiteralArgumentBuilder<CommandSourceStack> register(CommandBuildContext context) {
 		return Commands.literal("resetemc")
 				.requires(PEPermissions.COMMAND_RESET_EMC)
-				/*.then(Commands.argument("item", NSSItemArgument.nss(context))
-						.executes(ctx -> resetEmc(ctx, NSSItemArgument.getNSS(ctx, "item"))))*/
 				.then(Commands.argument("item", ItemArgument.item(context))
 						.executes(ctx -> {
 							ItemInput itemInput = ItemArgument.getItem(ctx, "item");
