@@ -1,7 +1,6 @@
 package moze_intel.projecte.emc.components.processor;
 
 import java.util.Map;
-import java.util.Optional;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
 import net.minecraft.core.Holder;
@@ -18,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 @DataComponentProcessor
 public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEnchantments> {
 
-	//TODO - 1.21: Test this behaves properly
 	private static final ResourceKey<Item> ENCHANTED_BOOK = BuiltInRegistries.ITEM.getResourceKey(Items.ENCHANTED_BOOK).orElseThrow();
 	private static final long ENCH_EMC_BONUS = 5_000;
 
@@ -45,13 +43,8 @@ public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEncha
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
-		Optional<? extends ItemEnchantments> itemEnchantments = info.getComponentsPatch().get(getComponentType(info));
-		if (itemEnchantments == null || itemEnchantments.isEmpty()) {
-			return currentEMC;
-		}
-		for (Map.Entry<Holder<Enchantment>, Integer> entry : itemEnchantments.get().entrySet()) {
-			//TODO - 1.21: Validate this is the correct way to get the rarity weight
+	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull ItemEnchantments enchantments) throws ArithmeticException {
+		for (Map.Entry<Holder<Enchantment>, Integer> entry : enchantments.entrySet()) {
 			int rarityWeight = entry.getKey().value().definition().weight();
 			if (rarityWeight > 0) {
 				currentEMC = Math.addExact(currentEMC, Math.multiplyExact(ENCH_EMC_BONUS / rarityWeight, entry.getValue()));
@@ -66,7 +59,7 @@ public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEncha
 	}
 
 	@Override
-	protected boolean shouldPersist(@NotNull ItemInfo info, @NotNull ItemEnchantments data) {
-		return !data.isEmpty();
+	protected boolean shouldPersist(@NotNull ItemInfo info, @NotNull ItemEnchantments component) {
+		return !component.isEmpty();
 	}
 }

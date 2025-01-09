@@ -40,13 +40,13 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		Map<ResourceLocation, CustomConversionFile> files = load(resourceManager);
+		Map<ResourceLocation, CustomConversionFile> files = load(registryAccess, resourceManager);
 		for (CustomConversionFile file : files.values()) {
 			addMappingsFromFile(file, mapper);
 		}
 	}
 
-	private static Map<ResourceLocation, CustomConversionFile> load(ResourceManager resourceManager) {
+	private static Map<ResourceLocation, CustomConversionFile> load(RegistryAccess registryAccess, ResourceManager resourceManager) {
 		Map<ResourceLocation, CustomConversionFile> loading = new HashMap<>();
 
 		// Find all data/<domain>/pe_custom_conversions/foo/bar.json
@@ -59,7 +59,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			// Iterate through all copies of this conversion, from lowest to highest priority datapack, merging the results together
 			for (Resource resource : resources) {
 				try (Reader reader = resource.openAsReader()) {
-					PECodecHelper.read(reader, CustomConversionFile.CODEC, "custom conversion file")
+					PECodecHelper.read(registryAccess, reader, CustomConversionFile.CODEC, "custom conversion file")
 							.ifPresent(result -> loading.merge(conversionId, result, CustomConversionFile::merge));
 				} catch (IOException e) {
 					PECore.LOGGER.error("Could not load resource {}", file, e);

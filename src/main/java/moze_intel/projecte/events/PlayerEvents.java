@@ -12,6 +12,7 @@ import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -35,7 +36,6 @@ import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 @EventBusSubscriber(modid = PECore.MODID)
 public class PlayerEvents {
@@ -100,8 +100,11 @@ public class PlayerEvents {
 	@SubscribeEvent
 	public static void onHighAlchemistJoin(PlayerEvent.PlayerLoggedInEvent evt) {
 		if (PECore.uuids.contains(evt.getEntity().getUUID().toString())) {
-			Component joinMessage = PELang.HIGH_ALCHEMIST.translateColored(ChatFormatting.BLUE, ChatFormatting.GOLD, evt.getEntity().getDisplayName());
-			ServerLifecycleHooks.getCurrentServer().getPlayerList().broadcastSystemMessage(joinMessage, false);
+			MinecraftServer server = evt.getEntity().getServer();
+			if (server != null) {
+				Component joinMessage = PELang.HIGH_ALCHEMIST.translateColored(ChatFormatting.BLUE, ChatFormatting.GOLD, evt.getEntity().getDisplayName());
+				server.getPlayerList().broadcastSystemMessage(joinMessage, false);
+			}
 		}
 	}
 

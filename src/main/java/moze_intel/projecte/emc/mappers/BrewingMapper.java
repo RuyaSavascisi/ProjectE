@@ -42,11 +42,8 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-		if (server == null) {
-			//TODO - 1.21: Figure this out? At the very least add a warning that gets logged
-			return;
-		}
-		PotionBrewing potionBrewing = server.potionBrewing();
+		//TODO - 1.21: Figure this out? At the very least add a warning that gets logged
+		PotionBrewing potionBrewing = server == null ? PotionBrewing.EMPTY : server.potionBrewing();
 		Set<ItemInfo> allReagents = mapAllReagents(potionBrewing);
 		Set<ItemInfo> allInputs = mapAllInputs(potionBrewing);
 

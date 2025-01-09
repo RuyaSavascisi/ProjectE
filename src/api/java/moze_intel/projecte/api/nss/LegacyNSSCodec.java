@@ -227,7 +227,8 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 				return DataResult.error(e::getMessage);
 			}
 			//DataResult<Pair<COMPONENT, T>> dataResult = componentCodec.decode(ItemParser.this.registryOps, tag);
-			//TODO - 1.21: Re-evaluate if this is even correct for how do decode it
+			//TODO - 1.21: Re-evaluate if this is even correct for how do decode it and if we need to somehow apply the registry ops.
+			// I believe ops may already have registry access
 			//Note: We use codecOrThrow as we validate that there is a codec before calling this method
 			DataResult<Pair<COMPONENT, T>> dataResult = componentType.codecOrThrow().decode(ops, NbtOps.INSTANCE.convertTo(ops, tag));
 

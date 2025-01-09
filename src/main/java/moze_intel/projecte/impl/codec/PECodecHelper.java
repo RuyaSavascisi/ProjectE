@@ -33,6 +33,7 @@ import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
@@ -195,9 +196,8 @@ public class PECodecHelper implements IPECodecHelper {
 		});
 	}
 
-	public static <TYPE> void writeToFile(Path path, Codec<TYPE> codec, TYPE value, String fileDescription) {
-		//TODO - 1.21: Do we need to create a serialization context?
-		DataResult<JsonElement> result = codec.encodeStart(JsonOps.INSTANCE, value);
+	public static <TYPE> void writeToFile(HolderLookup.Provider registries, Path path, Codec<TYPE> codec, TYPE value, String fileDescription) {
+		DataResult<JsonElement> result = codec.encodeStart(registries.createSerializationContext(JsonOps.INSTANCE), value);
 		Optional<DataResult.Error<JsonElement>> error = result.error();
 		if (error.isPresent()) {
 			PECore.LOGGER.error("Failed to convert {} to json: {}", fileDescription, error.get().message());
@@ -211,10 +211,10 @@ public class PECodecHelper implements IPECodecHelper {
 		}
 	}
 
-	public static <TYPE> Optional<TYPE> readFromFile(Path path, Codec<TYPE> codec, String fileDescription) {
+	public static <TYPE> Optional<TYPE> readFromFile(HolderLookup.Provider registries, Path path, Codec<TYPE> codec, String fileDescription) {
 		if (Files.exists(path)) {
 			try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-				return read(reader, codec, fileDescription);
+				return read(registries, reader, codec, fileDescription);
 			} catch (IOException e) {
 				PECore.LOGGER.error("Couldn't access {} file: {}", fileDescription, path, e);
 			}
@@ -222,7 +222,7 @@ public class PECodecHelper implements IPECodecHelper {
 		return Optional.empty();
 	}
 
-	public static <TYPE> Optional<TYPE> read(Reader reader, Codec<TYPE> codec, String description) {
+	public static <TYPE> Optional<TYPE> read(HolderLookup.Provider registries, Reader reader, Codec<TYPE> codec, String description) {
 		JsonElement json;
 		try {
 			json = JsonParser.parseReader(reader);
@@ -230,8 +230,7 @@ public class PECodecHelper implements IPECodecHelper {
 			PECore.LOGGER.error("Couldn't parse {}", description, e);
 			return Optional.empty();
 		}
-		//TODO - 1.21: Do we need to create a serialization context?
-		DataResult<TYPE> result = codec.parse(JsonOps.INSTANCE, json);
+		DataResult<TYPE> result = codec.parse(registries.createSerializationContext(JsonOps.INSTANCE), json);
 		if (result.error().isPresent()) {
 			PECore.LOGGER.error("Couldn't parse {}: {}", description, result.error().get().message());
 			return Optional.empty();

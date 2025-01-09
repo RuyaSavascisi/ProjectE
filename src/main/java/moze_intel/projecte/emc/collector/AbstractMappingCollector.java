@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
 import moze_intel.projecte.api.mapper.collector.IExtendedMappingCollector;
+import net.minecraft.core.HolderLookup;
 
 public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A extends IValueArithmetic<?>> implements IExtendedMappingCollector<T, V, A> {
 
@@ -50,6 +51,6 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 	}
 
 	@Override
-	public void finishCollection() {
+	public void finishCollection(HolderLookup.Provider registries) {
 	}
 }

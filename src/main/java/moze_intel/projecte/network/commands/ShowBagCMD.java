@@ -43,7 +43,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import net.neoforged.neoforge.server.command.EnumArgument;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,7 +67,7 @@ public class ShowBagCMD {
 
 	private static int showBag(CommandContext<CommandSourceStack> ctx, DyeColor color, UUID uuid) throws CommandSyntaxException {
 		ServerPlayer senderPlayer = ctx.getSource().getPlayerOrException();
-		return showBag(senderPlayer, createContainer(senderPlayer, uuid, color));
+		return showBag(senderPlayer, createContainer(ctx.getSource().getServer(), senderPlayer, uuid, color));
 	}
 
 	private static int showBag(ServerPlayer senderPlayer, MenuProvider container) {
@@ -85,12 +84,11 @@ public class ShowBagCMD {
 		return getContainer(sender, name, inv, false, () -> target.isAlive() && !target.hasDisconnected());
 	}
 
-	private static MenuProvider createContainer(ServerPlayer sender, UUID target, DyeColor color) throws CommandSyntaxException {
-		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+	private static MenuProvider createContainer(MinecraftServer server, ServerPlayer sender, UUID target, DyeColor color) throws CommandSyntaxException {
 		//Try to get the bag
 		IItemHandlerModifiable inv = loadOfflineBag(server, target, color);
 		Component name;
-		Optional<GameProfile> profileByUUID = server.getProfileCache().get(target);
+		Optional<GameProfile> profileByUUID = server.getProfileCache() == null ? Optional.empty() : server.getProfileCache().get(target);
 		if (profileByUUID.isPresent()) {
 			//If we have a cache of the player, include their last known name in the name of the bag
 			name = PELang.SHOWBAG_NAMED.translate(PEItems.getBag(color), profileByUUID.get().getName());

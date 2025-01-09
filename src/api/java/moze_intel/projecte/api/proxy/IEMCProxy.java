@@ -35,10 +35,20 @@ public interface IEMCProxy {
 		return item != Items.AIR && hasValue(ItemInfo.fromItem(item));
 	}
 
-	//TODO - 1.21: Docs and re-evaluate ItemLike variant
-	default boolean hasValue(@NotNull Holder<Item> itemLike) {
-		//TODO - 1.21: Better check against air
-		return Objects.requireNonNull(itemLike).value() != Items.AIR && hasValue(ItemInfo.fromItem(itemLike));
+	/**
+	 * Queries the EMC value registry if the given item has an EMC value
+	 * <p>
+	 * Can be called at any time, but will only return valid results if a world is loaded
+	 * <p>
+	 * Can be called on both sides
+	 *
+	 * @param holder Represents the item we want to query
+	 *
+	 * @return Whether the item has an emc value
+	 */
+	default boolean hasValue(@NotNull Holder<Item> holder) {
+		Objects.requireNonNull(holder);
+		return !holder.isBound() || holder.value() == Items.AIR && hasValue(ItemInfo.fromItem(holder));
 	}
 
 	/**
@@ -90,11 +100,21 @@ public interface IEMCProxy {
 		return item == Items.AIR ? 0 : getValue(ItemInfo.fromItem(item));
 	}
 
-	//TODO - 1.21: Docs and re-evaluate ItemLike variant
+	/**
+	 * Queries the EMC value for the provided item
+	 * <p>
+	 * Can be called at any time, but will only return valid results if a world is loaded
+	 * <p>
+	 * Can be called on both sides
+	 *
+	 * @param holder Represents the item we want to query
+	 *
+	 * @return The item's EMC value, or 0 if there is none
+	 */
 	@Range(from = 0, to = Long.MAX_VALUE)
-	default long getValue(@NotNull Holder<Item> item) {
-		//TODO - 1.21: Better check against air
-		return Objects.requireNonNull(item).value() == Items.AIR ? 0 : getValue(ItemInfo.fromItem(item));
+	default long getValue(@NotNull Holder<Item> holder) {
+		Objects.requireNonNull(holder);
+		return !holder.isBound() || holder.value() == Items.AIR ? 0 : getValue(ItemInfo.fromItem(holder));
 	}
 
 	/**

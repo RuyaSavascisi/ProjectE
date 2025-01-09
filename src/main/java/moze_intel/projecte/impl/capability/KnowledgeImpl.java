@@ -96,14 +96,14 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 
 	@Nullable
 	private ItemInfo getIfPersistent(@NotNull ItemInfo info) {
-		if (!info.hasModifiedData() || EMCMappingHandler.hasEmcValue(info)) {
-			//If we have no NBT or the base mapping has an emc value for our item with the given NBT
+		if (info.getComponentsPatch().isEmpty() || EMCMappingHandler.hasEmcValue(info)) {
+			//If we have no components or the base mapping has an emc value for our item with the given components
 			// then we don't have an extended state
 			return null;
 		}
 		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
-		if (cleanedInfo.hasModifiedData() && !EMCMappingHandler.hasEmcValue(cleanedInfo)) {
-			//If we still have NBT after unimportant parts being stripped, and it doesn't
+		if (!cleanedInfo.getComponentsPatch().isEmpty() && !EMCMappingHandler.hasEmcValue(cleanedInfo)) {
+			//If we still have components after unimportant parts being stripped, and it doesn't
 			// directly have an EMC value, then we know it has some persistent information
 			return cleanedInfo;
 		}
@@ -136,10 +136,8 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			return tryAdd(attachment, persistentInfo);
 		}
 		if (info.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
-			if (info.hasModifiedData()) {
-				//Make sure we don't have any NBT as it doesn't have any effect for the tome
-				info = ItemInfo.fromItem(info.getItem());
-			}
+			//Make sure we don't have any NBT as it doesn't have any effect for the tome
+			info = info.itemOnly();
 			//Note: We don't bother checking if we already somehow know the tome without having full knowledge
 			// as we are learning it without any NBT which means that it doesn't have any extra persistent item
 			// so can just check if it is already in it by nature of it being a set
@@ -164,11 +162,9 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		KnowledgeAttachment attachment = attachment();
 		if (attachment.fullKnowledge) {
 			if (info.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
-				//If we have full knowledge and are trying to remove the tome allow it
-				if (info.hasModifiedData()) {
-					//Make sure we don't have any NBT as it doesn't have any effect for the tome
-					info = ItemInfo.fromItem(info.getItem());
-				}
+				//If we have full knowledge and are trying to remove the tome allow it.
+				//Make sure we don't have any NBT as it doesn't have any effect for the tome
+				info = info.itemOnly();
 				attachment.knowledge.remove(info);
 				attachment.fullKnowledge = false;
 				fireChangedEvent();

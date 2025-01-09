@@ -263,7 +263,7 @@ public class PECore {
 			long start = System.currentTimeMillis();
 			//Clear the cached created tags
 			AbstractNSSTag.clearCreatedTags();
-			CustomEMCParser.init();
+			CustomEMCParser.init(emcUpdateResourceManager.registryAccess());
 			try {
 				EMCMappingHandler.map(emcUpdateResourceManager.serverResources(), emcUpdateResourceManager.registryAccess(), emcUpdateResourceManager.resourceManager());
 				PECore.LOGGER.info("Registered {} EMC values. (took {} ms)", EMCMappingHandler.getEmcMapSize(), System.currentTimeMillis() - start);
@@ -319,7 +319,7 @@ public class PECore {
 
 	private void serverQuit(ServerStoppedEvent event) {
 		//Ensure we save any changes to the custom emc file
-		CustomEMCParser.flush();
+		CustomEMCParser.flush(event.getServer().registryAccess());
 		TransmutationOffline.cleanAll();
 		EMCMappingHandler.clearEmcMap();
 	}

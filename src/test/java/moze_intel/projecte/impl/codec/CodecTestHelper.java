@@ -5,8 +5,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import java.io.Reader;
-import java.io.StringReader;
 import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentPatch;
@@ -28,13 +26,10 @@ public class CodecTestHelper {
 		PECodecHelper.initBuiltinNSS();
 	}
 
-	public static <OBJ> OBJ parseJson(Codec<OBJ> codec, String description, String json) throws JsonParseException {
-		return readJson(new StringReader(json), codec, description);
-	}
-
-	public static <OBJ> OBJ readJson(Reader reader, Codec<OBJ> codec, String description) throws JsonParseException {
+	public static <OBJ> OBJ parseJson(Codec<OBJ> codec, String description, String rawJson) throws JsonParseException {
 		//Similar to PECodecHelper#read except without any extra logging
-		JsonElement json = JsonParser.parseReader(reader);
+		JsonElement json = JsonParser.parseString(rawJson);
+		//TODO - 1.21: Do we need to create a serialization context?
 		return codec.parse(JsonOps.INSTANCE, json)
 				.mapOrElse(Function.identity(), error -> {
 					throw new JsonParseException("Failed to deserialize json (" + description + "): " + error.message());

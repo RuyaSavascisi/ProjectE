@@ -25,7 +25,7 @@ public class TransmutationProxyImpl implements ITransmutationProxy {
 			if (player != null) {
 				return Objects.requireNonNull(player.getCapability(PECapabilities.KNOWLEDGE_CAPABILITY));
 			}
-			return TransmutationOffline.forPlayer(playerUUID);
+			return TransmutationOffline.forPlayer(server, playerUUID);
 		} else if (FMLEnvironment.dist.isClient()) {
 			Objects.requireNonNull(Minecraft.getInstance().player, "Client player doesn't exist!");
 			return Objects.requireNonNull(Minecraft.getInstance().player.getCapability(PECapabilities.KNOWLEDGE_CAPABILITY));

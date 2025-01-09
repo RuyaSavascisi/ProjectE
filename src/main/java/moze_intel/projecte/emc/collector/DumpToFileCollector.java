@@ -8,6 +8,7 @@ import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.api.conversion.CustomConversion;
 import moze_intel.projecte.api.conversion.CustomConversionFile;
 import moze_intel.projecte.impl.codec.PECodecHelper;
+import net.minecraft.core.HolderLookup;
 
 public class DumpToFileCollector<A extends IValueArithmetic<?>> extends AbstractMappingCollector<NormalizedSimpleStack, Long, A> {
 
@@ -55,8 +56,8 @@ public class DumpToFileCollector<A extends IValueArithmetic<?>> extends Abstract
 	}
 
 	@Override
-	public void finishCollection() {
-		PECodecHelper.writeToFile(path, CustomConversionFile.CODEC, out, "custom conversion");
-		inner.finishCollection();
+	public void finishCollection(HolderLookup.Provider registries) {
+		PECodecHelper.writeToFile(registries, path, CustomConversionFile.CODEC, out, "custom conversion");
+		inner.finishCollection(registries);
 	}
 }

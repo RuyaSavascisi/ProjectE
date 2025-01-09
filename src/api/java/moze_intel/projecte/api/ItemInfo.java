@@ -147,12 +147,10 @@ public final class ItemInfo {
 	}
 
 	/**
-	 * Checks if this {@link ItemInfo} has an associated {@link DataComponentPatch}.
-	 *
-	 * @return True if this {@link ItemInfo} has an associated {@link DataComponentPatch}, false otherwise.
+	 * Gets a version of this ItemInfo without any of the data component changes.
 	 */
-	public boolean hasModifiedData() {//TODO - 1.21: Re-evaluate if this method is useful
-		return !componentsPatch.isEmpty();
+	public ItemInfo itemOnly() {
+		return componentsPatch.isEmpty() ? this : fromItem(item);
 	}
 
 	/**
@@ -182,11 +180,8 @@ public final class ItemInfo {
 
 	@Override
 	public String toString() {
-		//TODO: If getRegisteredName ends up being a hotspot, replace it with a variant that acts upon Holder#getKey
-		if (componentsPatch.isEmpty()) {
-			return item.getRegisteredName();
-		}
-		//TODO - 1.21: Do we want to change this? It isn't in the same format as the command does it
+		//Note: We display the component patch using the more readable string representation rather than the command representation
+		// as this is mostly for debug purposes
 		return item.getRegisteredName() + " " + componentsPatch;
 	}
 }

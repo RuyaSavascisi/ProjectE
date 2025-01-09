@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 class SerializationTest {
 
 	private static NormalizedSimpleStack deserializeLegacyNSS(String jsonString) {
+		//TODO - 1.21: Do we need to create a serialization context?
 		return IPECodecHelper.INSTANCE.legacyNSSCodec().parse(JsonOps.INSTANCE, new JsonPrimitive(jsonString)).getOrThrow(JsonParseException::new);
 	}
 

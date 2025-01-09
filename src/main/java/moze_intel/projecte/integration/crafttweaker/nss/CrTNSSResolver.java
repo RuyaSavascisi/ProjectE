@@ -53,7 +53,7 @@ public class CrTNSSResolver {
 	 */
 	@ZenCodeType.Method
 	public static NormalizedSimpleStack deserialize(IData representation) {
-		return deserialize(IDataOps.INSTANCE, representation);
+		return deserialize(IDataOps.INSTANCE.withRegistryAccess(), representation);
 	}
 
 	private static <T> NormalizedSimpleStack deserialize(DynamicOps<T> ops, T input) {

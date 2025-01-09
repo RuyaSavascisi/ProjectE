@@ -30,7 +30,6 @@ import net.neoforged.fml.util.thread.EffectiveSide;
 import net.neoforged.neoforge.attachment.AttachmentHolder;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 
 public class TransmutationOffline {
@@ -47,9 +46,9 @@ public class TransmutationOffline {
 		cachedKnowledgeProviders.remove(playerUUID);
 	}
 
-	static IKnowledgeProvider forPlayer(UUID playerUUID) {
+	static IKnowledgeProvider forPlayer(MinecraftServer server, UUID playerUUID) {
 		if (!cachedKnowledgeProviders.containsKey(playerUUID)) {
-			if (!cacheOfflineData(playerUUID)) {
+			if (!cacheOfflineData(server, playerUUID)) {
 				cachedKnowledgeProviders.put(playerUUID, NOT_FOUND_PROVIDER);
 			}
 		}
@@ -57,11 +56,10 @@ public class TransmutationOffline {
 		return cachedKnowledgeProviders.get(playerUUID);
 	}
 
-	private static boolean cacheOfflineData(UUID playerUUID) {
+	private static boolean cacheOfflineData(MinecraftServer server, UUID playerUUID) {
 		if (EffectiveSide.get().isClient()) {
 			throw new IllegalStateException("CRITICAL: Trying to read filesystem on client!!");
 		}
-		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 		Path player = server.getWorldPath(LevelResource.PLAYER_DATA_DIR).resolve(playerUUID.toString() + ".dat");
 		if (Files.exists(player) && Files.isRegularFile(player)) {
 			try (InputStream in = Files.newInputStream(player)) {

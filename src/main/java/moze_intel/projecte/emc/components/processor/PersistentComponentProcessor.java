@@ -9,13 +9,15 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class PersistentComponentProcessor<TYPE> implements IDataComponentProcessor {
 
+	protected abstract long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull TYPE component) throws ArithmeticException;
+
 	protected abstract DataComponentType<TYPE> getComponentType(@NotNull ItemInfo info);
 
 	protected boolean validItem(@NotNull ItemInfo info) {
 		return true;
 	}
 
-	protected boolean shouldPersist(@NotNull ItemInfo info, @NotNull TYPE data) {
+	protected boolean shouldPersist(@NotNull ItemInfo info, @NotNull TYPE component) {
 		return true;
 	}
 
@@ -25,7 +27,22 @@ public abstract class PersistentComponentProcessor<TYPE> implements IDataCompone
 	}
 
 	@Override
-	public void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
+	public final long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
+		if (validItem(info)) {
+			DataComponentType<TYPE> componentType = getComponentType(info);
+			Optional<? extends TYPE> storedComponent = info.getComponentsPatch().get(componentType);
+			if (storedComponent != null && storedComponent.isPresent()) {
+				TYPE component = storedComponent.get();
+				if (shouldPersist(info, component)) {
+					return recalculateEMC(info, currentEMC, component);
+				}
+			}
+		}
+		return currentEMC;
+	}
+
+	@Override
+	public final void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
 		if (validItem(info)) {
 			DataComponentType<TYPE> componentType = getComponentType(info);
 			Optional<? extends TYPE> storedComponent = info.getComponentsPatch().get(componentType);

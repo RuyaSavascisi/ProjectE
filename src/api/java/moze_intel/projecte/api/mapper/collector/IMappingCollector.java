@@ -2,6 +2,7 @@ package moze_intel.projecte.api.mapper.collector;
 
 import java.util.Map;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
+import net.minecraft.core.HolderLookup;
 
 /**
  * A Class that is used to collect Contributions to the EMC Mapping.
@@ -94,5 +95,5 @@ public interface IMappingCollector<T, V extends Comparable<V>> {
 	/**
 	 * Called when this {@link IMappingCollector} is done collecting information.
 	 */
-	void finishCollection();
+	void finishCollection(HolderLookup.Provider registries);
 }

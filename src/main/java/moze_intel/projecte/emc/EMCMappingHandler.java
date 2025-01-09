@@ -103,7 +103,7 @@ public final class EMCMappingHandler {
 
 		Path pregeneratedEmcFile = ProjectEConfig.CONFIG_DIR.resolve("pregenerated_emc.json");
 		Map<ItemInfo, Long> graphMapperItemValues;
-		Optional<Map<ItemInfo, Long>> readPregeneratedValues = PregeneratedEMC.read(pregeneratedEmcFile, shouldUsePregenerated);
+		Optional<Map<ItemInfo, Long>> readPregeneratedValues = PregeneratedEMC.read(registryAccess, pregeneratedEmcFile, shouldUsePregenerated);
 		if (readPregeneratedValues.isPresent()) {
 			graphMapperItemValues = readPregeneratedValues.get();
 			PECore.LOGGER.info("Loaded {} values from pregenerated EMC File", graphMapperItemValues.size());
@@ -126,7 +126,7 @@ public final class EMCMappingHandler {
 			DumpToFileCollector.currentGroupName = "NSSHelper";
 
 			PECore.debugLog("Mapping Collection finished");
-			mappingCollector.finishCollection();
+			mappingCollector.finishCollection(registryAccess);
 
 			PECore.debugLog("Starting to generate Values:");
 
@@ -140,7 +140,7 @@ public final class EMCMappingHandler {
 
 			if (shouldUsePregenerated) {
 				//Should have used pregenerated, but the file was not read => regenerate.
-				PregeneratedEMC.write(pregeneratedEmcFile, graphMapperItemValues);
+				PregeneratedEMC.write(registryAccess, pregeneratedEmcFile, graphMapperItemValues);
 				PECore.debugLog("Wrote Pregen-file!");
 			}
 		}

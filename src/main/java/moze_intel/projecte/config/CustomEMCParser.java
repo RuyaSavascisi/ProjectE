@@ -14,6 +14,7 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.impl.codec.PECodecHelper;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.util.ExtraCodecs;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.Nullable;
@@ -68,15 +69,15 @@ public final class CustomEMCParser {
 		return new CustomEMCFile(new LinkedHashMap<>(), "Use the in-game commands to edit this file");
 	}
 
-	public static void init() {
-		flush();
+	public static void init(HolderLookup.Provider registries) {
+		flush(registries);
 
 		if (Files.exists(CONFIG)) {
-			currentEntries = PECodecHelper.readFromFile(CONFIG, CustomEMCFile.CODEC, "custom emc")
+			currentEntries = PECodecHelper.readFromFile(registries, CONFIG, CustomEMCFile.CODEC, "custom emc")
 					.orElseGet(CustomEMCParser::createDefault);
 		} else {
 			currentEntries = createDefault();
-			PECodecHelper.writeToFile(CONFIG, CustomEMCFile.CODEC, currentEntries, "default custom EMC");
+			PECodecHelper.writeToFile(registries, CONFIG, CustomEMCFile.CODEC, currentEntries, "default custom EMC");
 		}
 	}
 
@@ -98,9 +99,9 @@ public final class CustomEMCParser {
 		return removed;
 	}
 
-	public static void flush() {
+	public static void flush(HolderLookup.Provider registries) {
 		if (dirty) {
-			PECodecHelper.writeToFile(CONFIG, CustomEMCFile.CODEC, currentEntries, "custom EMC");
+			PECodecHelper.writeToFile(registries, CONFIG, CustomEMCFile.CODEC, currentEntries, "custom EMC");
 			dirty = false;
 		}
 	}
