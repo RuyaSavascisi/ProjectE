@@ -1,28 +1,30 @@
-package moze_intel.projecte.network.packets.to_client.knowledge;
+package moze_intel.projecte.network.packets.to_client.alch_bag;
 
+import java.util.Map;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
-import moze_intel.projecte.impl.capability.KnowledgeImpl.KnowledgeAttachment;
+import moze_intel.projecte.impl.capability.AlchBagImpl.AlchemicalBagAttachment;
 import moze_intel.projecte.network.packets.IPEPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.item.DyeColor;
+import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
-public record KnowledgeSyncPKT(KnowledgeAttachment data) implements IPEPacket {
+public record SyncBagsDataPKT(Map<DyeColor, ItemStackHandler> handlers) implements IPEPacket {
 
-	public static final CustomPacketPayload.Type<KnowledgeSyncPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("sync_knowledge"));
-	public static final StreamCodec<RegistryFriendlyByteBuf, KnowledgeSyncPKT> STREAM_CODEC = KnowledgeAttachment.STREAM_CODEC.map(
-			KnowledgeSyncPKT::new, KnowledgeSyncPKT::data
+	public static final CustomPacketPayload.Type<SyncBagsDataPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("sync_bag_data"));
+	public static final StreamCodec<RegistryFriendlyByteBuf, SyncBagsDataPKT> STREAM_CODEC = AlchemicalBagAttachment.MAP_STREAM_CODEC.map(
+			SyncBagsDataPKT::new, SyncBagsDataPKT::handlers
 	);
 
 	@NotNull
 	@Override
-	public CustomPacketPayload.Type<KnowledgeSyncPKT> type() {
+	public CustomPacketPayload.Type<SyncBagsDataPKT> type() {
 		return TYPE;
 	}
 
@@ -33,11 +35,8 @@ public record KnowledgeSyncPKT(KnowledgeAttachment data) implements IPEPacket {
 		//Note: This must stay LocalPlayer to not cause classloading issues
 		LocalPlayer player = Minecraft.getInstance().player;
 		if (player != null) {
-			player.setData(PEAttachmentTypes.KNOWLEDGE, data);
-			if (player.containerMenu instanceof TransmutationContainer container) {
-				container.transmutationInventory.updateClientTargets();
-			}
+			player.getData(PEAttachmentTypes.ALCHEMICAL_BAGS).updateBags(handlers);
 		}
-		PECore.debugLog("** RECEIVED TRANSMUTATION DATA CLIENTSIDE **");
+		PECore.debugLog("** RECEIVED BAGS CLIENTSIDE **");
 	}
 }

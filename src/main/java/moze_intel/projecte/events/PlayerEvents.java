@@ -50,7 +50,7 @@ public class PlayerEvents {
 			}
 			IAlchBagProvider bagProvider = player.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
 			if (bagProvider != null) {
-				bagProvider.sync(null, player);
+				bagProvider.syncAllBags(player);
 			}
 		}
 	}
@@ -66,7 +66,7 @@ public class PlayerEvents {
 			}
 			IAlchBagProvider bagProvider = serverPlayer.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
 			if (bagProvider != null) {
-				bagProvider.sync(null, serverPlayer);
+				bagProvider.syncAllBags(serverPlayer);
 			}
 		}
 	}
@@ -82,7 +82,7 @@ public class PlayerEvents {
 
 		IAlchBagProvider alchBagProvider = player.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
 		if (alchBagProvider != null) {
-			alchBagProvider.sync(null, player);
+			alchBagProvider.syncAllBags(player);
 		}
 
 		PECore.debugLog("Sent knowledge and bag data to {}", player.getName());

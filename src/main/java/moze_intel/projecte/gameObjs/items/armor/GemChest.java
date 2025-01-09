@@ -36,8 +36,8 @@ public class GemChest extends GemArmorBase implements IFireProtector {
 		super.inventoryTick(stack, level, entity, slot, isHeld);
 		if (isArmorSlot(slot) && !level.isClientSide && entity instanceof Player player) {
 			InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-			timers.activateFeed();
-			if (player.getFoodData().needsFood() && timers.canFeed()) {
+			timers.feed.activate();
+			if (player.getFoodData().needsFood() && timers.feed.canFunction()) {
 				player.getFoodData().eat(2, 10);
 				entity.gameEvent(GameEvent.EAT);
 			}

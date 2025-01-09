@@ -23,20 +23,23 @@ public class PEAttachmentTypes {
 	public static final PEDeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = new PEDeferredRegister<>(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, PECore.MODID);
 
 	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<AlchemicalBagAttachment>> ALCHEMICAL_BAGS = ATTACHMENT_TYPES.register("alchemical_bags",
-			() -> AttachmentType.serializable(AlchemicalBagAttachment::new)
+			() -> AttachmentType.builder(AlchemicalBagAttachment::new)
+					.serialize(AlchemicalBagAttachment.CODEC)
 					.copyHandler(AlchemicalBagAttachment::copy)
 					.copyOnDeath()
 					.build()
 	);
 
 	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<KnowledgeAttachment>> KNOWLEDGE = ATTACHMENT_TYPES.register("knowledge",
-			() -> AttachmentType.serializable(KnowledgeAttachment::new)
+			() -> AttachmentType.builder(KnowledgeAttachment::new)
+					.serialize(KnowledgeAttachment.CODEC)
 					.copyHandler(KnowledgeAttachment::copy)
 					.copyOnDeath()
 					.build()
 	);
 
-	//TODO - 1.21: Somehow mention not copied and also not serialized
+	//Note: For current abilities we don't bother serializing them or copying on death
+	//TODO: Eventually we may want to evaluate this as it technically allows people to bypass timers, but for now we don't really care
 	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<CommonInternalAbilities>> COMMON_INTERNAL_ABILITIES = ATTACHMENT_TYPES.register("common_internal_abilities",
 			() -> AttachmentType.builder(CommonInternalAbilities::new).build()
 	);

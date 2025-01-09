@@ -3,6 +3,7 @@ package moze_intel.projecte.api.codec;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.function.UnaryOperator;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.core.Registry;
 import org.jetbrains.annotations.ApiStatus.Internal;
+import org.jetbrains.annotations.Nullable;
 
 public interface IPECodecHelper {
 
@@ -50,6 +52,25 @@ public interface IPECodecHelper {
 	 * failed.
 	 */
 	Codec<NormalizedSimpleStack> nssCodec();
+
+	/**
+	 * {@return Big Integer Codec that validates the value is greater than or equal to zero}
+	 */
+	Codec<BigInteger> nonNegativeBigInt();
+
+	/**
+	 * {@return Big Integer Codec that validates the value is greater than zero}
+	 */
+	Codec<BigInteger> positiveBigInt();
+
+	/**
+	 * {@return BigInteger Codec that validates the value is within the range, and if not produces the given error}
+	 *
+	 * @param min          Min value inclusive. Null if no min
+	 * @param max          Max value inclusive. Null if no max
+	 * @param errorMessage Error message producer.
+	 */
+	Codec<BigInteger> bigIntRangeWithMessage(@Nullable BigInteger min, @Nullable BigInteger max, Function<BigInteger, String> errorMessage);
 
 	/**
 	 * {@return Long Codec that validates the long is greater than or equal to zero}

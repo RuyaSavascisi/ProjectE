@@ -1,12 +1,13 @@
 package moze_intel.projecte.handlers;
 
+import java.util.function.IntSupplier;
 import moze_intel.projecte.config.ProjectEConfig;
 
 public class InternalTimers {
 
-	private final Timer repair = new Timer();
-	private final Timer heal = new Timer();
-	private final Timer feed = new Timer();
+	public final Timer repair = new Timer(ProjectEConfig.server.cooldown.player.repair);
+	public final Timer heal = new Timer(ProjectEConfig.server.cooldown.player.heal);
+	public final Timer feed = new Timer(ProjectEConfig.server.cooldown.player.feed);
 
 	public void tick() {
 		repair.tick();
@@ -14,49 +15,28 @@ public class InternalTimers {
 		feed.tick();
 	}
 
-	public void activateRepair() {
-		repair.shouldUpdate = ProjectEConfig.server.cooldown.player.repair.get() != -1;
-	}
+	public static class Timer {
 
-	public void activateHeal() {
-		heal.shouldUpdate = ProjectEConfig.server.cooldown.player.heal.get() != -1;
-	}
-
-	public void activateFeed() {
-		feed.shouldUpdate = ProjectEConfig.server.cooldown.player.feed.get() != -1;
-	}
-
-	public boolean canRepair() {
-		if (repair.tickCount == 0) {
-			repair.tickCount = ProjectEConfig.server.cooldown.player.repair.get();
-			repair.shouldUpdate = false;
-			return true;
-		}
-		return false;
-	}
-
-	public boolean canHeal() {
-		if (heal.tickCount == 0) {
-			heal.tickCount = ProjectEConfig.server.cooldown.player.heal.get();
-			heal.shouldUpdate = false;
-			return true;
-		}
-		return false;
-	}
-
-	public boolean canFeed() {
-		if (feed.tickCount == 0) {
-			feed.tickCount = ProjectEConfig.server.cooldown.player.feed.get();
-			feed.shouldUpdate = false;
-			return true;
-		}
-		return false;
-	}
-
-	private static class Timer {
-
+		private final IntSupplier defaultTickCount;
 		private int tickCount = 0;
 		private boolean shouldUpdate = false;
+
+		private Timer(IntSupplier defaultTickCount) {
+			this.defaultTickCount = defaultTickCount;
+		}
+
+		public void activate() {
+			shouldUpdate = defaultTickCount.getAsInt() != -1;
+		}
+
+		public boolean canFunction() {
+			if (tickCount == 0) {
+				tickCount = defaultTickCount.getAsInt();
+				shouldUpdate = false;
+				return true;
+			}
+			return false;
+		}
 
 		private void tick() {
 			if (shouldUpdate) {

@@ -48,7 +48,7 @@ public class ArchangelSmite extends PEToggleItem implements IPedestalItem {
 	}
 
 	private void emptyLeftClick(PlayerInteractEvent.LeftClickEmpty evt) {
-		PECore.packetHandler().leftClickArchangel();
+		PECore.packetHandler().activateArchangel();
 	}
 
 	private void leftClickBlock(PlayerInteractEvent.LeftClickBlock evt) {

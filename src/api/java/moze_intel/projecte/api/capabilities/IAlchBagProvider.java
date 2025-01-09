@@ -1,5 +1,6 @@
 package moze_intel.projecte.api.capabilities;
 
+import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.DyeColor;
 import net.neoforged.neoforge.capabilities.EntityCapability;
@@ -26,10 +27,17 @@ public interface IAlchBagProvider {
 	IItemHandler getBag(@NotNull DyeColor color);
 
 	/**
-	 * Syncs the bag inventory associated with this color to the player provided (usually the owner of this capability instance)
+	 * Syncs the bag inventories associated with the provided colors to the player provided (usually the owner of this capability instance)
 	 *
-	 * @param color  The bag color to sync. If null, syncs every color.
+	 * @param player The player to sync the bags to.
+	 * @param colors The bag colors to sync.
+	 */
+	void sync(@NotNull ServerPlayer player, @NotNull Set<DyeColor> colors);
+
+	/**
+	 * Syncs all bag inventories associated to the player provided (usually the owner of this capability instance)
+	 *
 	 * @param player The player to sync the bags to.
 	 */
-	void sync(DyeColor color, @NotNull ServerPlayer player);
+	void syncAllBags(@NotNull ServerPlayer player);
 }

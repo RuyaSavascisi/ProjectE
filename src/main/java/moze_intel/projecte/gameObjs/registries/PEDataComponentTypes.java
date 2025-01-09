@@ -16,7 +16,6 @@ import moze_intel.projecte.gameObjs.registration.impl.DataComponentTypeDeferredR
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.component.ItemContainerContents;
 
-//TODO - 1.21: Make sure we add defaults for these to all the items that should have said component type
 public class PEDataComponentTypes {
 
 	private PEDataComponentTypes() {

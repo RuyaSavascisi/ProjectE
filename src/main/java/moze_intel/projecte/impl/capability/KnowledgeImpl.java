@@ -1,5 +1,8 @@
 package moze_intel.projecte.impl.capability;
 
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,28 +14,28 @@ import java.util.Objects;
 import java.util.Set;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
+import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.event.PlayerKnowledgeChangeEvent;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
+import moze_intel.projecte.impl.codec.PECodecHelper;
+import moze_intel.projecte.network.PEStreamCodecs;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncChangePKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncInputsAndLocksPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncPKT;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.RegistryOps;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -217,8 +220,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 
 	@Override
 	public void sync(@NotNull ServerPlayer player) {
-		KnowledgeAttachment attachment = attachment();
-		PacketDistributor.sendToPlayer(player, new KnowledgeSyncPKT(attachment.serializeNBT(player.registryAccess())));
+		PacketDistributor.sendToPlayer(player, new KnowledgeSyncPKT(attachment()));
 	}
 
 	@Override
@@ -286,7 +288,24 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		return attachment.knowledge.addAll(toAdd) || hasRemoved;
 	}
 
-	public static class KnowledgeAttachment implements INBTSerializable<CompoundTag> {
+	public static class KnowledgeAttachment {
+
+		private static final int LOCK_SLOTS = 9;
+
+		private static final Codec<Set<ItemInfo>> MUTABLE_KNOWLEDGE_CODEC = ItemInfo.EXPLICIT_CODEC.listOf().xmap(HashSet::new, ImmutableList::copyOf);
+		public static final Codec<KnowledgeAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+				MUTABLE_KNOWLEDGE_CODEC.fieldOf("knowledge").forGetter(attachment -> attachment.knowledge),
+				PECodecHelper.HANDLER_CODEC.fieldOf("input_locks").forGetter(attachment -> attachment.inputLocks),
+				IPECodecHelper.INSTANCE.nonNegativeBigInt().optionalFieldOf("emc", BigInteger.ZERO).forGetter(attachment -> attachment.emc),
+				Codec.BOOL.optionalFieldOf("full_knowledge", false).forGetter(attachment -> attachment.fullKnowledge)
+		).apply(instance, KnowledgeAttachment::new));
+		public static final StreamCodec<RegistryFriendlyByteBuf, KnowledgeAttachment> STREAM_CODEC = StreamCodec.composite(
+				ItemInfo.STREAM_CODEC.apply(ByteBufCodecs.collection(HashSet::new)), attachment -> attachment.knowledge,
+				PEStreamCodecs.handlerStreamCodec(LOCK_SLOTS), attachment -> attachment.inputLocks,
+				PEStreamCodecs.EMC_VALUE, attachment -> attachment.emc,
+				ByteBufCodecs.BOOL, attachment -> attachment.fullKnowledge,
+				KnowledgeAttachment::new
+		);
 
 		private final ItemStackHandler inputLocks;
 		private final Set<ItemInfo> knowledge;
@@ -294,7 +313,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		private BigInteger emc;
 
 		public KnowledgeAttachment() {
-			this(new HashSet<>(), new ItemStackHandler(9), BigInteger.ZERO, false);
+			this(new HashSet<>(), new ItemStackHandler(LOCK_SLOTS), BigInteger.ZERO, false);
 		}
 
 		private KnowledgeAttachment(Set<ItemInfo> knowledge, ItemStackHandler inputLocks, BigInteger emc, boolean fullKnowledge) {
@@ -308,40 +327,6 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		public KnowledgeAttachment copy(IAttachmentHolder holder, HolderLookup.Provider registries) {
 			//Note: ItemInfo and BigInteger are both immutable, so we can just add them directly
 			return new KnowledgeAttachment(new HashSet<>(knowledge), PEAttachmentTypes.copyHandler(inputLocks, ItemStackHandler::new), emc, fullKnowledge);
-		}
-
-		@Override
-		public CompoundTag serializeNBT(@NotNull HolderLookup.Provider registries) {
-			RegistryOps<Tag> serializationContext = registries.createSerializationContext(NbtOps.INSTANCE);
-			CompoundTag properties = new CompoundTag();
-			properties.putString("transmutationEmc", emc.toString());
-
-			ListTag knowledgeWrite = new ListTag();
-			for (ItemInfo i : knowledge) {
-				ItemInfo.EXPLICIT_CODEC.encodeStart(serializationContext, i).result().ifPresent(knowledgeWrite::add);
-			}
-
-			properties.put("knowledge", knowledgeWrite);
-			properties.put("inputlock", inputLocks.serializeNBT(registries));
-			properties.putBoolean("fullknowledge", fullKnowledge);
-			return properties;
-		}
-
-		@Override
-		public void deserializeNBT(@NotNull HolderLookup.Provider registries, CompoundTag properties) {
-			RegistryOps<Tag> serializationContext = registries.createSerializationContext(NbtOps.INSTANCE);
-			String transmutationEmc = properties.getString("transmutationEmc");
-			emc = transmutationEmc.isEmpty() ? BigInteger.ZERO : new BigInteger(transmutationEmc);
-
-			for (Tag tag : properties.getList("knowledge", Tag.TAG_COMPOUND)) {
-				ItemInfo.EXPLICIT_CODEC.parse(serializationContext, tag).result().ifPresent(knowledge::add);
-			}
-
-			for (int i = 0; i < inputLocks.getSlots(); i++) {
-				inputLocks.setStackInSlot(i, ItemStack.EMPTY);
-			}
-			inputLocks.deserializeNBT(registries, properties.getCompound("inputlock"));
-			fullKnowledge = properties.getBoolean("fullknowledge");
 		}
 	}
 }

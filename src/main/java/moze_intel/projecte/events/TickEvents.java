@@ -46,17 +46,11 @@ public class TickEvents {
 
 			if (player instanceof ServerPlayer serverPlayer) {
 				//Only sync for when it ticks on the server
-				for (DyeColor e : colorsChanged) {
-					if (serverPlayer.containerMenu instanceof AlchBagContainer container) {
-						ItemStack heldItem = serverPlayer.getItemInHand(container.hand);
-						if (heldItem.getItem() instanceof AlchemicalBag bag && bag.color == e) {
-							// Do not sync if this color is open, the container system does it for us
-							// and we'll stay out of its way.
-							continue;
-						}
-					}
-					provider.sync(e, serverPlayer);
+				if (serverPlayer.containerMenu instanceof AlchBagContainer container && serverPlayer.getItemInHand(container.hand).getItem() instanceof AlchemicalBag bag) {
+					// Do not sync if this color is open, the container system does it for us and we'll stay out of its way.
+					colorsChanged.remove(bag.color);
 				}
+				provider.sync(serverPlayer, colorsChanged);
 			}
 		}
 

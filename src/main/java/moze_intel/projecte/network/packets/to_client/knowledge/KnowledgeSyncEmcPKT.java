@@ -6,8 +6,8 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
+import moze_intel.projecte.network.PEStreamCodecs;
 import moze_intel.projecte.network.packets.IPEPacket;
-import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
@@ -17,9 +17,8 @@ import org.jetbrains.annotations.NotNull;
 public record KnowledgeSyncEmcPKT(BigInteger emc) implements IPEPacket {
 
 	public static final CustomPacketPayload.Type<KnowledgeSyncEmcPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("knowledge_sync_emc"));
-	public static final StreamCodec<ByteBuf, KnowledgeSyncEmcPKT> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(
-			emc -> new KnowledgeSyncEmcPKT(emc.isEmpty() ? BigInteger.ZERO : new BigInteger(emc)),
-			pkt -> pkt.emc().toString()
+	public static final StreamCodec<ByteBuf, KnowledgeSyncEmcPKT> STREAM_CODEC = PEStreamCodecs.EMC_VALUE.map(
+			KnowledgeSyncEmcPKT::new, KnowledgeSyncEmcPKT::emc
 	);
 
 	@NotNull

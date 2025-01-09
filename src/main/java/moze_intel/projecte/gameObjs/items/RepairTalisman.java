@@ -47,8 +47,8 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 		super.inventoryTick(stack, level, entity, slot, isHeld);
 		if (!level.isClientSide && entity instanceof Player player) {
 			InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-			timers.activateRepair();
-			if (timers.canRepair()) {
+			timers.repair.activate();
+			if (timers.repair.canFunction()) {
 				repairAllItems(player);
 			}
 		}

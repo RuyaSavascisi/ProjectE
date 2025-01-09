@@ -7,7 +7,8 @@ import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.items.rings.ArchangelSmite;
 import moze_intel.projecte.network.packets.IPEPacket;
 import moze_intel.projecte.network.packets.to_client.NovaExplosionSyncPKT;
-import moze_intel.projecte.network.packets.to_client.SyncBagDataPKT;
+import moze_intel.projecte.network.packets.to_client.alch_bag.SyncAllBagDataPKT;
+import moze_intel.projecte.network.packets.to_client.alch_bag.SyncBagsDataPKT;
 import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.SyncFuelMapperPKT;
 import moze_intel.projecte.network.packets.to_client.UpdateCondenserLockPKT;
@@ -36,10 +37,10 @@ import org.apache.maven.artifact.versioning.ArtifactVersion;
 /**
  * Heavily based off of Mekanism's packet handler
  */
-public final class PacketHandler {//TODO - 1.21: Potentially rename any packet ids that aren't that great
+public final class PacketHandler {
 
 	//Client to server instanced packets
-	private SimplePacketPayLoad leftClickArchangel;
+	private SimplePacketPayLoad activateArchangel;
 
 	//Server to client instanced packets
 	private SimplePacketPayLoad clearKnowledge;
@@ -57,7 +58,7 @@ public final class PacketHandler {//TODO - 1.21: Potentially rename any packet i
 
 	private void registerClientToServer(PacketRegistrar registrar) {
 		registrar.play(KeyPressPKT.TYPE, KeyPressPKT.STREAM_CODEC);
-		leftClickArchangel = registrar.playInstanced(PECore.rl("left_click_archangel"), (ignored, context) -> {
+		activateArchangel = registrar.playInstanced(PECore.rl("activate_archangel"), (ignored, context) -> {
 			Player player = context.player();
 			ItemStack main = player.getMainHandItem();
 			if (!main.isEmpty() && main.getItem() instanceof ArchangelSmite archangelSmite) {
@@ -85,7 +86,8 @@ public final class PacketHandler {//TODO - 1.21: Potentially rename any packet i
 		registrar.play(KnowledgeSyncInputsAndLocksPKT.TYPE, KnowledgeSyncInputsAndLocksPKT.STREAM_CODEC);
 		registrar.play(KnowledgeSyncChangePKT.TYPE, KnowledgeSyncChangePKT.STREAM_CODEC);
 		registrar.play(NovaExplosionSyncPKT.TYPE, NovaExplosionSyncPKT.STREAM_CODEC);
-		registrar.play(SyncBagDataPKT.TYPE, SyncBagDataPKT.STREAM_CODEC);
+		registrar.play(SyncAllBagDataPKT.TYPE, SyncAllBagDataPKT.STREAM_CODEC);
+		registrar.play(SyncBagsDataPKT.TYPE, SyncBagsDataPKT.STREAM_CODEC);
 		registrar.play(SyncEmcPKT.TYPE, SyncEmcPKT.STREAM_CODEC);
 		registrar.play(SyncFuelMapperPKT.TYPE, SyncFuelMapperPKT.STREAM_CODEC);
 		registrar.play(UpdateCondenserLockPKT.TYPE, UpdateCondenserLockPKT.STREAM_CODEC);
@@ -109,8 +111,8 @@ public final class PacketHandler {//TODO - 1.21: Potentially rename any packet i
 		PacketDistributor.sendToPlayer(player, resetCooldown);
 	}
 
-	public void leftClickArchangel() {
-		PacketDistributor.sendToServer(leftClickArchangel);
+	public void activateArchangel() {
+		PacketDistributor.sendToServer(activateArchangel);
 	}
 
 	protected record SimplePacketPayLoad(CustomPacketPayload.Type<CustomPacketPayload> type) implements CustomPacketPayload {

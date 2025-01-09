@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public record SearchUpdatePKT(int slot, ItemStack itemStack) implements IPEPacket {
 
-	public static final CustomPacketPayload.Type<SearchUpdatePKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("search_update"));
+	public static final CustomPacketPayload.Type<SearchUpdatePKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("update_search"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, SearchUpdatePKT> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.VAR_INT, SearchUpdatePKT::slot,
 			ItemStack.OPTIONAL_STREAM_CODEC, SearchUpdatePKT::itemStack,

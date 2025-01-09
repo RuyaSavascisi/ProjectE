@@ -18,6 +18,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,19 +37,45 @@ import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 public class PECodecHelper implements IPECodecHelper {
 
 	private static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
+	private static final MethodHandle HANDLER_STACK_FIELD = Util.make(() -> {
+		try {
+			Field field = ItemStackHandler.class.getDeclaredField("stacks");
+			field.setAccessible(true);
+			return MethodHandles.lookup().unreflectGetter(field);
+		} catch (ReflectiveOperationException roe) {
+			throw new RuntimeException("Couldn't get getter MethodHandle for stacks", roe);
+		}
+	});
+
+	//TODO - 1.21: How does optional codec this handle if an item was removed and is no longer registered
+	public static final Codec<ItemStackHandler> HANDLER_CODEC = NonNullList.codecOf(ItemStack.OPTIONAL_CODEC).flatComapMap(ItemStackHandler::new, handler -> {
+		try {
+			return DataResult.success((NonNullList<ItemStack>) HANDLER_STACK_FIELD.invokeExact(handler));
+		} catch (Throwable t) {
+			return DataResult.error(t::getMessage);
+		}
+	});
 
 	private final Codec<Long> NON_NEGATIVE_LONG = longRangeWithMessage(0, Long.MAX_VALUE, value -> "Value must be non-negative: " + value);
 	private final Codec<Long> POSITIVE_LONG = longRangeWithMessage(1, Long.MAX_VALUE, value -> "Value must be positive: " + value);
+	private final Codec<BigInteger> BIG_INT = Codec.STRING.xmap(val -> val.isEmpty() ? BigInteger.ZERO : new BigInteger(val), BigInteger::toString);
+	private final Codec<BigInteger> NON_NEGATIVE_BIG_INT = bigIntRangeWithMessage(BigInteger.ZERO, null, value -> "Value must be non-negative: " + value);
+	private final Codec<BigInteger> POSITIVE_BIG_INT = bigIntRangeWithMessage(BigInteger.ONE, null, value -> "Value must be non-negative: " + value);
 
 	private final Map<String, Codec<? extends NormalizedSimpleStack>> nssLegacyCodecs = new HashMap<>();
 	private Codec<NSSCodecHolder<?>> nssSerializerCodec;
@@ -153,6 +183,30 @@ public class PECodecHelper implements IPECodecHelper {
 						 ? DataResult.success(value)
 						 : DataResult.error(() -> errorMessage.apply(value))
 		);
+	}
+
+	@Override
+	public Codec<BigInteger> nonNegativeBigInt() {
+		return NON_NEGATIVE_BIG_INT;
+	}
+
+	@Override
+	public Codec<BigInteger> positiveBigInt() {
+		return POSITIVE_BIG_INT;
+	}
+
+	@Override
+	public Codec<BigInteger> bigIntRangeWithMessage(@Nullable BigInteger min, @Nullable BigInteger max, Function<BigInteger, String> errorMessage) {
+		if (min == null && max == null) {
+			return BIG_INT;
+		}
+		return BIG_INT.validate(value -> {
+			if ((min == null || value.compareTo(min) >= 0) &&
+				(max == null || value.compareTo(max) <= 0)) {
+				return DataResult.success(value);
+			}
+			return DataResult.error(() -> errorMessage.apply(value));
+		});
 	}
 
 	@Override

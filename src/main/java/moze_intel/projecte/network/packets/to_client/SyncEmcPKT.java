@@ -4,6 +4,7 @@ import io.netty.buffer.Unpooled;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.emc.EMCMappingHandler;
+import moze_intel.projecte.network.PEStreamCodecs;
 import moze_intel.projecte.network.packets.IPEPacket;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -17,18 +18,8 @@ import org.jetbrains.annotations.NotNull;
 public record SyncEmcPKT(EmcPKTInfo[] data) implements IPEPacket {
 
 	public static final CustomPacketPayload.Type<SyncEmcPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("sync_emc"));
-	public static final StreamCodec<RegistryFriendlyByteBuf, SyncEmcPKT> STREAM_CODEC = StreamCodec.of((buffer, pkt) -> {
-				buffer.writeVarInt(pkt.data().length);
-				for (EmcPKTInfo info : pkt.data()) {
-					EmcPKTInfo.STREAM_CODEC.encode(buffer, info);
-				}
-			}, (buffer) -> {
-				EmcPKTInfo[] data = new EmcPKTInfo[buffer.readVarInt()];
-				for (int i = 0; i < data.length; i++) {
-					data[i] = EmcPKTInfo.STREAM_CODEC.decode(buffer);
-				}
-				return new SyncEmcPKT(data);
-			}
+	public static final StreamCodec<RegistryFriendlyByteBuf, SyncEmcPKT> STREAM_CODEC = EmcPKTInfo.STREAM_CODEC.apply(PEStreamCodecs.array(EmcPKTInfo[]::new)).map(
+			SyncEmcPKT::new, SyncEmcPKT::data
 	);
 
 	public SyncEmcPKT(RegistryAccess registryAccess) {

@@ -1,5 +1,6 @@
 package moze_intel.projecte.integration.crafttweaker.nss;
 
+import com.blamejared.crafttweaker.api.CraftTweakerAPI;
 import com.blamejared.crafttweaker.api.annotation.ZenRegister;
 import com.blamejared.crafttweaker.api.data.IData;
 import com.blamejared.crafttweaker.api.data.op.IDataOps;
@@ -7,6 +8,7 @@ import com.blamejared.crafttweaker.api.fluid.IFluidStack;
 import com.blamejared.crafttweaker.api.item.IItemStack;
 import com.blamejared.crafttweaker.api.tag.type.KnownTag;
 import com.blamejared.crafttweaker_annotations.annotations.Document;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -16,6 +18,7 @@ import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
@@ -40,8 +43,8 @@ public class CrTNSSResolver {
 	 */
 	@ZenCodeType.Method
 	public static NormalizedSimpleStack deserialize(String representation) {
-		//TODO - 1.21: Do we need to create a serialization context?
-		return deserialize(JsonOps.INSTANCE, new JsonPrimitive(representation));
+		RegistryOps<JsonElement> serializationContext = CraftTweakerAPI.getAccessibleElementsProvider().registryAccess().createSerializationContext(JsonOps.INSTANCE);
+		return deserialize(serializationContext, new JsonPrimitive(representation));
 	}
 
 	/**

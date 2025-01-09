@@ -45,8 +45,8 @@ public class BodyStone extends PEToggleItem implements IPedestalItem, ICapabilit
 				stack.set(PEDataComponentTypes.ACTIVE, false);
 			} else {
 				InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-				timers.activateFeed();
-				if (player.getFoodData().needsFood() && timers.canFeed()) {
+				timers.feed.activate();
+				if (player.getFoodData().needsFood() && timers.feed.canFunction()) {
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.HEAL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 					player.getFoodData().eat(2, 10);
 					player.gameEvent(GameEvent.EAT);

@@ -1,5 +1,6 @@
 package moze_intel.projecte.impl;
 
+import com.mojang.serialization.DataResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -21,7 +22,9 @@ import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -66,13 +69,16 @@ public class TransmutationOffline {
 				CompoundTag playerDat = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap()); // No need to create buffered stream, that call does it for us
 				if (playerDat.contains(AttachmentHolder.ATTACHMENTS_NBT_KEY, Tag.TAG_COMPOUND)) {
 					CompoundTag attachmentData = playerDat.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
-					KnowledgeAttachment attachment = new KnowledgeAttachment();
-					attachment.deserializeNBT(server.registryAccess(), attachmentData.getCompound(PEAttachmentTypes.KNOWLEDGE.getId().toString()));
-
-					cachedKnowledgeProviders.put(playerUUID, immutableView(attachment));
-
-					PECore.debugLog("Caching offline data for UUID: {}", playerUUID);
-					return true;
+					CompoundTag knowledgeData = attachmentData.getCompound(PEAttachmentTypes.KNOWLEDGE.getId().toString());
+					RegistryOps<Tag> serializationContext = server.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+					DataResult<KnowledgeAttachment> result = KnowledgeAttachment.CODEC.parse(serializationContext, knowledgeData);
+					if (result.isSuccess()) {
+						cachedKnowledgeProviders.put(playerUUID, immutableView(result.getOrThrow()));
+						PECore.debugLog("Caching offline data for UUID: {}", playerUUID);
+						return true;
+					} else {
+						result.ifError(error -> PECore.LOGGER.warn("Failed to cache offline data for API calls for UUID: {}. {}", playerUUID, error.message()));
+					}
 				}
 			} catch (IOException e) {
 				PECore.LOGGER.warn("Failed to cache offline data for API calls for UUID: {}", playerUUID);

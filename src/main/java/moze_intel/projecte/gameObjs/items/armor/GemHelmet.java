@@ -64,8 +64,8 @@ public class GemHelmet extends GemArmorBase {
 		super.inventoryTick(stack, level, entity, slot, isHeld);
 		if (isArmorSlot(slot) && !level.isClientSide && entity instanceof Player player) {
 			InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-			timers.activateHeal();
-			if (player.getHealth() < player.getMaxHealth() && timers.canHeal()) {
+			timers.heal.activate();
+			if (player.getHealth() < player.getMaxHealth() && timers.heal.canFunction()) {
 				player.heal(2.0F);
 			}
 

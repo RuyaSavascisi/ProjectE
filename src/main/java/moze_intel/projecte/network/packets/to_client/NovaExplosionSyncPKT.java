@@ -1,8 +1,8 @@
 package moze_intel.projecte.network.packets.to_client;
 
-import io.netty.buffer.ByteBuf;
 import java.util.List;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.network.PEStreamCodecs;
 import moze_intel.projecte.network.packets.IPEPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -21,16 +21,10 @@ import org.jetbrains.annotations.NotNull;
 
 public record NovaExplosionSyncPKT(Vec3 explosionCenter, float explosionRadius, Holder<SoundEvent> explosionSound, List<BlockPos> positions) implements IPEPacket {
 
-	public static final CustomPacketPayload.Type<NovaExplosionSyncPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("sync_nova"));
+	public static final CustomPacketPayload.Type<NovaExplosionSyncPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("nova_explosion"));
 
-	private static final StreamCodec<ByteBuf, Vec3> VEC_3_STREAM_CODEC = StreamCodec.composite(
-			ByteBufCodecs.DOUBLE, Vec3::x,
-			ByteBufCodecs.DOUBLE, Vec3::y,
-			ByteBufCodecs.DOUBLE, Vec3::z,
-			Vec3::new
-	);
 	public static final StreamCodec<RegistryFriendlyByteBuf, NovaExplosionSyncPKT> STREAM_CODEC = StreamCodec.composite(
-			VEC_3_STREAM_CODEC, NovaExplosionSyncPKT::explosionCenter,
+			PEStreamCodecs.VEC_3, NovaExplosionSyncPKT::explosionCenter,
 			ByteBufCodecs.FLOAT, NovaExplosionSyncPKT::explosionRadius,
 			ByteBufCodecs.holderRegistry(Registries.SOUND_EVENT), NovaExplosionSyncPKT::explosionSound,
 			BlockPos.STREAM_CODEC.apply(ByteBufCodecs.list()), NovaExplosionSyncPKT::positions,
