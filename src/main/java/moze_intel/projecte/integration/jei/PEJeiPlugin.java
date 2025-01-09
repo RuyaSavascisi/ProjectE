@@ -27,7 +27,6 @@ import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.integration.jei.collectors.CollectorRecipeCategory;
 import moze_intel.projecte.integration.jei.collectors.FuelUpgradeRecipe;
 import moze_intel.projecte.integration.jei.world_transmute.WorldTransmuteRecipeCategory;
-import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
@@ -127,7 +126,7 @@ public class PEJeiPlugin implements IModPlugin {
 		for (Holder<Item> i : FuelMapper.getFuelMap()) {
 			ItemStack stack = new ItemStack(i);
 			ItemStack fuelUpgrade = FuelMapper.getFuelUpgrade(stack);
-			if (EMCHelper.getEmcValue(stack) <= EMCHelper.getEmcValue(fuelUpgrade)) {
+			if (!fuelUpgrade.isEmpty()) {
 				recipes.add(new FuelUpgradeRecipe(stack, fuelUpgrade));
 			}
 		}

@@ -49,11 +49,15 @@ public final class FuelMapper {
 	}
 
 	public static ItemStack getFuelUpgrade(ItemStack stack) {
-		for (int i = 0, elements = FUEL_MAP.size(); i < elements; i++) {
-			if (stack.is(FUEL_MAP.get(i))) {
-				//TODO - 1.21: Why does this return zero as the index for the last element
-				int nextIndex = i + 1 == elements ? 0 : i + 1;
-				return new ItemStack(FUEL_MAP.get(nextIndex));
+		if (stack.is(PETags.Items.COLLECTOR_FUEL)) {
+			for (int i = 0, elements = FUEL_MAP.size(); i < elements; i++) {
+				if (stack.is(FUEL_MAP.get(i))) {
+					if (i + 1 == elements) {
+						//No upgrade for items already at the highest tier
+						return ItemStack.EMPTY;
+					}
+					return new ItemStack(FUEL_MAP.get(i + 1));
+				}
 			}
 		}
 		PECore.LOGGER.warn("Tried to upgrade invalid fuel: {}", stack.getItem());
