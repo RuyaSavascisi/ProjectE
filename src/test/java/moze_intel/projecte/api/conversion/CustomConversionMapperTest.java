@@ -7,17 +7,22 @@ import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Items;
+import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(EphemeralTestServerProvider.class)
 @DisplayName("Test Custom Conversion Mappers")
 class CustomConversionMapperTest {
 
-	private static CustomConversionFile parseJson(String json) {
-		return CodecTestHelper.parseJson(CustomConversionFile.CODEC, "custom conversion test", json);
+	private static CustomConversionFile parseJson(HolderLookup.Provider registryAccess, String json) {
+		return CodecTestHelper.parseJson(registryAccess, CustomConversionFile.CODEC, "custom conversion test", json);
 	}
 
 	@BeforeAll
@@ -29,8 +34,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test conversion file that only contains a comment")
-	void testCommentOnlyCustomFile() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testCommentOnlyCustomFile(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"comment": "A very simple Example"
 				}""");
@@ -39,8 +44,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test conversion file with empty group")
-	void testSingleEmptyGroupFile() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testSingleEmptyGroupFile(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"groups": {
 						"groupa": {
@@ -59,8 +64,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test simple conversion file")
-	void testSimpleFile() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testSimpleFile(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"groups": {
 						"groupa": {
@@ -131,8 +136,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test conversion file setting value")
-	void testSetValueFile() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testSetValueFile(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"values": {
 						"before": {
@@ -154,8 +159,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test conversion file skipping invalid keys for setting value")
-	void testInvalidKeySetValueFile() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testInvalidKeySetValueFile(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"values": {
 						"before": {
@@ -174,8 +179,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test set value from conversion")
-	void testSetValueFromConversion() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testSetValueFromConversion(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"values": {
 						"conversion": [
@@ -203,8 +208,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test explicit format in conversions")
-	void testConversionExplicitFormat() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testConversionExplicitFormat(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"values": {
 						"conversion": [
@@ -273,7 +278,7 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test to make sure FAKE values in conversions don't break things")
-	void testNonInterferingFakes() {
+	void testNonInterferingFakes(MinecraftServer server) {
 		String file1 = """
 				{
 					"values": {
@@ -289,10 +294,10 @@ class CustomConversionMapperTest {
 				}""";
 
 		NSSFake.setCurrentNamespace("file1");
-		CustomConversionFile conversionFile1 = parseJson(file1);
-		CustomConversionFile conversionFile2 = parseJson(file1);
+		CustomConversionFile conversionFile1 = parseJson(server.registryAccess(), file1);
+		CustomConversionFile conversionFile2 = parseJson(server.registryAccess(), file1);
 		NSSFake.setCurrentNamespace("file2");
-		CustomConversionFile conversionFile3 = parseJson(file1);
+		CustomConversionFile conversionFile3 = parseJson(server.registryAccess(), file1);
 
 		CustomConversion conversion1 = conversionFile1.values().conversions().get(0);
 		CustomConversion conversion2 = conversionFile2.values().conversions().get(0);
@@ -305,8 +310,8 @@ class CustomConversionMapperTest {
 
 	@Test
 	@DisplayName("Test ignore invalid conversions")
-	void testIgnoreInvalidConversions() {
-		CustomConversionFile conversionFile = parseJson("""
+	void testIgnoreInvalidConversions(MinecraftServer server) {
+		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"groups": {
 						"groupa": {

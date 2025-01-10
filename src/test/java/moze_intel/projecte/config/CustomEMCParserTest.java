@@ -5,18 +5,23 @@ import java.util.Map;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.config.CustomEMCParser.CustomEMCFile;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(EphemeralTestServerProvider.class)
 @DisplayName("Test parsing Custom EMC files")
 class CustomEMCParserTest {
 
-	private static CustomEMCFile parseJson(String json) {
-		return CodecTestHelper.parseJson(CustomEMCParser.CustomEMCFile.CODEC, "custom emc test", json);
+	private static CustomEMCFile parseJson(HolderLookup.Provider registryAccess, String json) {
+		return CodecTestHelper.parseJson(registryAccess, CustomEMCParser.CustomEMCFile.CODEC, "custom emc test", json);
 	}
 
 	@BeforeAll
@@ -28,9 +33,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file that is empty")
-	void testEmpty() {
+	void testEmpty(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": {
 					}
@@ -38,7 +43,7 @@ class CustomEMCParserTest {
 		Assertions.assertNull(customEMCFile.comment());
 		Assertions.assertEquals(0, customEMCFile.entries().size());
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		CustomEMCFile customEMCFileLegacy = parseJson("""
+		CustomEMCFile customEMCFileLegacy = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 					]
@@ -49,9 +54,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file that only contains a comment")
-	void testCommentOnly() {
+	void testCommentOnly(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"comment": "A very simple Example",
 					"entries": {
@@ -60,7 +65,7 @@ class CustomEMCParserTest {
 		Assertions.assertEquals("A very simple Example", customEMCFile.comment());
 		Assertions.assertEquals(0, customEMCFile.entries().size());
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		CustomEMCFile customEMCFileLegacy = parseJson( """
+		CustomEMCFile customEMCFileLegacy = parseJson(server.registryAccess(),  """
 				{
 					"comment": "A very simple Example",
 					"entries": [
@@ -72,9 +77,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file with a few entries")
-	void testSimple() {
+	void testSimple(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": {
 						"minecraft:dirt": 1,
@@ -88,7 +93,7 @@ class CustomEMCParserTest {
 		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE)));
 		Assertions.assertEquals(3, entries.get(NSSItem.createTag(Tags.Items.INGOTS_IRON)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		CustomEMCFile customEMCFileLegacy = parseJson("""
+		CustomEMCFile customEMCFileLegacy = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -114,8 +119,8 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file using a mix of legacy and extended legacy")
-	void testMixedLegacy() {
-		CustomEMCFile customEMCFile = parseJson("""
+	void testMixedLegacy(MinecraftServer server) {
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -141,9 +146,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file with an entry that is a long")
-	void testCustomEmcFileWithLongValue() {
+	void testCustomEmcFileWithLongValue(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": {
 						"minecraft:dirt": 2147483648
@@ -154,7 +159,7 @@ class CustomEMCParserTest {
 		//Max int + 1
 		Assertions.assertEquals(2_147_483_648L, entries.get(NSSItem.createItem(Items.DIRT)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		CustomEMCFile customEMCFileLegacy = parseJson("""
+		CustomEMCFile customEMCFileLegacy = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -171,16 +176,16 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file with an invalid value")
-	void testCustomEmcFileWithInvalidValue() {
+	void testCustomEmcFileWithInvalidValue(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
+		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"entries": {
 						"minecraft:dirt": -1
 					}
 				}"""));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
+		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -193,17 +198,17 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file with an invalid value")
-	void testInvalidKeyAndValue() {
+	void testInvalidKeyAndValue(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
 		//Note: We validate this doesn't throw as invalid keys in the new format are just entirely ignored and their values are not checked
-		Assertions.assertDoesNotThrow(() -> parseJson("""
+		Assertions.assertDoesNotThrow(() -> parseJson(server.registryAccess(), """
 				{
 					"entries": {
 						"INVALID|minecraft:dirt": -1
 					}
 				}"""));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
+		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -216,9 +221,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test ignoring invalid keys in a custom emc file")
-	void testIgnoreInvalidKeys() {
+	void testIgnoreInvalidKeys(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": {
 						"INVALID|minecraft:dirt": 1,
@@ -229,7 +234,7 @@ class CustomEMCParserTest {
 		Assertions.assertEquals(1, entries.size());
 		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		CustomEMCFile customEMCFileLegacy = parseJson("""
+		CustomEMCFile customEMCFileLegacy = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -257,9 +262,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file with values of zero")
-	void testCustomEmcFileWithZero() {
+	void testCustomEmcFileWithZero(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": {
 						"minecraft:dirt": 0
@@ -269,7 +274,7 @@ class CustomEMCParserTest {
 		Assertions.assertEquals(1, entries.size());
 		Assertions.assertEquals(0, entries.get(NSSItem.createItem(Items.DIRT)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		CustomEMCFile customEMCFileLegacy = parseJson("""
+		CustomEMCFile customEMCFileLegacy = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -285,9 +290,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file with items dependent on data components")
-	void testCustomEmcFileWithDC() {
+	void testCustomEmcFileWithDC(MinecraftServer server) {
 		//New format that just uses it as an array of NSS -> emc
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": {
 						"minecraft:dirt[custom_data={my: \\"tag\\"}]": 1
@@ -297,7 +302,7 @@ class CustomEMCParserTest {
 		Assertions.assertEquals(1, entries.size());
 		Assertions.assertEquals(1, entries.get(NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
 		//Legacy format using an array that lists the item and the emc value as separate values in the object
-		CustomEMCFile customEMCFileLegacy = parseJson("""
+		CustomEMCFile customEMCFileLegacy = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -310,7 +315,7 @@ class CustomEMCParserTest {
 		Assertions.assertEquals(1, legacyEntries.size());
 		Assertions.assertEquals(1, legacyEntries.get(NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
 		//Expanded legacy format using an array that lists the item and the emc value as separate values in the object but supporting using the explicit format for representing the item
-		CustomEMCFile customEMCFileExtendedLegacy = parseJson("""
+		CustomEMCFile customEMCFileExtendedLegacy = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{
@@ -339,9 +344,9 @@ class CustomEMCParserTest {
 
 	@Test
 	@DisplayName("Test custom emc file using the extended legacy format")
-	void testCustomEmcFileWithExtendedLegacy() {
+	void testCustomEmcFileWithExtendedLegacy(MinecraftServer server) {
 		//Expanded legacy format using an array that lists the item and the emc value as separate values in the object but supporting using the explicit format for representing the item
-		CustomEMCFile customEMCFile = parseJson("""
+		CustomEMCFile customEMCFile = parseJson(server.registryAccess(), """
 				{
 					"entries": [
 						{

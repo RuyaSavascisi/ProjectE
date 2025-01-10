@@ -4,17 +4,22 @@ import com.google.gson.JsonParseException;
 import java.util.Map;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Items;
+import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+@ExtendWith(EphemeralTestServerProvider.class)
 @DisplayName("Test Pregenerated EMC Serialization")
 class PregeneratedEMCTest {
 
-	private static Map<ItemInfo, Long> parseJson(String json) {
-		return CodecTestHelper.parseJson(PregeneratedEMC.CODEC, "pregnerated emc test", json);
+	private static Map<ItemInfo, Long> parseJson(HolderLookup.Provider registryAccess, String json) {
+		return CodecTestHelper.parseJson(registryAccess, PregeneratedEMC.CODEC, "pregnerated emc test", json);
 	}
 
 	@BeforeAll
@@ -26,15 +31,15 @@ class PregeneratedEMCTest {
 
 	@Test
 	@DisplayName("Test empty pregen file")
-	void testEmptyPregenFile() {
-		Map<ItemInfo, Long> pregenerated = parseJson("{}");
+	void testEmptyPregenFile(MinecraftServer server) {
+		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), "{}");
 		Assertions.assertEquals(0, pregenerated.size());
 	}
 
 	@Test
 	@DisplayName("Test a simple pregen file")
-	void testSimplePregenFile() {
-		Map<ItemInfo, Long> pregenerated = parseJson("""
+	void testSimplePregenFile(MinecraftServer server) {
+		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
 				{
 					"minecraft:dirt": 1
 				}""");
@@ -44,8 +49,8 @@ class PregeneratedEMCTest {
 
 	@Test
 	@DisplayName("Test pregen file with long values")
-	void testPregenFileLongValues() {
-		Map<ItemInfo, Long> pregenerated = parseJson("""
+	void testPregenFileLongValues(MinecraftServer server) {
+		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
 				{
 					"minecraft:dirt": 2147483648
 				}""");
@@ -56,8 +61,8 @@ class PregeneratedEMCTest {
 
 	@Test
 	@DisplayName("Test pregen file with keys that contains data components")
-	void testPregenFileWithDC() {
-		Map<ItemInfo, Long> pregenerated = parseJson("""
+	void testPregenFileWithDC(MinecraftServer server) {
+		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
 				{
 					"minecraft:dirt[custom_data={my: \\"tag\\"}]": 1
 				}""");
@@ -67,9 +72,9 @@ class PregeneratedEMCTest {
 
 	@Test
 	@DisplayName("Test pregen file with keys that contain an empty data component")
-	void testPregenFileWithEmptyDC() {
+	void testPregenFileWithEmptyDC(MinecraftServer server) {
 		//Empty data components are ignored and are treated as if they aren't there
-		Map<ItemInfo, Long> pregenerated = parseJson("""
+		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
 				{
 					"minecraft:dirt[]": 1
 				}""");
@@ -79,12 +84,12 @@ class PregeneratedEMCTest {
 
 	@Test
 	@DisplayName("Test pregen file with invalid value")
-	void testPregenFileInvalidValues() {
-		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
+	void testPregenFileInvalidValues(MinecraftServer server) {
+		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"minecraft:dirt": 0
 				}"""));
-		Assertions.assertThrows(JsonParseException.class, () -> parseJson("""
+		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"minecraft:dirt": -1
 				}"""));
@@ -92,9 +97,9 @@ class PregeneratedEMCTest {
 
 	@Test
 	@DisplayName("Test pregen file with invalid keys")
-	void testPregenFileInvalidKeys() {
+	void testPregenFileInvalidKeys(MinecraftServer server) {
 		//Test to ensure we skip over any invalid keys rather than throwing an exception and failing to deserialize anything
-		Map<ItemInfo, Long> pregenerated = parseJson("""
+		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
 				{
 					"minecraft:dirt": 1,
 					"projecte:invalid": 2,
