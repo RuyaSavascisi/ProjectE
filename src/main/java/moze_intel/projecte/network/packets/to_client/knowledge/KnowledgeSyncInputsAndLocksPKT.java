@@ -22,7 +22,6 @@ public record KnowledgeSyncInputsAndLocksPKT(Map<Integer, ItemStack> stacksToSyn
 
 	public static final CustomPacketPayload.Type<KnowledgeSyncInputsAndLocksPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("knowledge_sync_inputs_and_locks"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, KnowledgeSyncInputsAndLocksPKT> STREAM_CODEC = StreamCodec.composite(
-			//TODO - 1.21: Should this be STREAM_CODEC or OPTIONAL_STREAM_CODEC?
 			ByteBufCodecs.map(HashMap::new, ByteBufCodecs.VAR_INT, ItemStack.OPTIONAL_STREAM_CODEC), KnowledgeSyncInputsAndLocksPKT::stacksToSync,
 			TargetUpdateType.STREAM_CODEC, KnowledgeSyncInputsAndLocksPKT::updateTargets,
 			KnowledgeSyncInputsAndLocksPKT::new

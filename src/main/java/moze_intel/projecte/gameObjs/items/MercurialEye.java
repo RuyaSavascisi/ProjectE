@@ -240,10 +240,8 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 
 		if (hitTargets > 0) {
 			level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 0.8F, 2F / ((float) charge / getNumCharges(eye) + 2F));
-			if (!drops.isEmpty()) {
-				//Make all the drops fall together
-				WorldHelper.createLootDrop(drops, player.level(), startingPos);
-			}
+			//Make all the drops fall together
+			WorldHelper.createLootDrop(drops, player.level(), startingPos);
 		}
 		return InteractionResult.CONSUME;
 	}

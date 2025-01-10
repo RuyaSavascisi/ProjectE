@@ -72,6 +72,7 @@ public class Arcana extends ItemPE implements IItemMode<ArcanaMode>, IFireProtec
 				.component(PEDataComponentTypes.ARCANA_MODE, ArcanaMode.ZERO)
 				.component(PEDataComponentTypes.STORED_EMC, 0L)
 		);
+		//TODO - 1.21: This doesn't seem to support it being in the hotbar but not actively equipped
 		this.defaultModifiers = Suppliers.memoize(() -> ItemAttributeModifiers.builder()
 				.add(NeoForgeMod.CREATIVE_FLIGHT, FLIGHT, EquipmentSlotGroup.ANY)
 				.build());

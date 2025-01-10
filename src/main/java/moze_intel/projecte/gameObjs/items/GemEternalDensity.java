@@ -146,7 +146,7 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 				if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 					GemData oldData = stack.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, GemData::clearConsumed);
 					if (oldData != null && !oldData.consumed().isEmpty()) {
-						WorldHelper.createLootDrop(oldData.modifiableConsumed(), level, player.position());
+						WorldHelper.createLootDrop(oldData.consumed(), level, player.position());
 						stack.set(PEDataComponentTypes.STORED_EMC, 0L);
 					}
 					stack.set(PEDataComponentTypes.ACTIVE, false);

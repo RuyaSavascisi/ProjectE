@@ -54,26 +54,6 @@ public final class ItemHelper {
 	}
 
 	/**
-	 * Compacts and sorts list of items, without regard for stack sizes
-	 */
-	public static void compactItemListNoStacksize(List<ItemStack> list) {
-		for (int i = 0; i < list.size(); i++) {
-			ItemStack s = list.get(i);
-			if (!s.isEmpty()) {
-				for (int j = i + 1; j < list.size(); j++) {
-					ItemStack s1 = list.get(j);
-					if (ItemStack.isSameItemSameComponents(s, s1)) {
-						s.grow(s1.getCount());
-						list.set(j, ItemStack.EMPTY);
-					}
-				}
-			}
-		}
-		list.removeIf(ItemStack::isEmpty);
-		list.sort(Comparators.ITEMSTACK_ASCENDING);
-	}
-
-	/**
 	 * Returns an ItemStack with stacksize 1.
 	 */
 	public static ItemStack getNormalizedStack(ItemStack stack) {

@@ -17,7 +17,6 @@ public record UpdateWindowLongPKT(short windowId, short propId, long propVal) im
 	public static final StreamCodec<ByteBuf, UpdateWindowLongPKT> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.SHORT, UpdateWindowLongPKT::windowId,
 			ByteBufCodecs.SHORT, UpdateWindowLongPKT::propId,
-			//TODO - 1.21: Should this be some form of long that isn't var?
 			ByteBufCodecs.VAR_LONG, UpdateWindowLongPKT::propVal,
 			UpdateWindowLongPKT::new
 	);

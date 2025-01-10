@@ -433,8 +433,7 @@ public class ToolHelper {
 				List<ItemStack> drops = target.onSheared(player, stack, level, pos);
 				if (!drops.isEmpty()) {
 					if (!level.isClientSide) {
-						//Protect against any mods that may use unmodifiable lists in their onSheared return
-						WorldHelper.createLootDrop(new ArrayList<>(drops), level, pos);
+						WorldHelper.createLootDrop(drops, level, pos);
 						player.awardStat(Stats.BLOCK_MINED.get(block), 1);
 						level.gameEvent(player, GameEvent.SHEAR, pos);
 					}

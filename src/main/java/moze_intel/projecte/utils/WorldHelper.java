@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -81,6 +82,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.common.IShearable;
+import net.neoforged.neoforge.common.util.ItemStackMap;
 import net.neoforged.neoforge.common.util.TriPredicate;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -100,19 +102,67 @@ public final class WorldHelper {
 	private static final Predicate<Entity> INTERDICTION_REPEL_HOSTILE_PREDICATE = entity -> validRepelEntity(entity, PETags.Entities.BLACKLIST_INTERDICTION) &&
 																							(entity instanceof Enemy || entity instanceof Projectile);
 
+	/**
+	 * Drops all the items in the list at the given location compacting as much as possible.
+	 *
+	 * @param drops Items to drop. Will not be modified by the function
+	 */
 	public static void createLootDrop(List<ItemStack> drops, Level level, BlockPos pos) {
 		createLootDrop(drops, level, pos.getX(), pos.getY(), pos.getZ());
 	}
 
+	/**
+	 * Drops all the items in the list at the given location compacting as much as possible.
+	 *
+	 * @param drops Items to drop. Will not be modified by the function
+	 */
 	public static void createLootDrop(List<ItemStack> drops, Level level, Vec3 pos) {
 		createLootDrop(drops, level, pos.x(), pos.y(), pos.z());
 	}
 
+	/**
+	 * Drops all the items in the list at the given location compacting as much as possible.
+	 *
+	 * @param drops Items to drop. Will not be modified by the function
+	 */
 	public static void createLootDrop(List<ItemStack> drops, Level level, double x, double y, double z) {
 		if (!drops.isEmpty()) {
-			ItemHelper.compactItemListNoStacksize(drops);
+			//Note: We need to ensure that the dropped items do not exceed the max stack size so that
+			// there is not an error when the item entities are saved to disk
+			Map<ItemStack, ItemEntity> knownItems = ItemStackMap.createTypeAndTagMap();
 			for (ItemStack drop : drops) {
-				level.addFreshEntity(new ItemEntity(level, x, y, z, drop));
+				if (!drop.isEmpty()) {
+					int dropCount = drop.getCount();
+					ItemEntity itemEntity = knownItems.get(drop);
+					if (itemEntity != null) {
+						int availableRoom = drop.getMaxStackSize() - itemEntity.getItem().getCount();
+						if (dropCount <= availableRoom) {
+							itemEntity.getItem().grow(dropCount);
+							if (dropCount == availableRoom) {
+								//Item entity is now holding as much as it can. Remove it from tracked items
+								// and add it as a fresh entity
+								knownItems.remove(drop);
+								level.addFreshEntity(itemEntity);
+							}
+							//Skip to next item as this one has been fully handled
+							continue;
+						} else {
+							itemEntity.getItem().grow(availableRoom);
+							//Item entity is now holding as much as it can. Remove it from tracked items
+							// and add it as a fresh entity
+							knownItems.remove(drop);
+							level.addFreshEntity(itemEntity);
+							// Decrement how much we have left to drop and continue on
+							dropCount -= availableRoom;
+						}
+					}
+					//Copy the drop with the amount that is actually being dropped and track it in our known items map
+					itemEntity = new ItemEntity(level, x, y, z, drop.copyWithCount(dropCount));
+					knownItems.put(drop, itemEntity);
+				}
+			}
+			for (ItemEntity itemEntity : knownItems.values()) {
+				level.addFreshEntity(itemEntity);
 			}
 		}
 	}

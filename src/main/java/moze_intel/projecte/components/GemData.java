@@ -52,13 +52,9 @@ public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemS
 		return new GemData(isWhitelist, whitelist, Collections.emptyList());
 	}
 
-	public List<ItemStack> modifiableConsumed() {
-		//TODO - 1.21: FIXME, make this a mutable list and make it so that the stacks are modifiable as well
-		return consumed;
-	}
-
 	public GemData addToList(ItemStack stack) {
-		List<ItemStack> modifiableConsumed = modifiableConsumed();
+		//TODO - 1.21: FIXME, make this a mutable list and make it so that the stacks are modifiable as well
+		List<ItemStack> modifiableConsumed = consumed;
 		boolean hasFound = false;
 		for (ItemStack s : modifiableConsumed) {
 			if (s.getCount() < s.getMaxStackSize() && ItemStack.isSameItemSameComponents(s, stack)) {
