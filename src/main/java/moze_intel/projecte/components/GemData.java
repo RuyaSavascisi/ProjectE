@@ -2,6 +2,7 @@ package moze_intel.projecte.components;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -20,7 +21,7 @@ public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemS
 			ItemStack.OPTIONAL_CODEC.listOf().fieldOf("whitelist").forGetter(GemData::whitelist),
 			ItemStack.OPTIONAL_CODEC.listOf().fieldOf("consumed").forGetter(GemData::consumed)
 	).apply(instance, GemData::new));
-	//TODO - 1.21: Theoretically it will work as is because neo has builtin packet splitting for everything now
+	//TODO: Theoretically it will work as is because neo has builtin packet splitting for everything now
 	// but we may want to evaluate moving this off to world save data (and also removing the ItemHelper method)
 	public static final StreamCodec<RegistryFriendlyByteBuf, GemData> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.BOOL, GemData::isWhitelist,
@@ -52,27 +53,38 @@ public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemS
 		return new GemData(isWhitelist, whitelist, Collections.emptyList());
 	}
 
+	/**
+	 * @param stack May be modified by the method
+	 */
 	public GemData addToList(ItemStack stack) {
-		//TODO - 1.21: FIXME, make this a mutable list and make it so that the stacks are modifiable as well
-		List<ItemStack> modifiableConsumed = consumed;
-		boolean hasFound = false;
-		for (ItemStack s : modifiableConsumed) {
-			if (s.getCount() < s.getMaxStackSize() && ItemStack.isSameItemSameComponents(s, stack)) {
-				int remain = s.getMaxStackSize() - s.getCount();
-				if (stack.getCount() <= remain) {
-					s.grow(stack.getCount());
-					hasFound = true;
-					break;
+		if (stack.isEmpty()) {
+			//Nothing to do, just return this element
+			return this;
+		}
+		//Note: We make a shallow copy so that we don't need to use as much memory keeping track of individual stacks
+		// when we modify a stack we copy it then
+		List<ItemStack> modifiableConsumed = new ArrayList<>(consumed);
+		for (int i = 0, size = modifiableConsumed.size(); i < size; i++) {
+			ItemStack existing = modifiableConsumed.get(i);
+			int maxStackSize = existing.getMaxStackSize();
+			if (existing.getCount() < maxStackSize && ItemStack.isSameItemSameComponents(existing, stack)) {
+				int spaceAvailable = maxStackSize - existing.getCount();
+				if (stack.getCount() <= spaceAvailable) {
+					//Replace the element that we are merging into with a fresh copy so that we don't affect the old data
+					existing = existing.copyWithCount(existing.getCount() + stack.getCount());
+					modifiableConsumed.set(i, existing);
+					return new GemData(isWhitelist, whitelist, List.copyOf(modifiableConsumed));
 				} else {
-					s.grow(remain);
-					stack.shrink(remain);
+					//Replace the element that we are merging into with a fresh copy so that we don't affect the old data
+					existing = existing.copyWithCount(existing.getCount() + spaceAvailable);
+					modifiableConsumed.set(i, existing);
+					//Note: We shrink the existing stack that we were passed as we can mutate it
+					stack.shrink(spaceAvailable);
 				}
 			}
 		}
-		if (!hasFound) {
-			modifiableConsumed.add(stack);
-		}
-		//TODO - 1.21: Actually set the modified list back onto a gem data
+		//Add whatever remains of the stack to the end of the list
+		modifiableConsumed.add(stack);
 		return new GemData(isWhitelist, whitelist, List.copyOf(modifiableConsumed));
 	}
 

@@ -107,10 +107,11 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 
 			if (gemData.isWhitelist() == filtered.get()) {
 				ItemStack copy = inv.extractItem(i, stack.getCount() == 1 ? 1 : stack.getCount() / 2, false);
+				//Note: We add the emc to the stack before adding it to the consumed gem data
+				// so that we don't need to worry about addToList mutating the stack
+				addEmcToStack(gem, EMCHelper.getEmcValue(copy) * copy.getCount());
 				gemData = gemData.addToList(copy);
 				gem.set(PEDataComponentTypes.GEM_DATA, gemData);
-
-				addEmcToStack(gem, EMCHelper.getEmcValue(copy) * copy.getCount());
 				hasChanged = true;
 				break;
 			}
