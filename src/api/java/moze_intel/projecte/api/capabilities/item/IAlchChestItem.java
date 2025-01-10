@@ -24,7 +24,7 @@ public interface IAlchChestItem {
 	 * @param level The Level
 	 * @param stack The ItemStack being ticked
 	 *
-	 * @return {@code true} if the passed in stack had its NBT modified to ensure it can be saved.
+	 * @return {@code true} if the passed in stack had its component data modified to ensure it can be saved.
 	 */
 	boolean updateInAlchChest(@NotNull Level level, @NotNull BlockPos pos, @NotNull ItemStack stack);
 }

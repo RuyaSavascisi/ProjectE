@@ -36,7 +36,7 @@ public abstract class WrappedShapelessRecipe implements CraftingRecipe {
 
     @Override
     public boolean matches(@NotNull CraftingInput inv, @NotNull Level world) {
-        //Note: We do not override the matches method if it matches ignoring NBT,
+        //Note: We do not override the matches method if it matches ignoring data components,
         // to ensure that we return the proper value for if there is a match that gives a proper output
         return internal.matches(inv, world) && !assemble(inv, world.registryAccess()).isEmpty();
     }

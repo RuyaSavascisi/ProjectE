@@ -35,20 +35,15 @@ public class ItemPE extends Item {
 		return stack.getOrDefault(PEDataComponentTypes.STORED_EMC, 0L);
 	}
 
-	public static void setEmc(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {
-		//TODO - 1.21: Re-evaluate this and how we define the default component for this
-		stack.set(PEDataComponentTypes.STORED_EMC, amount);
-	}
-
 	public static void addEmcToStack(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {
 		if (amount > 0) {
-			setEmc(stack, getEmc(stack) + amount);
+			stack.update(PEDataComponentTypes.STORED_EMC, 0L, amount, Long::sum);
 		}
 	}
 
 	public static void removeEmc(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {
 		if (amount > 0) {
-			setEmc(stack, Math.max(getEmc(stack) - amount, 0));
+			stack.update(PEDataComponentTypes.STORED_EMC, 0L, amount, (emc, change) -> Math.max(emc - change, 0));
 		}
 	}
 

@@ -55,8 +55,8 @@ class PregeneratedEMCTest {
 	}
 
 	@Test
-	@DisplayName("Test pregen file with keys that contain nbt")
-	void testPregenFileWithNbt() {
+	@DisplayName("Test pregen file with keys that contains data components")
+	void testPregenFileWithDC() {
 		Map<ItemInfo, Long> pregenerated = parseJson("""
 				{
 					"minecraft:dirt[custom_data={my: \\"tag\\"}]": 1
@@ -66,9 +66,9 @@ class PregeneratedEMCTest {
 	}
 
 	@Test
-	@DisplayName("Test pregen file with keys that contain empty nbt")
-	void testPregenFileWithEmptyNbt() {
-		//Empty nbt is ignored and is treated as if it isn't there
+	@DisplayName("Test pregen file with keys that contain an empty data component")
+	void testPregenFileWithEmptyDC() {
+		//Empty data components are ignored and are treated as if they aren't there
 		Map<ItemInfo, Long> pregenerated = parseJson("""
 				{
 					"minecraft:dirt[]": 1

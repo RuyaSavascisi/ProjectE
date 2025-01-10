@@ -139,11 +139,11 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			return tryAdd(attachment, persistentInfo);
 		}
 		if (info.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
-			//Make sure we don't have any NBT as it doesn't have any effect for the tome
+			//Make sure we don't have any data components as it doesn't have any effect for the tome
 			info = info.itemOnly();
 			//Note: We don't bother checking if we already somehow know the tome without having full knowledge
-			// as we are learning it without any NBT which means that it doesn't have any extra persistent item
-			// so can just check if it is already in it by nature of it being a set
+			// as we are learning it without any data components which means that it doesn't have any extra
+			// persistent item so can just check if it is already in it by nature of it being a set
 			attachment.knowledge.add(info);
 			attachment.fullKnowledge = true;
 			fireChangedEvent();
@@ -166,7 +166,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		if (attachment.fullKnowledge) {
 			if (info.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
 				//If we have full knowledge and are trying to remove the tome allow it.
-				//Make sure we don't have any NBT as it doesn't have any effect for the tome
+				//Make sure we don't have any data components as it doesn't have any effect for the tome
 				info = info.itemOnly();
 				attachment.knowledge.remove(info);
 				attachment.fullKnowledge = false;

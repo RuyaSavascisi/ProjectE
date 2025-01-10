@@ -284,8 +284,8 @@ class CustomEMCParserTest {
 	}
 
 	@Test
-	@DisplayName("Test custom emc file with items dependent on nbt")
-	void testCustomEmcFileWithNbt() {
+	@DisplayName("Test custom emc file with items dependent on data components")
+	void testCustomEmcFileWithDC() {
 		//New format that just uses it as an array of NSS -> emc
 		CustomEMCFile customEMCFile = parseJson("""
 				{

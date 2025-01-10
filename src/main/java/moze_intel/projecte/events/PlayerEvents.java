@@ -6,6 +6,7 @@ import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.armor.PEArmor;
+import moze_intel.projecte.gameObjs.items.armor.PEArmor.ReductionInfo;
 import moze_intel.projecte.impl.TransmutationOffline;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.text.PELang;
@@ -17,17 +18,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.util.thread.EffectiveSide;
+import net.neoforged.neoforge.common.damagesource.DamageContainer;
+import net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
@@ -147,37 +146,26 @@ public class PlayerEvents {
 
 	//This event gets called when calculating how much damage to do to the entity, even if it is canceled the entity will still get "hit"
 	@SubscribeEvent
-	public static void onLivingDamaged(LivingIncomingDamageEvent evt) {
-		float damage = evt.getAmount();
-		if (damage > 0) {
-			//TODO - 1.21: Make use of the damage container and maybe apply this via a reduction modifier instead?
-			LivingEntity entityLiving = evt.getEntity();
-			DamageSource source = evt.getSource();
-			float totalPercentReduced = getReductionForSlot(entityLiving, source, EquipmentSlot.HEAD, damage) +
-										getReductionForSlot(entityLiving, source, EquipmentSlot.CHEST, damage) +
-										getReductionForSlot(entityLiving, source, EquipmentSlot.LEGS, damage) +
-										getReductionForSlot(entityLiving, source, EquipmentSlot.FEET, damage);
-			float damageAfter = totalPercentReduced >= 1 ? 0 : damage - damage * totalPercentReduced;
-			if (damageAfter <= 0) {
-				evt.setCanceled(true);
-			} else if (damage != damageAfter) {
-				evt.setAmount(damageAfter);
+	public static void onLivingDamaged(LivingIncomingDamageEvent event) {
+		DamageContainer damageContainer = event.getContainer();
+		if (damageContainer.getNewDamage() > 0) {
+			ReductionInfo reductionInfo = ReductionInfo.ZERO;
+			for (ItemStack armorStack : event.getEntity().getArmorSlots()) {
+				if (armorStack.getItem() instanceof PEArmor armorItem) {
+					//We return the max of this piece's base reduction (in relation to the full set),
+					// and the max damage an item can absorb for a given source
+					reductionInfo = reductionInfo.add(armorItem.getReductionInfo(damageContainer.getSource()));
+				}
+			}
+			if (reductionInfo.percentReduced() >= 1) {
+				event.setCanceled(true);
+			} else if (reductionInfo.maxDamagedAbsorbed() > 0 && reductionInfo.percentReduced() > 0) {
+				ReductionInfo info = reductionInfo;
+				damageContainer.addModifier(Reduction.ARMOR, (container, reduction) -> {
+					float damageAbsorbed = container.getNewDamage() * info.percentReduced();
+					return reduction + Math.min(damageAbsorbed, info.maxDamagedAbsorbed());
+				});
 			}
 		}
-	}
-
-	private static float getReductionForSlot(LivingEntity entityLiving, DamageSource source, EquipmentSlot slot, float damage) {
-		ItemStack armorStack = entityLiving.getItemBySlot(slot);
-		if (armorStack.getItem() instanceof PEArmor armorItem) {
-			ArmorItem.Type type = armorItem.getType();
-			if (type.getSlot() != slot) {
-				//If the armor slot does not match the slot this piece of armor is for then it shouldn't be providing any reduction
-				return 0;
-			}
-			//We return the max of this piece's base reduction (in relation to the full set), and the
-			// max damage an item can absorb for a given source
-			return Math.max(armorItem.getFullSetBaseReduction(), armorItem.getMaxDamageAbsorb(type, source) / damage) * armorItem.getPieceEffectiveness(type);
-		}
-		return 0;
 	}
 }

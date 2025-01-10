@@ -69,8 +69,8 @@ class SerializationTest {
 	}
 
 	@Test
-	@DisplayName("Test Serialization of an Item with NBT")
-	void testItemNBTSerialization() {
+	@DisplayName("Test Serialization of an Item with Data Components")
+	void testItemDCSerialization() {
 		NSSItem expected = NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH);
 		Assertions.assertEquals(expected, deserializeLegacyNSS("minecraft:dirt[custom_data={my: \"tag\"}]"));
 		//Test explicit syntax
@@ -82,7 +82,7 @@ class SerializationTest {
 						"custom_data": "{my: \\"tag\\"}"
 					}
 				}"""));
-		//Alternate nbt format
+		//Alternate data component format
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:item",
@@ -128,14 +128,14 @@ class SerializationTest {
 	}
 
 	@Test
-	@DisplayName("Test Serialization of an Item Tag with NBT")
-	void testItemTagNBTSerialization() {
+	@DisplayName("Test Serialization of an Item Tag with Data Components")
+	void testItemTagDCSerialization() {
 		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("#c:cobblestones{my: \"tag\"}"));
 	}
 
 	@Test
-	@DisplayName("Test Serialization of an Explicit Item Tag with NBT")
-	void testExplicitItemTagNBTSerialization() {
+	@DisplayName("Test Serialization of an Explicit Item Tag with Data Components")
+	void testExplicitItemTagDCSerialization() {
 		//The tag is ignored
 		NSSItem expected = NSSItem.createTag(Tags.Items.COBBLESTONES);
 		Assertions.assertEquals(expected, parseJson("""
@@ -176,8 +176,8 @@ class SerializationTest {
 	}
 
 	@Test
-	@DisplayName("Test Serialization of a Fluid with NBT")
-	void testFluidNBTSerialization() {
+	@DisplayName("Test Serialization of a Fluid with Data Components")
+	void testFluidDCSerialization() {
 		NSSFluid expected = NSSFluid.createFluid(Fluids.WATER, CodecTestHelper.MY_TAG_PATCH);
 		Assertions.assertEquals(expected, deserializeLegacyNSS("FLUID|minecraft:water[custom_data={my: \"tag\"}]"));
 		//Test explicit syntax
@@ -189,7 +189,7 @@ class SerializationTest {
 						"custom_data": "{my: \\"tag\\"}"
 					}
 				}"""));
-		//Alternate nbt format
+		//Alternate data component format
 		Assertions.assertEquals(expected, parseJson("""
 				{
 					"type": "projecte:fluid",
@@ -235,8 +235,8 @@ class SerializationTest {
 	}
 
 	@Test
-	@DisplayName("Test Serialization of a Fluid Tag with NBT")
-	void testFluidTagNBTSerialization() {
+	@DisplayName("Test Serialization of a Fluid Tag with Data Components")
+	void testFluidTagDCSerialization() {
 		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS("FLUID|#c:milk{my: \"tag\"}"));
 		//The tag is ignored
 		NSSFluid expected = NSSFluid.createTag(Tags.Fluids.MILK);

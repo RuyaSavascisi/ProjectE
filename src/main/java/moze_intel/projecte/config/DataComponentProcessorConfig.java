@@ -44,9 +44,7 @@ public class DataComponentProcessorConfig extends BasePEConfig {
 						"saved to knowledge/copied in a condenser.",
 				"To disable an Data Component Processor set the '" + ENABLED + "' option for it to false.",
 				"To disable an Data Component Processor from contributing to the persistent data set the '" + PERSISTENT + "' option for it to false. Note: that if there is no " +
-				PERSISTENT + "' config option, the Data Component Processor never has any persistent data.",
-				"The config options in this file are synced from server to client, as the processors get used dynamically to calculate/preview EMC values for items " +
-				"and are not included in the synced EMC mappings.")
+				PERSISTENT + "' config option, the Data Component Processor never has any persistent data.")
 				.push(MAIN_KEY);
 		for (IDataComponentProcessor processor : processors) {
 			processorConfigs.put(processor.getName(), new ProcessorConfig(this, builder, processor));

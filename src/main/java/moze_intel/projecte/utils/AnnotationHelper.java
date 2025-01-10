@@ -31,28 +31,28 @@ public class AnnotationHelper {
 
 	private static final Type MAPPER_TYPE = Type.getType(EMCMapper.class);
 	private static final Type RECIPE_TYPE_MAPPER_TYPE = Type.getType(RecipeTypeMapper.class);
-	private static final Type NBT_PROCESSOR_TYPE = Type.getType(DataComponentProcessor.class);
+	private static final Type DATA_COMPONENT_PROCESSOR_TYPE = Type.getType(DataComponentProcessor.class);
 
 	public static List<IDataComponentProcessor> getDataComponentProcessors() {
 		ModList modList = ModList.get();
-		List<IDataComponentProcessor> nbtProcessors = new ArrayList<>();
+		List<IDataComponentProcessor> dataComponentProcessors = new ArrayList<>();
 		Object2IntMap<IDataComponentProcessor> priorities = new Object2IntOpenHashMap<>();
 		for (ModFileScanData scanData : modList.getAllScanData()) {
 			for (AnnotationData data : scanData.getAnnotations()) {
-				if (NBT_PROCESSOR_TYPE.equals(data.annotationType()) && checkRequiredMods(data)) {
+				if (DATA_COMPONENT_PROCESSOR_TYPE.equals(data.annotationType()) && checkRequiredMods(data)) {
 					//If all the mods were loaded then attempt to get the processor
-					IDataComponentProcessor processor = getNBTProcessor(data.memberName());
+					IDataComponentProcessor processor = getDataComponentProcessor(data.memberName());
 					if (processor != null) {
 						int priority = getPriority(data);
-						nbtProcessors.add(processor);
+						dataComponentProcessors.add(processor);
 						priorities.put(processor, priority);
 						PECore.LOGGER.info("Found and loaded Data Component Processor: {}, with priority {}", processor.getName(), priority);
 					}
 				}
 			}
 		}
-		nbtProcessors.sort(Collections.reverseOrder(Comparator.comparingInt(priorities::getInt)));
-		return nbtProcessors;
+		dataComponentProcessors.sort(Collections.reverseOrder(Comparator.comparingInt(priorities::getInt)));
+		return dataComponentProcessors;
 	}
 
 	public static List<IRecipeTypeMapper> getRecipeTypeMappers() {
@@ -116,7 +116,7 @@ public class AnnotationHelper {
 	}
 
 	@Nullable
-	private static IDataComponentProcessor getNBTProcessor(String className) {
+	private static IDataComponentProcessor getDataComponentProcessor(String className) {
 		return createOrGetInstance(className, IDataComponentProcessor.class, DataComponentProcessor.Instance.class, IDataComponentProcessor::getName);
 	}
 

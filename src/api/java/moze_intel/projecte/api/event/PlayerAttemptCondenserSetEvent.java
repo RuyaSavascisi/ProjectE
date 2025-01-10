@@ -40,7 +40,7 @@ public class PlayerAttemptCondenserSetEvent extends Event implements ICancellabl
 	}
 
 	/**
-	 * Gets the "cleaned" {@link ItemInfo} that the player is trying to condense. This {@link ItemInfo} may have reduced NBT information.
+	 * Gets the "cleaned" {@link ItemInfo} that the player is trying to condense. This {@link ItemInfo} may have reduced data component information.
 	 *
 	 * @return The "cleaned" {@link ItemInfo} that the player is trying to learn.
 	 */

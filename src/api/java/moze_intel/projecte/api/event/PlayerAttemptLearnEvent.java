@@ -40,7 +40,7 @@ public class PlayerAttemptLearnEvent extends Event implements ICancellableEvent 
 	}
 
 	/**
-	 * Gets the "cleaned" {@link ItemInfo} that the player is trying to learn. This {@link ItemInfo} may have reduced NBT information.
+	 * Gets the "cleaned" {@link ItemInfo} that the player is trying to learn. This {@link ItemInfo} may have reduced data component information.
 	 *
 	 * @return The "cleaned" {@link ItemInfo} that the player is trying to learn.
 	 */

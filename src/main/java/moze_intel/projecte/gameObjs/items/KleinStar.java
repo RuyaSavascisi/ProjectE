@@ -52,7 +52,7 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, @NotNull InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (!level.isClientSide && !FMLEnvironment.production && player.isCreative()) {
-			setEmc(stack, tier.maxEmc);
+			stack.set(PEDataComponentTypes.STORED_EMC, tier.maxEmc);
 			return InteractionResultHolder.success(stack);
 		}
 		return InteractionResultHolder.pass(stack);
@@ -97,7 +97,7 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 		long storedEmc = getStoredEmc(stack);
 		long toRemove = Math.min(storedEmc, toExtract);
 		if (action.execute()) {
-			setEmc(stack, storedEmc - toRemove);
+			stack.set(PEDataComponentTypes.STORED_EMC, storedEmc - toRemove);
 		}
 		return toRemove;
 	}
@@ -105,7 +105,7 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 	@Override
 	@Range(from = 0, to = Long.MAX_VALUE)
 	public long getStoredEmc(@NotNull ItemStack stack) {
-		return ItemPE.getEmc(stack);
+		return getEmc(stack);
 	}
 
 	@Override

@@ -28,9 +28,9 @@ public class PETags {
 		 */
 		public static final TagKey<Item> COLLECTOR_FUEL = tag("collector_fuel");
 		/**
-		 * Items in this tag can have their NBT tags duped by condensers and transmutation tables
+		 * Items in this tag can have their Data Components duped by condensers and transmutation tables
 		 */
-		public static final TagKey<Item> NBT_WHITELIST = tag("nbt_whitelist");
+		public static final TagKey<Item> DATA_COMPONENT_WHITELIST = tag("data_component_whitelist");
 		/**
 		 * Items in this tag can contribute and are "valid dusts" for the covalence repair recipe
 		 */

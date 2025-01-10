@@ -322,7 +322,6 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 
 	@Override
 	public void attachCapabilities(RegisterCapabilitiesEvent event) {
-		//TODO - 1.21: Test this
 		event.registerItem(ItemHandler.ITEM, (stack, context) -> new ComponentItemHandler(stack, PEDataComponentTypes.EYE_INVENTORY.get(), 2), this);
 	}
 

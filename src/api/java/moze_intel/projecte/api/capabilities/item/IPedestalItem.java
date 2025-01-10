@@ -23,7 +23,7 @@ public interface IPedestalItem {
 
 	/***
 	 * Called on both client and server each time an active DMPedestalBlockEntity ticks with this item inside
-	 * @return {@code true} if the passed in stack had its NBT modified to ensure it can be saved.
+	 * @return {@code true} if the passed in stack had its component data modified to ensure it can be saved.
 	 */
 	<PEDESTAL extends BlockEntity & IDMPedestal> boolean updateInPedestal(@NotNull ItemStack stack, @NotNull Level level, @NotNull BlockPos pos, @NotNull PEDESTAL pedestal);
 

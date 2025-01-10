@@ -84,11 +84,11 @@ public class CrTNSSResolver {
 	}
 
 	/**
-	 * Creates a {@link NormalizedSimpleStack} that matches the given stack's item and NBT.
+	 * Creates a {@link NormalizedSimpleStack} that matches the given stack's item and data components.
 	 *
-	 * @param stack Stack to match the item and NBT of
+	 * @param stack Stack to match the item and data components of
 	 *
-	 * @return A {@link NormalizedSimpleStack} that matches the given stack's item and NBT.
+	 * @return A {@link NormalizedSimpleStack} that matches the given stack's item and data components.
 	 */
 	@ZenCodeType.Method
 	public static NormalizedSimpleStack fromItem(IItemStack stack) {
@@ -114,11 +114,11 @@ public class CrTNSSResolver {
 	}
 
 	/**
-	 * Creates a {@link NormalizedSimpleStack} that matches the given stack's fluid and NBT.
+	 * Creates a {@link NormalizedSimpleStack} that matches the given stack's fluid and data components.
 	 *
-	 * @param stack Stack to match the fluid and NBT of
+	 * @param stack Stack to match the fluid and data components of
 	 *
-	 * @return A {@link NormalizedSimpleStack} that matches the given stack's fluid and NBT.
+	 * @return A {@link NormalizedSimpleStack} that matches the given stack's fluid and data components.
 	 */
 	@ZenCodeType.Method
 	public static NormalizedSimpleStack fromFluid(IFluidStack stack) {

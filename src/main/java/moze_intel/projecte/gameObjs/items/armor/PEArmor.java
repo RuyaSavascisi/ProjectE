@@ -51,6 +51,16 @@ public abstract class PEArmor extends ArmorItem {
 	 */
 	public abstract float getMaxDamageAbsorb(ArmorItem.Type type, DamageSource source);
 
+	public ReductionInfo getReductionInfo(DamageSource source) {
+		float maxDamageAbsorb = getMaxDamageAbsorb(type, source);
+		float fullSetReduction = getFullSetBaseReduction();
+		if (maxDamageAbsorb > 0 && fullSetReduction > 0) {
+			float pieceEffectiveness = getPieceEffectiveness(type);
+			return new ReductionInfo(fullSetReduction * pieceEffectiveness, maxDamageAbsorb * pieceEffectiveness);
+		}
+		return ReductionInfo.ZERO;
+	}
+
 	/**
 	 * Gets the overall effectiveness of a given slots piece.
 	 */
@@ -65,5 +75,19 @@ public abstract class PEArmor extends ArmorItem {
 
 	protected static boolean isArmorSlot(int slot) {
 		return slot >= Inventory.INVENTORY_SIZE && slot < Inventory.INVENTORY_SIZE + 4;
+	}
+
+	public record ReductionInfo(float percentReduced, float maxDamagedAbsorbed) {
+
+		public static final ReductionInfo ZERO = new ReductionInfo(0, 0);
+
+		public ReductionInfo add(ReductionInfo other) {
+			if (this == ZERO) {
+				return other;
+			} else if (other == ZERO) {
+				return this;
+			}
+			return new ReductionInfo(percentReduced + other.percentReduced, maxDamagedAbsorbed + other.maxDamagedAbsorbed);
+		}
 	}
 }

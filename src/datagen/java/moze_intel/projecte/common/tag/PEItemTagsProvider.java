@@ -61,7 +61,7 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				PEItems.MEDIUM_COVALENCE_DUST.get(),
 				PEItems.HIGH_COVALENCE_DUST.get()
 		);
-		tag(PETags.Items.NBT_WHITELIST);
+		tag(PETags.Items.DATA_COMPONENT_WHITELIST);
 		tag(PETags.Items.CURIOS_BELT).add(
 				PEItems.REPAIR_TALISMAN.get(),
 				PEItems.WATCH_OF_FLOWING_TIME.get()

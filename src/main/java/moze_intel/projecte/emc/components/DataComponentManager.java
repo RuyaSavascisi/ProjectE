@@ -26,7 +26,7 @@ public class DataComponentManager {
 
 	@NotNull
 	public static ItemInfo getPersistentInfo(@NotNull ItemInfo info) {
-		if (info.getComponentsPatch().isEmpty() || info.getItem().is(PETags.Items.NBT_WHITELIST) || EMCMappingHandler.hasEmcValue(info)) {
+		if (info.getComponentsPatch().isEmpty() || info.getItem().is(PETags.Items.DATA_COMPONENT_WHITELIST) || EMCMappingHandler.hasEmcValue(info)) {
 			//If we have no Data Components, we want to allow the tag to be kept, or we have an exact match to a stored value just go with it
 			return info;
 		}

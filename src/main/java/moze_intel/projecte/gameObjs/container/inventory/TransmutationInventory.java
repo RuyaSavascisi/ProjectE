@@ -78,7 +78,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 */
 	public void handleKnowledge(ItemInfo info) {
 		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
-		//Pass both stacks to the Attempt Learn Event in case a mod cares about the NBT/damage difference when comparing
+		//Pass both stacks to the Attempt Learn Event in case a mod cares about the data component/damage difference when comparing
 		if (!provider.hasKnowledge(cleanedInfo) && !NeoForge.EVENT_BUS.post(new PlayerAttemptLearnEvent(player, info, cleanedInfo)).isCanceled()) {
 			if (provider.addKnowledge(cleanedInfo)) {
 				//Only sync the knowledge changed if the provider successfully added it

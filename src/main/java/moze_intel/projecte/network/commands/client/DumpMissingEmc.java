@@ -42,7 +42,7 @@ public class DumpMissingEmc {
 			//If the search tab hasn't been initialized yet initialize it
 			initTab(tab);
 		}
-		//Check all items in the search tab to see if they have an EMC value (as they may have nbt variants declared)
+		//Check all items in the search tab to see if they have an EMC value (as they may have data component variants declared)
 		for (ItemStack stack : tab.getSearchTabDisplayItems()) {
 			if (!stack.isEmpty()) {
 				ItemInfo itemInfo = ItemInfo.fromStack(stack);
@@ -54,8 +54,8 @@ public class DumpMissingEmc {
 			}
 		}
 		for (Holder<Item> item : allItems) {
-			//Try any items that we didn't have a variant with NBT for that had one
-			//Note: This is intentionally not using Item#getDefaultInstance as nbt based variants should be based on the creative mode tabs
+			//Try any items that we didn't have a variant with non default data components for that had one
+			//Note: This is intentionally not using Item#getDefaultInstance as data component based variants should be based on the creative mode tabs
 			ItemInfo itemInfo = ItemInfo.fromItem(item);
 			if (EMCHelper.getEmcValue(itemInfo) == 0) {
 				missing.add(itemInfo);

@@ -36,6 +36,9 @@ public final class ItemInfo {
 			() -> "ItemInfo does not support tags or missing items"
 	);
 
+	/**
+	 * Codec for encoding and decoding ItemInfo.
+	 */
 	public static final Codec<ItemInfo> EXPLICIT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(ItemInfo::getItem),
 			DataComponentPatch.CODEC.optionalFieldOf("data", DataComponentPatch.EMPTY).forGetter(ItemInfo::getComponentsPatch)
@@ -67,17 +70,17 @@ public final class ItemInfo {
 	 *
 	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
 	 */
+	@SuppressWarnings("deprecation")
 	public static ItemInfo fromItem(@NotNull ItemLike itemLike, @NotNull DataComponentPatch componentsPatch) {
 		return new ItemInfo(itemLike.asItem().builtInRegistryHolder(), componentsPatch);
 	}
 
 	/**
-	 * Creates an {@link ItemInfo} object from a given {@link Item} with an optional {@link DataComponentPatch} attached.
+	 * Creates an {@link ItemInfo} object from a given {@link Holder} with an optional {@link DataComponentPatch} attached.
 	 *
-	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
+	 * @apiNote While it is not required that the holder does not represent air, it is expected to check yourself to make sure it is not air.
 	 */
 	public static ItemInfo fromItem(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
-		//TODO - 1.21: Update Docs
 		return new ItemInfo(item, componentsPatch);
 	}
 
@@ -86,17 +89,17 @@ public final class ItemInfo {
 	 *
 	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
 	 */
+	@SuppressWarnings("deprecation")
 	public static ItemInfo fromItem(@NotNull ItemLike itemLike) {
 		return fromItem(itemLike.asItem().builtInRegistryHolder(), DataComponentPatch.EMPTY);
 	}
 
 	/**
-	 * Creates an {@link ItemInfo} object from a given {@link Item} with no {@link DataComponentPatch} attached.
+	 * Creates an {@link ItemInfo} object from a given {@link Holder} with no {@link DataComponentPatch} attached.
 	 *
-	 * @apiNote While it is not required that the item is not air, it is expected to check yourself to make sure it is not air.
+	 * @apiNote While it is not required that the holder does not represent air, it is expected to check yourself to make sure it is not air.
 	 */
 	public static ItemInfo fromItem(@NotNull Holder<Item> item) {
-		//TODO - 1.21: Update Docs
 		return fromItem(item, DataComponentPatch.EMPTY);
 	}
 
@@ -128,16 +131,15 @@ public final class ItemInfo {
 	}
 
 	/**
-	 * @return The {@link Item} stored in this {@link ItemInfo}.
+	 * @return The {@link Holder} that represents the item stored by this {@link ItemInfo}.
 	 */
 	@NotNull
 	public Holder<Item> getItem() {
-		//TODO - 1.21: Docs for this and all other methods we added that are undocumented
 		return item;
 	}
 
 	/**
-	 * @return The {@link DataComponentPatch} stored in this {@link ItemInfo}, or {@link DataComponentPatch#EMPTY} if there is no nbt data stored.
+	 * @return The {@link DataComponentPatch} stored in this {@link ItemInfo}, or {@link DataComponentPatch#EMPTY} if there is no custom data stored.
 	 */
 	@NotNull
 	public DataComponentPatch getComponentsPatch() {

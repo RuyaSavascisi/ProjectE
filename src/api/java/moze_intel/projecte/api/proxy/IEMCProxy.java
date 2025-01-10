@@ -182,12 +182,12 @@ public interface IEMCProxy {
 	long getSellValue(@NotNull ItemInfo info);
 
 	/**
-	 * Gets an {@link ItemInfo} with the {@link net.minecraft.nbt.CompoundTag} reduced to what will be saved to knowledge/used for condensing.
+	 * Gets an {@link ItemInfo} with the {@link net.minecraft.core.component.DataComponentPatch} reduced to what will be saved to knowledge/used for condensing.
 	 *
 	 * @param info The ItemInfo we want to trim to the data that will be used for persistence.
 	 *
-	 * @return An {@link ItemInfo} for the same item as the input info, but with a potentially reduced {@link net.minecraft.nbt.CompoundTag}, containing whatever data is
-	 * persistent/matters.
+	 * @return An {@link ItemInfo} for the same item as the input info, but with a potentially reduced {@link net.minecraft.core.component.DataComponentPatch}, containing
+	 * whatever data is persistent/matters.
 	 */
 	@NotNull
 	ItemInfo getPersistentInfo(@NotNull ItemInfo info);
