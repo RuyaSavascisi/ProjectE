@@ -4,7 +4,9 @@ import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.conversion.CustomConversion;
@@ -50,22 +52,26 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 		Map<ResourceLocation, CustomConversionFile> loading = new HashMap<>();
 
 		// Find all data/<domain>/pe_custom_conversions/foo/bar.json
-		CONVERSION_LISTER.listMatchingResourceStacks(resourceManager).forEach((file /*<domain>:foo/bar*/, resources) -> {
+		for (Map.Entry<ResourceLocation, List<Resource>> entry : CONVERSION_LISTER.listMatchingResourceStacks(resourceManager).entrySet()) {
+			ResourceLocation file = entry.getKey();//<domain>:foo/bar
 			ResourceLocation conversionId = CONVERSION_LISTER.fileToId(file);
 
 			PECore.LOGGER.info("Considering file {}, ID {}", file, conversionId);
 			NSSFake.setCurrentNamespace(conversionId.toString());
 
 			// Iterate through all copies of this conversion, from lowest to highest priority datapack, merging the results together
-			for (Resource resource : resources) {
+			for (Resource resource : entry.getValue()) {
 				try (Reader reader = resource.openAsReader()) {
-					PECodecHelper.read(registryAccess, reader, CustomConversionFile.CODEC, "custom conversion file")
-							.ifPresent(result -> loading.merge(conversionId, result, CustomConversionFile::merge));
+					Optional<CustomConversionFile> fileOptional = PECodecHelper.read(registryAccess, reader, CustomConversionFile.CODEC, "custom conversion file");
+					//noinspection OptionalIsPresent - Capturing lambda
+					if (fileOptional.isPresent()) {
+						loading.merge(conversionId, fileOptional.get(), CustomConversionFile::merge);
+					}
 				} catch (IOException e) {
 					PECore.LOGGER.error("Could not load resource {}", file, e);
 				}
 			}
-		});
+		}
 		NSSFake.resetNamespace();
 		return loading;
 	}
