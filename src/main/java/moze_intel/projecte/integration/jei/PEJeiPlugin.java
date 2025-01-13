@@ -16,6 +16,7 @@ import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import mezz.jei.api.runtime.IJeiRuntime;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.capabilities.item.IModeChanger;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.gameObjs.container.PhilosStoneContainer;
 import moze_intel.projecte.gameObjs.gui.AbstractCollectorScreen;
@@ -46,10 +47,15 @@ public class PEJeiPlugin implements IModPlugin {
 		@Override
 		public Object getSubtypeData(@NotNull ItemStack stack, @NotNull UidContext context) {
 			if (context == UidContext.Ingredient) {
+				Object mode = null;
+				if (stack.getItem() instanceof IModeChanger<?> modeChanger) {
+					mode = modeChanger.getMode(stack);
+				}
 				long stored = ItemPE.getEmc(stack);
 				if (stored > 0) {
-					return stored;
+					return mode == null ? stored : List.of(mode, stored);
 				}
+				return mode;
 			}
 			return null;
 		}
@@ -58,9 +64,15 @@ public class PEJeiPlugin implements IModPlugin {
 		@Override
 		public String getLegacyStringSubtypeInfo(@NotNull ItemStack stack, @NotNull UidContext context) {
 			if (context == UidContext.Ingredient) {
+				Object mode = null;
+				if (stack.getItem() instanceof IModeChanger<?> modeChanger) {
+					mode = modeChanger.getMode(stack);
+				}
 				long stored = ItemPE.getEmc(stack);
 				if (stored > 0) {
-					return Long.toString(stored);
+					return mode == null ? Long.toString(stored) : mode + ";" + stored;
+				} else if (mode != null) {
+					return mode.toString();
 				}
 			}
 			return "";
