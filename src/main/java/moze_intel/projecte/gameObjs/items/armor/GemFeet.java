@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import java.util.List;
 import java.util.function.Supplier;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
@@ -26,16 +25,15 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLEnvironment;
-import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class GemFeet extends GemArmorBase implements IHasConditionalAttributes {
+public class GemFeet extends GemArmorBase {
 
-	private static final AttributeModifier STEP_ASSIST = new AttributeModifier(PECore.rl("gem_step_assist"), 0.4, Operation.ADD_VALUE);
 	private static final Vec3 VERTICAL_MOVEMENT = new Vec3(0, 0.1, 0);
 	private static final boolean STEP_ASSIST_DEFAULT = false;
 
 	private final Supplier<ItemAttributeModifiers> defaultModifiers;
+	private final Supplier<ItemAttributeModifiers> defaultWithStepAssistModifiers;
 
 	public GemFeet(Properties props) {
 		super(ArmorItem.Type.BOOTS, props.component(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT));
@@ -44,12 +42,26 @@ public class GemFeet extends GemArmorBase implements IHasConditionalAttributes {
 				new AttributeModifier(PECore.rl("armor"), 1.0, Operation.ADD_MULTIPLIED_TOTAL),
 				EquipmentSlotGroup.FEET
 		));
+		this.defaultWithStepAssistModifiers = Suppliers.memoize(() -> getDefaultAttributeModifiers().withModifierAdded(
+				Attributes.STEP_HEIGHT,
+				new AttributeModifier(PECore.rl("gem_step_assist"), 0.4, Operation.ADD_VALUE),
+				EquipmentSlotGroup.FEET
+		));
 	}
 
 	@NotNull
 	@Override
 	public ItemAttributeModifiers getDefaultAttributeModifiers() {
 		return this.defaultModifiers.get();
+	}
+
+	@NotNull
+	@Override
+	public ItemAttributeModifiers getDefaultAttributeModifiers(@NotNull ItemStack stack) {
+		if (stack.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT)) {
+			return this.defaultWithStepAssistModifiers.get();
+		}
+		return super.getDefaultAttributeModifiers(stack);
 	}
 
 	public void toggleStepAssist(ItemStack boots, Player player) {
@@ -105,13 +117,6 @@ public class GemFeet extends GemArmorBase implements IHasConditionalAttributes {
 			tooltip.add(PELang.STEP_ASSIST.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
 		} else {
 			tooltip.add(PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
-		}
-	}
-
-	@Override
-	public void adjustAttributes(ItemAttributeModifierEvent event) {
-		if (event.getItemStack().getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT)) {
-			event.replaceModifier(Attributes.STEP_HEIGHT, STEP_ASSIST, EquipmentSlotGroup.FEET);
 		}
 	}
 }
