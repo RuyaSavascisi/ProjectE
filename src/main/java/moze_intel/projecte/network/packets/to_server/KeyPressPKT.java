@@ -1,9 +1,12 @@
 package moze_intel.projecte.network.packets.to_server;
 
 import io.netty.buffer.ByteBuf;
-import java.util.function.Predicate;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.capabilities.PECapabilities;
+import moze_intel.projecte.api.capabilities.item.IExtraFunction;
+import moze_intel.projecte.api.capabilities.item.IItemCharge;
+import moze_intel.projecte.api.capabilities.item.IModeChanger;
+import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.armor.GemArmorBase;
 import moze_intel.projecte.gameObjs.items.armor.GemChest;
@@ -61,17 +64,17 @@ public record KeyPressPKT(PEKeybind key) implements IPEPacket {
 			ItemStack stack = player.getItemInHand(hand);
 			switch (key) {
 				case CHARGE -> {
-					if (tryPerformCapability(stack, PECapabilities.CHARGE_ITEM_CAPABILITY, capability -> capability.changeCharge(player, stack, hand))) {
+					if (tryPerformCapability(player, stack, hand, PECapabilities.CHARGE_ITEM_CAPABILITY, IItemCharge::changeCharge)) {
 						return;
 					} else if (hand == InteractionHand.MAIN_HAND && isSafe(stack) && GemArmorBase.hasAnyPiece(player)) {
-						internalAbilities.setGemState(!internalAbilities.getGemState());
+						internalAbilities.toggleGemState();
 						ILangEntry langEntry = internalAbilities.getGemState() ? PELang.GEM_ACTIVATE : PELang.GEM_DEACTIVATE;
 						player.sendSystemMessage(langEntry.translate());
 						return;
 					}
 				}
 				case EXTRA_FUNCTION -> {
-					if (tryPerformCapability(stack, PECapabilities.EXTRA_FUNCTION_ITEM_CAPABILITY, capability -> capability.doExtraFunction(stack, player, hand))) {
+					if (tryPerformCapability(player, stack, hand, PECapabilities.EXTRA_FUNCTION_ITEM_CAPABILITY, IExtraFunction::doExtraFunction)) {
 						return;
 					} else if (hand == InteractionHand.MAIN_HAND && isSafe(stack) && internalAbilities.getGemState()) {
 						ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
@@ -84,7 +87,7 @@ public record KeyPressPKT(PEKeybind key) implements IPEPacket {
 				}
 				case FIRE_PROJECTILE -> {
 					if (!stack.isEmpty() && internalAbilities.getProjectileCooldown() == 0 &&
-						tryPerformCapability(stack, PECapabilities.PROJECTILE_SHOOTER_ITEM_CAPABILITY, capability -> capability.shootProjectile(player, stack, hand))) {
+						tryPerformCapability(player, stack, hand, PECapabilities.PROJECTILE_SHOOTER_ITEM_CAPABILITY, IProjectileShooter::shootProjectile)) {
 						PlayerHelper.swingItem(player, hand);
 						internalAbilities.resetProjectileCooldown();
 					}
@@ -97,7 +100,7 @@ public record KeyPressPKT(PEKeybind key) implements IPEPacket {
 					}
 				}
 				case MODE -> {
-					if (tryPerformCapability(stack, PECapabilities.MODE_CHANGER_ITEM_CAPABILITY, capability -> capability.changeMode(player, stack, hand))) {
+					if (tryPerformCapability(player, stack, hand, PECapabilities.MODE_CHANGER_ITEM_CAPABILITY, IModeChanger::changeMode)) {
 						return;
 					}
 				}
@@ -105,12 +108,19 @@ public record KeyPressPKT(PEKeybind key) implements IPEPacket {
 		}
 	}
 
-	private static <CAPABILITY> boolean tryPerformCapability(ItemStack stack, ItemCapability<CAPABILITY, Void> capability, Predicate<CAPABILITY> perform) {
+	private static <CAPABILITY> boolean tryPerformCapability(Player player, ItemStack stack, InteractionHand hand, ItemCapability<CAPABILITY, Void> capability,
+			CapabilityProcessor<CAPABILITY> processor) {
 		CAPABILITY impl = stack.getCapability(capability);
-		return impl != null && perform.test(impl);
+		return impl != null && processor.process(impl, player, stack, hand);
 	}
 
 	private static boolean isSafe(ItemStack stack) {
 		return ProjectEConfig.server.misc.unsafeKeyBinds.get() || stack.isEmpty();
+	}
+
+	@FunctionalInterface
+	private interface CapabilityProcessor<CAPABILITY> {
+
+		boolean process(CAPABILITY capability, Player player, ItemStack stack, InteractionHand hand);
 	}
 }

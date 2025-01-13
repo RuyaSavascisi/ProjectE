@@ -11,7 +11,8 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 
-//TODO - 1.21: Whitelist don't allow duplicates (and maybe make it a strict size of nine?
+//TODO - 1.21: Whitelist don't allow duplicates (and maybe make it a strict size of nine?)
+//TODO - 1.21: Do we want to enforce whitelist and consumed being unmodifiable views?
 public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemStack> consumed) {
 
 	public static final GemData EMPTY = new GemData(false, Collections.emptyList(), Collections.emptyList());

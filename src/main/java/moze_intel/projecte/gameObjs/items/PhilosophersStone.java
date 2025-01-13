@@ -120,7 +120,7 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 	}
 
 	@Override
-	public boolean doExtraFunction(@NotNull ItemStack stack, @NotNull Player player, InteractionHand hand) {
+	public boolean doExtraFunction(@NotNull Player player, @NotNull ItemStack stack, InteractionHand hand) {
 		if (!player.level().isClientSide) {
 			player.openMenu(new ContainerProvider(stack));
 		}

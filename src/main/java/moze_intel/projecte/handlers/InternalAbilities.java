@@ -39,8 +39,8 @@ public final class InternalAbilities {
 		return gemChestCooldown;
 	}
 
-	public void setGemState(boolean state) {
-		gemArmorReady = state;
+	public void toggleGemState() {
+		gemArmorReady = !gemArmorReady;
 	}
 
 	public boolean getGemState() {

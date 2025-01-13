@@ -19,11 +19,11 @@ public interface IExtraFunction {
 	/**
 	 * Called serverside when the server receives an Extra Function key packet
 	 *
-	 * @param stack  The ItemStack performing this function
 	 * @param player The player performing this function
+	 * @param stack  The ItemStack performing this function
 	 * @param hand   The hand this stack was in, or null if the call was not from the player's hands
 	 *
 	 * @return Whether the operation succeeded
 	 */
-	boolean doExtraFunction(@NotNull ItemStack stack, @NotNull Player player, @Nullable InteractionHand hand);
+	boolean doExtraFunction(@NotNull Player player, @NotNull ItemStack stack, @Nullable InteractionHand hand);
 }
