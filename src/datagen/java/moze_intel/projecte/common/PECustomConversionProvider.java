@@ -9,7 +9,6 @@ import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.FluidTags;
@@ -376,10 +375,7 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 	}
 
 	private ItemStack horn(HolderLookup.Provider registries, ResourceKey<Instrument> instrument) {
-		return registries.lookup(Registries.INSTRUMENT)
-				.flatMap(instruments -> instruments.get(instrument))
-				.map(inst -> InstrumentItem.create(Items.GOAT_HORN, inst))
-				.orElseThrow(() -> new RuntimeException("Unable to find instrument for creating horn"));
+		return InstrumentItem.create(Items.GOAT_HORN, registries.holderOrThrow(instrument));
 	}
 
 	private static NormalizedSimpleStack ingotTag(String ingot) {

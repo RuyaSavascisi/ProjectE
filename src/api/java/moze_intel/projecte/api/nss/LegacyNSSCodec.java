@@ -14,7 +14,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import moze_intel.projecte.api.nss.LegacyNSSCodec.NameComponent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.DefaultedRegistry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
@@ -22,7 +25,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.Nullable;
 
 public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault, Codec<String> baseCodec
@@ -78,18 +85,46 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 	public <T> DataResult<T> encode(Either<ResourceLocation, NameComponent> input, DynamicOps<T> ops, T prefix) {
 		String stringRepresentation = input.map(
 				left -> "#" + left,//Tag
-				right -> right.name().toString() + convertComponentPatchToString(right.patch())
+				right -> right.name().toString() + convertComponentPatchToStringWithOps(ops, right.patch())
 		);
 		return baseCodec.encode(stringRepresentation, ops, prefix);
 	}
 
+	private static <T> String convertComponentPatchToStringWithOps(DynamicOps<T> ops, @Nullable DataComponentPatch patch) {
+		if (patch == null || patch.isEmpty()) {
+			return "";
+		}
+		if (ops instanceof RegistryOps<T> registryOps) {
+			//Attempt to get the lookup provider from the passed in dynamic ops if it happens to be a registry ops
+			return convertComponentPatchToString(RegistryOps.create(NbtOps.INSTANCE, registryOps.lookupProvider), patch);
+		}
+		return convertComponentPatchToString(patch);
+	}
+
+	//TODO - 1.21: Recommend using one of the other methods
 	public static String convertComponentPatchToString(@Nullable DataComponentPatch patch) {
+		if (patch == null || patch.isEmpty()) {
+			return "";
+		}
+		HolderLookup.Provider registries = registryAccess();
+		DynamicOps<Tag> ops =  NbtOps.INSTANCE;
+		if (registries != null) {
+			ops = registries.createSerializationContext(ops);
+		}
+		return convertComponentPatchToString(ops, patch);
+	}
+
+	public static String convertComponentPatchToString(HolderLookup.Provider registries, @Nullable DataComponentPatch patch) {
+		return convertComponentPatchToString(registries.createSerializationContext(NbtOps.INSTANCE), patch);
+	}
+
+	public static String convertComponentPatchToString(DynamicOps<Tag> ops, @Nullable DataComponentPatch patch) {
 		if (patch == null || patch.isEmpty()) {
 			return "";
 		}
 		StringBuilder builder = new StringBuilder("[");
 		for (Map.Entry<DataComponentType<?>, Optional<?>> entry : patch.entrySet()) {
-			DataResult<String> result = appendComponentData(entry.getKey(), entry.getValue());
+			DataResult<String> result = appendComponentData(ops, entry.getKey(), entry.getValue());
 			//TODO - 1.21: Handle error
 			result.ifSuccess(builder::append);
 		}
@@ -98,7 +133,7 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 	}
 
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-	private static <COMPONENT> DataResult<String> appendComponentData(DataComponentType<COMPONENT> componentType, Optional<?> value) {
+	private static <COMPONENT> DataResult<String> appendComponentData(DynamicOps<Tag> ops, DataComponentType<COMPONENT> componentType, Optional<?> value) {
 		Codec<COMPONENT> componentCodec = componentType.codec();
 		if (componentCodec == null) {
 			return DataResult.error(() -> componentType + " is not a persistent component");
@@ -109,16 +144,38 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 		}
 		if (value.isEmpty()) {
 			return DataResult.success("!" + typeName);
-		} else {
-			//TODO - 1.21: Does this have access to registries
-			return componentCodec.encodeStart(NbtOps.INSTANCE, (COMPONENT) value.get())
-					.map(tag -> typeName + "=" + tag);
 		}
+		return componentCodec.encodeStart(ops, (COMPONENT) value.get())
+				.map(tag -> typeName + "=" + tag);
 	}
 
 	@Override
 	public String toString() {
 		return "projecte:legacy_nss_codec";
+	}
+
+	@Nullable
+	private static HolderLookup.Provider registryAccess() {
+		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+		if (server != null) {
+			return server.registryAccess();
+		} else if (FMLEnvironment.dist.isClient()) {
+			return ClientHelper.registryAccess();
+		}
+		return null;
+	}
+
+	private static class ClientHelper {//Separate class to prevent class loading issues on servers
+
+		@Nullable
+		private static HolderLookup.Provider registryAccess() {
+			Minecraft minecraft = Minecraft.getInstance();
+			if (minecraft == null) {//Null in datagen
+				return null;
+			}
+			ClientLevel level = minecraft.level;
+			return level == null ? null : level.registryAccess();
+		}
 	}
 
 	private static class ComponentDecoderState<T> {
@@ -186,8 +243,7 @@ public record LegacyNSSCodec<TYPE>(Registry<TYPE> registry, boolean allowDefault
 					this.builder.remove(componentType);
 				} else {
 					if (missingExpected(reader, '=')) {
-						//TODO - 1.21: Better error message
-						return DataResult.error(() -> "Expected component to SOMETHING with a '='");
+						return DataResult.error(() -> "Expected component to value conversion to be separated by a '='");
 					}
 					reader.skipWhitespace();
 					DataResult<? extends Pair<?, T>> componentResult = readComponent(reader, componentType);

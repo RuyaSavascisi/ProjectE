@@ -1,4 +1,4 @@
-// 1.21.1	2025-01-07T17:34:08.6174007	Tags for minecraft:item mod id projecte
+// 1.21.1	2025-01-13T12:40:29.5210327	Tags for minecraft:item mod id projecte
 b3907f1aa02b78471363a02cc94dc9569664a81d data/curios/tags/item/belt.json
 9090bbbb09865a842a67d6a0c05eaf72df3720f7 data/curios/tags/item/klein_star.json
 58753d63ef9f09a75ea529395bb7c6d282310f2b data/curios/tags/item/necklace.json
@@ -35,4 +35,4 @@ be3eb6a2aa417db88fc3647b56f5bba00abbc024 data/minecraft/tags/item/shovels.json
 823df3f383ec8da9f84db57523a1d8ee863903b7 data/projecte/tags/item/alchemical_bags.json
 e4725bb8b1976c0a55fd0ced5bb9741612220299 data/projecte/tags/item/collector_fuel.json
 fd5806da7a4775edf3b8f6520ee2bdd6d4068164 data/projecte/tags/item/covalence_dust.json
-35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/projecte/tags/item/nbt_whitelist.json
+35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/projecte/tags/item/data_component_whitelist.json
