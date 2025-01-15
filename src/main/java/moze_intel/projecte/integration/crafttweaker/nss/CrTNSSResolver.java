@@ -10,10 +10,8 @@ import com.blamejared.crafttweaker.api.tag.type.KnownTag;
 import com.blamejared.crafttweaker_annotations.annotations.Document;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import java.util.Optional;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
@@ -60,12 +58,8 @@ public class CrTNSSResolver {
 	}
 
 	private static <T> NormalizedSimpleStack deserialize(DynamicOps<T> ops, T input) {
-		DataResult<NormalizedSimpleStack> result = IPECodecHelper.INSTANCE.nssCodec().parse(ops, input);
-		Optional<DataResult.Error<NormalizedSimpleStack>> error = result.error();
-		if (error.isPresent()) {
-			throw new IllegalArgumentException("Error deserializing NSS representation: " + error.get().message());
-		}
-		return result.result().orElseThrow();
+		return IPECodecHelper.INSTANCE.nssCodec().parse(ops, input)
+				.getOrThrow(error -> new IllegalArgumentException("Error deserializing NSS representation: " + error));
 	}
 
 	/**

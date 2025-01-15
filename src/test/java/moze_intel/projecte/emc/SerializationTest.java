@@ -1,9 +1,6 @@
 package moze_intel.projecte.emc;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.mojang.serialization.JsonOps;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSFluid;
@@ -11,14 +8,12 @@ import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,29 +23,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @DisplayName("Test Serialization of Normalized Simple Stacks")
 class SerializationTest {
 
-	private static NormalizedSimpleStack deserializeLegacyNSS(HolderLookup.Provider registryAccess, String jsonString) {
-		RegistryOps<JsonElement> serializationContext = registryAccess.createSerializationContext(JsonOps.INSTANCE);
-		return IPECodecHelper.INSTANCE.legacyNSSCodec().parse(serializationContext, new JsonPrimitive(jsonString)).getOrThrow(JsonParseException::new);
-	}
-
 	private static NormalizedSimpleStack parseJson(HolderLookup.Provider registryAccess, String json) {
 		return CodecTestHelper.parseJson(registryAccess, IPECodecHelper.INSTANCE.nssCodec(), "serialization test", json);
-	}
-
-	@BeforeAll
-	@DisplayName("Manually load the default supported codecs")
-	static void setupBuiltinCodecs() {
-		//Registry init does not happen for tests, so we need to manually add our codecs
-		CodecTestHelper.initBuiltinNSS();
 	}
 
 	@Test
 	@DisplayName("Test Serialization of a valid Item")
 	void testValidItemSerialization(MinecraftServer server) {
-		NSSItem expected = NSSItem.createItem(Items.DIRT);
-		Assertions.assertEquals(expected, deserializeLegacyNSS(server.registryAccess(), "minecraft:dirt"));
-		//Test explicit syntax
-		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
+		Assertions.assertEquals(NSSItem.createItem(Items.DIRT), parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:item",
 					"id": "minecraft:dirt"
@@ -58,16 +38,8 @@ class SerializationTest {
 	}
 
 	@Test
-	@DisplayName("Test Serialization of a valid Item with prefix included")
-	void testValidItemSerializationAlt(MinecraftServer server) {
-		Assertions.assertEquals(NSSItem.createItem(Items.DIRT), deserializeLegacyNSS(server.registryAccess(), "ITEM|minecraft:dirt"));
-	}
-
-	@Test
 	@DisplayName("Test Serialization of an invalid Item")
 	void testInvalidItemSerialization(MinecraftServer server) {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "minecraft:Dirt"));
-		//Test explicit syntax
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:item",
@@ -79,8 +51,6 @@ class SerializationTest {
 	@DisplayName("Test Serialization of an Item with Data Components")
 	void testItemDCSerialization(MinecraftServer server) {
 		NSSItem expected = NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH);
-		Assertions.assertEquals(expected, deserializeLegacyNSS(server.registryAccess(), "minecraft:dirt[custom_data={my: \"tag\"}]"));
-		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:item",
@@ -105,10 +75,7 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of a valid Item Tag")
 	void testValidItemTagSerialization(MinecraftServer server) {
-		NSSItem expected = NSSItem.createTag(Tags.Items.COBBLESTONES);
-		Assertions.assertEquals(expected, deserializeLegacyNSS(server.registryAccess(), "#c:cobblestones"));
-		//Test explicit syntax
-		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
+		Assertions.assertEquals(NSSItem.createTag(Tags.Items.COBBLESTONES), parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:item",
 					"tag": "c:cobblestones"
@@ -118,9 +85,6 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of an invalid Item Tag")
 	void testInvalidItemTagSerialization(MinecraftServer server) {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "#minecraft:TAG"));
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "#TAG"));
-		//Test explicit syntax
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:item",
@@ -132,12 +96,6 @@ class SerializationTest {
 					"type": "projecte:item",
 					"tag": "#c:cobblestones"
 				}"""));
-	}
-
-	@Test
-	@DisplayName("Test Serialization of an Item Tag with Data Components")
-	void testItemTagDCSerialization(MinecraftServer server) {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "#c:cobblestones{my: \"tag\"}"));
 	}
 
 	@Test
@@ -160,10 +118,7 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of a valid Fluid")
 	void testValidFluidSerialization(MinecraftServer server) {
-		NSSFluid expected = NSSFluid.createFluid(Fluids.WATER);
-		Assertions.assertEquals(expected, deserializeLegacyNSS(server.registryAccess(), "FLUID|minecraft:water"));
-		//Test explicit syntax
-		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
+		Assertions.assertEquals(NSSFluid.createFluid(Fluids.WATER), parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:fluid",
 					"id": "minecraft:water"
@@ -173,8 +128,6 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of an invalid Fluid")
 	void testInvalidFluidSerialization(MinecraftServer server) {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "FLUID|minecraft:Milk"));
-		//Test explicit syntax
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:fluid",
@@ -186,8 +139,6 @@ class SerializationTest {
 	@DisplayName("Test Serialization of a Fluid with Data Components")
 	void testFluidDCSerialization(MinecraftServer server) {
 		NSSFluid expected = NSSFluid.createFluid(Fluids.WATER, CodecTestHelper.MY_TAG_PATCH);
-		Assertions.assertEquals(expected, deserializeLegacyNSS(server.registryAccess(), "FLUID|minecraft:water[custom_data={my: \"tag\"}]"));
-		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:fluid",
@@ -212,10 +163,7 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of a valid Fluid Tag")
 	void testValidFluidTagSerialization(MinecraftServer server) {
-		NSSFluid expected = NSSFluid.createTag(Tags.Fluids.MILK);
-		Assertions.assertEquals(expected, deserializeLegacyNSS(server.registryAccess(), "FLUID|#c:milk"));
-		//Test explicit syntax
-		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
+		Assertions.assertEquals(NSSFluid.createTag(Tags.Fluids.MILK), parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:fluid",
 					"tag": "c:milk"
@@ -225,9 +173,6 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of an invalid Fluid Tag")
 	void testInvalidFluidTagSerialization(MinecraftServer server) {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "FLUID|#c:Milk"));
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "FLUID|#TAG"));
-		//Test explicit syntax
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:fluid",
@@ -244,10 +189,8 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of a Fluid Tag with Data Components")
 	void testFluidTagDCSerialization(MinecraftServer server) {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "FLUID|#c:milk{my: \"tag\"}"));
-		//The tag is ignored
-		NSSFluid expected = NSSFluid.createTag(Tags.Fluids.MILK);
-		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
+		//The component data is ignored
+		Assertions.assertEquals(NSSFluid.createTag(Tags.Fluids.MILK), parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:fluid",
 					"tag": "c:milk",
@@ -263,8 +206,6 @@ class SerializationTest {
 	@DisplayName("Test Serialization of a FAKE entry")
 	void testFake(MinecraftServer server) {
 		NSSFake expected = NSSFake.create("MyFakeEntry");
-		Assertions.assertEquals(expected, deserializeLegacyNSS(server.registryAccess(), "FAKE|MyFakeEntry"));
-		//Test explicit syntax
 		Assertions.assertEquals(expected, parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:fake",
@@ -304,8 +245,6 @@ class SerializationTest {
 	@Test
 	@DisplayName("Test Serialization of an invalid type")
 	void testInvalid(MinecraftServer server) {
-		Assertions.assertThrows(JsonParseException.class, () -> deserializeLegacyNSS(server.registryAccess(), "INVALID|minecraft:test"));
-		//Test explicit syntax
 		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
 				{
 					"type": "projecte:invalid",

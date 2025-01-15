@@ -1,9 +1,9 @@
 package moze_intel.projecte.api;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSItem;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
@@ -29,20 +29,17 @@ import org.jetbrains.annotations.Nullable;
 public final class ItemInfo {
 
 	/**
-	 * Codec for encoding ItemInfo to and from strings.
+	 * MapCodec for encoding and decoding ItemInfo.
 	 */
-	public static final Codec<ItemInfo> LEGACY_CODEC = IPECodecHelper.INSTANCE.validatePresent(
-			NSSItem.LEGACY_CODEC.xmap(ItemInfo::fromNSS, itemInfo -> NSSItem.createItem(itemInfo.getItem(), itemInfo.getComponentsPatch())),
-			() -> "ItemInfo does not support tags or missing items"
-	);
+	public static final MapCodec<ItemInfo> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+			BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(ItemInfo::getItem),
+			DataComponentPatch.CODEC.optionalFieldOf("data", DataComponentPatch.EMPTY).forGetter(ItemInfo::getComponentsPatch)
+	).apply(instance, ItemInfo::new));
 
 	/**
 	 * Codec for encoding and decoding ItemInfo.
 	 */
-	public static final Codec<ItemInfo> EXPLICIT_CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(ItemInfo::getItem),
-			DataComponentPatch.CODEC.optionalFieldOf("data", DataComponentPatch.EMPTY).forGetter(ItemInfo::getComponentsPatch)
-	).apply(instance, ItemInfo::new));
+	public static final Codec<ItemInfo> CODEC = MAP_CODEC.codec();
 
 	/**
 	 * Stream codec for encoding ItemInfo across the network.

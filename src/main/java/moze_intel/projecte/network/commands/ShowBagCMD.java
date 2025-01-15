@@ -6,6 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.serialization.DataResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -131,9 +132,9 @@ public class ShowBagCMD {
 					CompoundTag attachmentData = playerDat.getCompound(AttachmentHolder.ATTACHMENTS_NBT_KEY);
 					CompoundTag bagData = attachmentData.getCompound(PEAttachmentTypes.ALCHEMICAL_BAGS.getId().toString());
 					RegistryOps<Tag> serializationContext = server.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-					Optional<AlchemicalBagAttachment> result = AlchemicalBagAttachment.CODEC.parse(serializationContext, bagData).result();
-					if (result.isPresent()) {
-						return result.get().getBag(color);
+					DataResult<AlchemicalBagAttachment> result = AlchemicalBagAttachment.CODEC.parse(serializationContext, bagData);
+					if (result.isSuccess()) {
+						return result.getOrThrow().getBag(color);
 					}
 				}
 			} catch (IOException e) {

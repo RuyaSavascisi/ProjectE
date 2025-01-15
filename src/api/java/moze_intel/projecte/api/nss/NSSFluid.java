@@ -1,9 +1,7 @@
 package moze_intel.projecte.api.nss;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
-import moze_intel.projecte.api.codec.NSSCodecHolder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,16 +18,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 
-	private static final boolean ALLOW_DEFAULT = false;
-
-	/**
-	 * Codec for encoding NSSFluids to and from strings.
-	 */
-	public static final Codec<NSSFluid> LEGACY_CODEC = createLegacyCodec(BuiltInRegistries.FLUID, ALLOW_DEFAULT, "FLUID|", NSSFluid::new);
-
-	public static final MapCodec<NSSFluid> EXPLICIT_CODEC = createExplicitCodec(BuiltInRegistries.FLUID, ALLOW_DEFAULT, NSSFluid::new);
-
-	public static final NSSCodecHolder<NSSFluid> CODECS = new NSSCodecHolder<>("FLUID", LEGACY_CODEC, EXPLICIT_CODEC);
+	public static final MapCodec<NSSFluid> CODEC = createCodec(BuiltInRegistries.FLUID, false, NSSFluid::new);
 
 
 	private NSSFluid(@NotNull ResourceLocation resourceLocation, boolean isTag, @NotNull DataComponentPatch componentsPatch) {
@@ -113,7 +102,7 @@ public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 	}
 
 	@Override
-	public NSSCodecHolder<NSSFluid> codecs() {
-		return CODECS;
+	public MapCodec<NSSFluid> codec() {
+		return CODEC;
 	}
 }

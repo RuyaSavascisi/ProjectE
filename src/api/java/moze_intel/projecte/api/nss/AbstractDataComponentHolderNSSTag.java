@@ -1,12 +1,8 @@
 package moze_intel.projecte.api.nss;
 
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
-import moze_intel.projecte.api.codec.IPECodecHelper;
-import moze_intel.projecte.api.nss.LegacyNSSCodec.NameComponent;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
@@ -63,45 +59,15 @@ public abstract class AbstractDataComponentHolderNSSTag<TYPE> extends AbstractNS
 	 * @param allowDefault   {@code true} to allow ids matching the default element of the registry.
 	 * @param nssConstructor Normalized Simple Stack constructor.
 	 */
-	protected static <TYPE, NSS extends AbstractDataComponentHolderNSSTag<TYPE>> MapCodec<NSS> createExplicitCodec(Registry<TYPE> registry, boolean allowDefault,
+	protected static <TYPE, NSS extends AbstractDataComponentHolderNSSTag<TYPE>> MapCodec<NSS> createCodec(Registry<TYPE> registry, boolean allowDefault,
 			DataComponentHolderNSSConstructor<TYPE, NSS> nssConstructor) {
 		//Note: We return a MapCodec so that dispatch codecs can inline this
 		return NeoForgeExtraCodecs.withAlternative(
-				createExplicitTagCodec(nssConstructor),
+				createTagCodec(nssConstructor),
 				RecordCodecBuilder.mapCodec(instance -> instance.group(
 						idComponent(registry, allowDefault),
 						DataComponentPatch.CODEC.optionalFieldOf("data", DataComponentPatch.EMPTY).forGetter(AbstractDataComponentHolderNSSTag::getComponentsPatch)
 				).apply(instance, nssConstructor::create))
-		);
-	}
-
-	/**
-	 * Creates a legacy codec capable of reading and writing this {@link NormalizedSimpleStack} to/from strings.
-	 *
-	 * @param registry       Registry that backs this codec.
-	 * @param allowDefault   {@code true} to allow ids matching the default element of the registry.
-	 * @param prefix         A string representing the prefix to use for serialization. Must end with '|' to properly work. Anything without a '|' is assumed to be an
-	 *                       item.
-	 * @param nssConstructor Normalized Simple Stack constructor.
-	 */
-	protected static <TYPE, NSS extends AbstractDataComponentHolderNSSTag<TYPE>> Codec<NSS> createLegacyCodec(Registry<TYPE> registry, boolean allowDefault, String prefix,
-			DataComponentHolderNSSConstructor<TYPE, NSS> nssConstructor) {
-		return createLegacyCodec(registry, allowDefault, IPECodecHelper.INSTANCE.withPrefix(prefix), nssConstructor);
-	}
-
-	/**
-	 * Creates a legacy codec capable of reading and writing this {@link NormalizedSimpleStack} to/from strings.
-	 *
-	 * @param registry       Registry that backs this codec.
-	 * @param allowDefault   {@code true} to allow ids matching the default element of the registry.
-	 * @param baseCodec      String codec that processes any related prefix requirements.
-	 * @param nssConstructor Normalized Simple Stack constructor.
-	 */
-	static <TYPE, NSS extends AbstractDataComponentHolderNSSTag<TYPE>> Codec<NSS> createLegacyCodec(Registry<TYPE> registry, boolean allowDefault,
-			Codec<String> baseCodec, DataComponentHolderNSSConstructor<TYPE, NSS> nssConstructor) {
-		return new LegacyNSSCodec<>(registry, allowDefault, baseCodec).xmap(
-				data -> data.map(nssConstructor::createTag, right -> nssConstructor.create(right.name(), right.patch())),
-				nss -> nss.representsTag() ? Either.left(nss.getResourceLocation()) : Either.right(new NameComponent(nss.getResourceLocation(), nss.getComponentsPatch()))
 		);
 	}
 

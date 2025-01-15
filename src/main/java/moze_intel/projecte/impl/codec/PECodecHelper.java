@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -25,29 +24,21 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.ProjectERegistries;
 import moze_intel.projecte.api.codec.IPECodecHelper;
-import moze_intel.projecte.api.codec.NSSCodecHolder;
-import moze_intel.projecte.api.nss.NSSFake;
-import moze_intel.projecte.api.nss.NSSFluid;
-import moze_intel.projecte.api.nss.NSSItem;
+import moze_intel.projecte.api.codec.MapProcessor;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.VisibleForTesting;
 
 public class PECodecHelper implements IPECodecHelper {
 
@@ -77,93 +68,19 @@ public class PECodecHelper implements IPECodecHelper {
 	private final Codec<BigInteger> NON_NEGATIVE_BIG_INT = bigIntRangeWithMessage(BigInteger.ZERO, null, value -> "Value must be non-negative: " + value);
 	private final Codec<BigInteger> POSITIVE_BIG_INT = bigIntRangeWithMessage(BigInteger.ONE, null, value -> "Value must be non-negative: " + value);
 
-	private final Map<String, Codec<? extends NormalizedSimpleStack>> nssLegacyCodecs = new HashMap<>();
-	private Codec<NSSCodecHolder<?>> nssSerializerCodec;
-
-	@SuppressWarnings("unchecked")
-	private final Codec<NormalizedSimpleStack> LEGACY_NSS_CODEC = new Codec<>() {
-		@Override
-		public <T> DataResult<Pair<NormalizedSimpleStack, T>> decode(DynamicOps<T> ops, T input) {
-			return ExtraCodecs.NON_EMPTY_STRING.decode(ops, input).flatMap(p -> {
-				String[] parts = p.getFirst().split("\\|", 2);
-				String prefix = parts.length == 2 ? parts[0] : NSSItem.CODECS.legacyPrefix();
-				Codec<NormalizedSimpleStack> codec = (Codec<NormalizedSimpleStack>) nssLegacyCodecs.get(prefix);
-				if (codec == null) {
-					return DataResult.error(() -> "Unknown legacy prefix: " + prefix);
-				}
-				return codec.decode(ops, input);
-			});
-		}
-
-		@Override
-		public <T> DataResult<T> encode(NormalizedSimpleStack input, DynamicOps<T> ops, T prefix) {
-			Codec<NormalizedSimpleStack> inputCodec = (Codec<NormalizedSimpleStack>) input.codecs().legacy();
-			return inputCodec.encode(input, ops, prefix);
-		}
-
-		@Override
-		public String toString() {
-			return "projecte:legacy_normalized_simple_stack";
-		}
-	};
-
-	private final Codec<NormalizedSimpleStack> EXPLICIT_NSS_CODEC = Codec.lazyInitialized(() -> nssSerializerCodec.dispatch(NormalizedSimpleStack::codecs, NSSCodecHolder::explicit));
-
-	private final Codec<NormalizedSimpleStack> NSS_CODEC = NeoForgeExtraCodecs.withAlternative(LEGACY_NSS_CODEC, EXPLICIT_NSS_CODEC);
-
-	@VisibleForTesting
-	static void initBuiltinNSS() {
-		PECodecHelper instance = (PECodecHelper) INSTANCE;
-		instance.nssLegacyCodecs.put(NSSFake.CODECS.legacyPrefix(), NSSFake.CODECS.legacy());
-		instance.nssLegacyCodecs.put(NSSItem.CODECS.legacyPrefix(), NSSItem.CODECS.legacy());
-		instance.nssLegacyCodecs.put(NSSFluid.CODECS.legacyPrefix(), NSSFluid.CODECS.legacy());
-		ResourceLocation item = PECore.rl("item");
-		ResourceLocation fluid = PECore.rl("fluid");
-		ResourceLocation fake = PECore.rl("fake");
-		instance.nssSerializerCodec = ResourceLocation.CODEC.flatXmap(id -> {
-			if (id.equals(item)) {
-				return DataResult.success(NSSItem.CODECS);
-			} else if (id.equals(fluid)) {
-				return DataResult.success(NSSFluid.CODECS);
-			} else if (id.equals(fake)) {
-				return DataResult.success(NSSFake.CODECS);
-			}
-			return DataResult.error(() -> "Unknown builtin NSS serializer");
-		}, codecHolder -> {
-			if (codecHolder == NSSItem.CODECS) {
-				return DataResult.success(item);
-			} else if (codecHolder == NSSFluid.CODECS) {
-				return DataResult.success(fluid);
-			} else if (codecHolder == NSSFake.CODECS) {
-				return DataResult.success(fake);
-			}
-			return DataResult.error(() -> "Unknown builtin NSS serializer");
-		});
-	}
-
-	@Override
-	public void setSerializers(Registry<NSSCodecHolder<?>> registry) {
-		//Ensure there are no set legacy codecs, in case we are getting called after snapshot injection while joining a server
-		nssLegacyCodecs.clear();
-		for (NSSCodecHolder<?> codecHolder : registry) {
-			nssLegacyCodecs.put(codecHolder.legacyPrefix(), codecHolder.legacy());
-		}
-		nssSerializerCodec = registry.byNameCodec();
-	}
-
-	@Override
-	public Codec<NormalizedSimpleStack> legacyNSSCodec() {
-		return LEGACY_NSS_CODEC;
-	}
-
-	@Override
-	public Codec<NormalizedSimpleStack> explicitNSSCodec() {
-		return EXPLICIT_NSS_CODEC;
-	}
+	private final MapCodec<NormalizedSimpleStack> NSS_MAP_CODEC = ProjectERegistries.NSS_SERIALIZER.byNameCodec().dispatchMap(
+			NormalizedSimpleStack::codec, Function.identity()
+	);
+	private final Codec<NormalizedSimpleStack> NSS_CODEC = NSS_MAP_CODEC.codec();
 
 	@Override
 	public Codec<NormalizedSimpleStack> nssCodec() {
 		return NSS_CODEC;
+	}
+
+	@Override
+	public MapCodec<NormalizedSimpleStack> nssMapCodec() {
+		return NSS_MAP_CODEC;
 	}
 
 	@Override
@@ -210,18 +127,13 @@ public class PECodecHelper implements IPECodecHelper {
 	}
 
 	@Override
-	public Codec<String> withPrefix(String prefix) {
-		return ExtraCodecs.NON_EMPTY_STRING.comapFlatMap(str -> {
-			if (str.startsWith(prefix)) {
-				return DataResult.success(str.substring(prefix.length()));
-			}
-			return DataResult.error(() -> "Does not start with " + prefix);
-		}, str -> prefix + str);
+	public <K, V> Codec<Map<K, V>> lenientKeyUnboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec, MapProcessor<K, V> processor) {
+		return new PEUnboundedMapCodec<>(keyCodec, elementCodec, processor, true);
 	}
 
 	@Override
-	public <K, V> Codec<Map<K, V>> lenientKeyUnboundedMap(Codec<K> keyCodec, Codec<V> elementCodec) {
-		return new LenientKeyUnboundedMapCodec<>(keyCodec, elementCodec);
+	public <K, V> Codec<Map<K, V>> unboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec, MapProcessor<K, V> processor) {
+		return new PEUnboundedMapCodec<>(keyCodec, elementCodec, processor, false);
 	}
 
 	@Override
@@ -229,8 +141,8 @@ public class PECodecHelper implements IPECodecHelper {
 		return codec.mapResult(new ResultFunction<>() {//Like orElse except logs the error
 			@Override
 			public <T> DataResult<TYPE> apply(DynamicOps<T> ops, MapLike<T> input, DataResult<TYPE> result) {
-				if (result.error().isPresent()) {
-					PECore.LOGGER.error(onError.get(), result.error().get().message());
+				if (result.isError()) {
+					PECore.LOGGER.error(onError.get(), result.error().orElseThrow().message());
 					//If there is a key that is not serializable promote it to an invalid object. This will be filtered out before converting to a map
 					// but allows for us to collect and see what errors might exist in the values
 					return DataResult.success(fallback);
@@ -252,14 +164,12 @@ public class PECodecHelper implements IPECodecHelper {
 
 	public static <TYPE> void writeToFile(HolderLookup.Provider registries, Path path, Codec<TYPE> codec, TYPE value, String fileDescription) {
 		DataResult<JsonElement> result = codec.encodeStart(registries.createSerializationContext(JsonOps.INSTANCE), value);
-		Optional<DataResult.Error<JsonElement>> error = result.error();
-		if (error.isPresent()) {
-			PECore.LOGGER.error("Failed to convert {} to json: {}", fileDescription, error.get().message());
+		if (result.isError()) {
+			PECore.LOGGER.error("Failed to convert {} to json: {}", fileDescription, result.error().orElseThrow().message());
 			return;
 		}
-		JsonElement json = result.result().orElseThrow();
 		try (Writer writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-			PRETTY_GSON.toJson(json, writer);
+			PRETTY_GSON.toJson(result.getOrThrow(), writer);
 		} catch (IOException e) {
 			PECore.LOGGER.error("Failed to write {} file: {}", fileDescription, path, e);
 		}
@@ -285,8 +195,8 @@ public class PECodecHelper implements IPECodecHelper {
 			return Optional.empty();
 		}
 		DataResult<TYPE> result = codec.parse(registries.createSerializationContext(JsonOps.INSTANCE), json);
-		if (result.error().isPresent()) {
-			PECore.LOGGER.error("Couldn't parse {}: {}", description, result.error().get().message());
+		if (result.isError()) {
+			PECore.LOGGER.error("Couldn't parse {}: {}", description, result.error().orElseThrow().message());
 			return Optional.empty();
 		}
 		return result.result();

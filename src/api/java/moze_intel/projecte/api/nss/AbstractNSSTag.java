@@ -1,8 +1,6 @@
 package moze_intel.projecte.api.nss;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.datafixers.util.Either;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,11 +10,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import moze_intel.projecte.api.codec.IPECodecHelper;
-import moze_intel.projecte.api.nss.LegacyNSSCodec.NameComponent;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
@@ -139,7 +135,7 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 *
 	 * @param nssConstructor Normalized Simple Stack constructor.
 	 */
-	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> MapCodec<NSS> createExplicitTagCodec(NSSTagConstructor<TYPE, NSS> nssConstructor) {
+	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> MapCodec<NSS> createTagCodec(NSSTagConstructor<TYPE, NSS> nssConstructor) {
 		return RecordCodecBuilder.mapCodec(instance -> instance.group(
 				IPECodecHelper.INSTANCE.validatePresent(
 						ResourceLocation.CODEC, () -> "Must represent a tag"
@@ -156,25 +152,14 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> RecordCodecBuilder<NSS, ResourceLocation> idComponent(Registry<?> registry, boolean allowDefault) {
 		return ResourceLocation.CODEC.validate(id -> {
 			if (id == null) {
-				return com.mojang.serialization.DataResult.error(() -> "Must represent a registry id");
+				return DataResult.error(() -> "Must represent a registry id");
+			} else if (!registry.containsKey(id)) {
+				return DataResult.error(() -> "Registry " + registry.key().location() + " does not contain element " + id);
+			} else if (!allowDefault && registry instanceof DefaultedRegistry<?> defaultedRegistry && id.equals(defaultedRegistry.getDefaultKey())) {
+				return DataResult.error(() -> "NormalizedSimpleStack cannot be created for registry " + registry.key().location() + " with the default element " + id);
 			}
-			return validate(registry, allowDefault, id);
+			return DataResult.success(id);
 		}).fieldOf("id").forGetter(nss -> nss.representsTag() ? null : nss.getResourceLocation());
-	}
-
-	/**
-	 * Validates if an id is contained in the registry and if {@code allowDefault = false} doesn't match the default element of the registry.
-	 *
-	 * @param registry     Registry that backs this codec.
-	 * @param allowDefault {@code true} to allow ids matching the default element of the registry.
-	 */
-	private static DataResult<ResourceLocation> validate(Registry<?> registry, boolean allowDefault, ResourceLocation id) {
-		if (!registry.containsKey(id)) {
-			return DataResult.error(() -> "Registry " + registry.key().location() + " does not contain element " + id);
-		} else if (!allowDefault && registry instanceof DefaultedRegistry<?> defaultedRegistry && id.equals(defaultedRegistry.getDefaultKey())) {
-			return DataResult.error(() -> "NormalizedSimpleStack cannot be created for registry " + registry.key().location() + " with the default element " + id);
-		}
-		return DataResult.success(id);
 	}
 
 	/**
@@ -184,31 +169,14 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 * @param allowDefault   {@code true} to allow ids matching the default element of the registry.
 	 * @param nssConstructor Normalized Simple Stack constructor.
 	 */
-	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> MapCodec<NSS> createExplicitCodec(Registry<TYPE> registry, boolean allowDefault,
+	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> MapCodec<NSS> createCodec(Registry<TYPE> registry, boolean allowDefault,
 			NSSTagConstructor<TYPE, NSS> nssConstructor) {
 		//Note: We return a MapCodec so that dispatch codecs can inline this
 		return NeoForgeExtraCodecs.withAlternative(
-				createExplicitTagCodec(nssConstructor),
+				createTagCodec(nssConstructor),
 				RecordCodecBuilder.mapCodec(instance -> instance.group(
 						idComponent(registry, allowDefault)
 				).apply(instance, nssConstructor::create))
-		);
-	}
-
-	/**
-	 * Creates a legacy codec capable of reading and writing this {@link NormalizedSimpleStack} to/from strings.
-	 *
-	 * @param registry       Registry that backs this codec.
-	 * @param allowDefault   {@code true} to allow ids matching the default element of the registry.
-	 * @param prefix         A string representing the prefix to use for serialization. Must end with '|' to properly work. Anything without a '|' is assumed to be an
-	 *                       item.
-	 * @param nssConstructor Normalized Simple Stack constructor.
-	 */
-	protected static <TYPE, NSS extends AbstractNSSTag<TYPE>> Codec<NSS> createLegacyCodec(Registry<TYPE> registry, boolean allowDefault, String prefix,
-			NSSTagConstructor<TYPE, NSS> nssConstructor) {
-		return new LegacyNSSCodec<>(registry, allowDefault, IPECodecHelper.INSTANCE.withPrefix(prefix)).xmap(
-				data -> data.map(nssConstructor::createTag, right -> nssConstructor.create(right.name())),
-				nss -> nss.representsTag() ? Either.left(nss.getResourceLocation()) : Either.right(new NameComponent(nss.getResourceLocation(), DataComponentPatch.EMPTY))
 		);
 	}
 

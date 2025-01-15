@@ -12,7 +12,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Items;
 import net.neoforged.testframework.junit.EphemeralTestServerProvider;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,13 +22,6 @@ class CustomConversionMapperTest {
 
 	private static CustomConversionFile parseJson(HolderLookup.Provider registryAccess, String json) {
 		return CodecTestHelper.parseJson(registryAccess, CustomConversionFile.CODEC, "custom conversion test", json);
-	}
-
-	@BeforeAll
-	@DisplayName("Manually load the default supported codecs")
-	static void setupBuiltinCodecs() {
-		//Registry init does not happen for tests, so we need to manually add our codecs
-		CodecTestHelper.initBuiltinNSS();
 	}
 
 	@Test
@@ -58,7 +50,7 @@ class CustomConversionMapperTest {
 		Assertions.assertEquals(1, conversionFile.groups().size());
 		Assertions.assertTrue(conversionFile.groups().containsKey("groupa"), "Map contains key for group");
 		ConversionGroup group = conversionFile.groups().get("groupa");
-		Assertions.assertEquals(group.comment(), "A conversion group for something", "Group contains specific comment");
+		Assertions.assertEquals("A conversion group for something", group.comment(), "Group contains specific comment");
 		Assertions.assertEquals(0, group.size());
 	}
 
@@ -71,28 +63,66 @@ class CustomConversionMapperTest {
 						"groupa": {
 							"conversions": [
 								{
-									"output": "iron_ingot",
-									"ingredients": {
-										"stone": 1,
-										"granite": 2,
-										"diorite": 3
-									}
-								},
-								{
-									"output": "gold_ingot",
+									"output": {
+										"type": "projecte:item",
+										"id": "iron_ingot"
+									},
 									"ingredients": [
-										"stone",
-										"granite",
-										"diorite"
+										{
+											"type": "projecte:item",
+											"id": "stone"
+										},
+										{
+											"type": "projecte:item",
+											"id": "granite",
+											"amount": 2
+										},
+										{
+											"type": "projecte:item",
+											"id": "diorite",
+											"amount": 3
+										}
 									]
 								},
 								{
-									"output": "copper_ingot",
+									"output": {
+										"type": "projecte:item",
+										"id": "gold_ingot"
+									},
+									"ingredients": [
+										{
+											"type": "projecte:item",
+											"id": "stone"
+										},
+										{
+											"type": "projecte:item",
+											"id": "granite"
+										},
+										{
+											"type": "projecte:item",
+											"id": "diorite"
+										}
+									]
+								},
+								{
+									"output": {
+										"type": "projecte:item",
+										"id": "copper_ingot"
+									},
 									"count": 3,
 									"ingredients": [
-										"stone",
-										"stone",
-										"stone"
+										{
+											"type": "projecte:item",
+											"id": "stone"
+										},
+										{
+											"type": "projecte:item",
+											"id": "stone"
+										},
+										{
+											"type": "projecte:item",
+											"id": "stone"
+										}
 									]
 								}
 							]
@@ -105,7 +135,7 @@ class CustomConversionMapperTest {
 		Assertions.assertEquals(3, group.size());
 		List<CustomConversion> conversions = group.conversions();
 		{
-			CustomConversion conversion = conversions.get(0);
+			CustomConversion conversion = conversions.getFirst();
 			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
@@ -140,14 +170,30 @@ class CustomConversionMapperTest {
 		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"values": {
-						"before": {
-							"stone": 1,
-							"granite": 2,
-							"diorite": "free"
-						},
-						"after": {
-							"andesite": 3
-						}
+						"before": [
+							{
+								"type": "projecte:item",
+								"id": "minecraft:stone",
+								"value": 1
+							},
+							{
+								"type": "projecte:item",
+								"id": "granite",
+								"value": 2
+							},
+							{
+								"type": "projecte:item",
+								"id": "diorite",
+								"value": "free"
+							}
+						],
+						"after": [
+							{
+								"type": "projecte:item",
+								"id": "andesite",
+								"value": 3
+							}
+						]
 					}
 				}""");
 		FixedValues values = conversionFile.values();
@@ -163,13 +209,25 @@ class CustomConversionMapperTest {
 		CustomConversionFile conversionFile = parseJson(server.registryAccess(), """
 				{
 					"values": {
-						"before": {
-							"INVALID|stone": 1,
-							"granite": 2
-						},
-						"after": {
-							"INVALID|andesite": 3
-						}
+						"before": [
+							{
+								"type": "projecte:item",
+								"id": "INVALID|stone",
+								"value": 1
+							},
+							{
+								"type": "projecte:item",
+								"id": "granite",
+								"value": 2
+							}
+						],
+						"after": [
+							{
+								"type": "projecte:item",
+								"id": "INVALID|andesite",
+								"value": 3
+							}
+						]
 					}
 				}""");
 		FixedValues values = conversionFile.values();
@@ -185,18 +243,33 @@ class CustomConversionMapperTest {
 					"values": {
 						"conversion": [
 							{
-								"output": "iron_ingot",
-								"ingredients": {
-									"stone": 1,
-									"granite": 2,
-									"diorite": 3
-								}
+								"output": {
+									"type": "projecte:item",
+									"id": "iron_ingot"
+								},
+								"ingredients": [
+									{
+										"type": "projecte:item",
+										"id": "minecraft:stone",
+										"amount": 1
+									},
+									{
+										"type": "projecte:item",
+										"id": "granite",
+										"amount": 2
+									},
+									{
+										"type": "projecte:item",
+										"id": "minecraft:diorite",
+										"amount": 3
+									}
+								]
 							}
 						]
 					}
 				}""");
 		Assertions.assertEquals(1, conversionFile.values().conversions().size());
-		CustomConversion conversion = conversionFile.values().conversions().get(0);
+		CustomConversion conversion = conversionFile.values().conversions().getFirst();
 		Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 		Assertions.assertEquals(1, conversion.count());
 		Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
@@ -218,11 +291,23 @@ class CustomConversionMapperTest {
 									"type": "projecte:item",
 									"id": "iron_ingot"
 								},
-								"ingredients": {
-									"stone": 1,
-									"granite": 2,
-									"diorite": 3
-								}
+								"ingredients": [
+									{
+										"type": "projecte:item",
+										"id": "minecraft:stone",
+										"amount": 1
+									},
+									{
+										"type": "projecte:item",
+										"id": "granite",
+										"amount": 2
+									},
+									{
+										"type": "projecte:item",
+										"id": "minecraft:diorite",
+										"amount": 3
+									}
+								]
 							},
 							{
 								"output": {
@@ -239,7 +324,10 @@ class CustomConversionMapperTest {
 										"type": "projecte:item",
 										"id": "stone"
 									},
-									"granite",
+									{
+										"type": "projecte:item",
+										"id": "granite"
+									},
 									{
 										"type": "projecte:item",
 										"id": "diorite",
@@ -255,7 +343,7 @@ class CustomConversionMapperTest {
 		List<CustomConversion> conversions = conversionFile.values().conversions();
 		Assertions.assertEquals(2, conversions.size());
 		{
-			CustomConversion conversion = conversions.get(0);
+			CustomConversion conversion = conversions.getFirst();
 			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
@@ -284,9 +372,15 @@ class CustomConversionMapperTest {
 					"values": {
 						"conversion": [
 							{
-								"output": "FAKE|FOO",
+								"output": {
+									"type": "projecte:fake",
+									"description": "FOO"
+								},
 								"ingredients": [
-									"FAKE|BAR"
+									{
+										"type": "projecte:fake",
+										"description": "BAR"
+									}
 								]
 							}
 						]
@@ -299,9 +393,9 @@ class CustomConversionMapperTest {
 		NSSFake.setCurrentNamespace("file2");
 		CustomConversionFile conversionFile3 = parseJson(server.registryAccess(), file1);
 
-		CustomConversion conversion1 = conversionFile1.values().conversions().get(0);
-		CustomConversion conversion2 = conversionFile2.values().conversions().get(0);
-		CustomConversion conversion3 = conversionFile3.values().conversions().get(0);
+		CustomConversion conversion1 = conversionFile1.values().conversions().getFirst();
+		CustomConversion conversion2 = conversionFile2.values().conversions().getFirst();
+		CustomConversion conversion3 = conversionFile3.values().conversions().getFirst();
 
 		Assertions.assertEquals(conversion1.output(), conversion2.output());
 		Assertions.assertNotEquals(conversion1.output(), conversion3.output());
@@ -317,23 +411,46 @@ class CustomConversionMapperTest {
 						"groupa": {
 							"conversions": [
 								{
-									"output": "iron_ingot",
-									"ingredients": {
-										"stone": 1,
-										"granite": 2,
-										"diorite": 3
+									"output": {
+										"type": "projecte:item",
+										"id": "iron_ingot"
+									},
+									"ingredients": [
+										{
+											"type": "projecte:item",
+											"id": "minecraft:stone",
+											"amount": 1
+										},
+										{
+											"type": "projecte:item",
+											"id": "granite",
+											"amount": 2
+										},
+										{
+											"type": "projecte:item",
+											"id": "minecraft:diorite",
+											"amount": 3
+										}
+									]
+								},
+								{
+									"output": {
+										"type": "projecte:item",
+										"id": "gold_ingot"
 									}
 								},
 								{
-									"output": "gold_ingot"
-								},
-								{
-									"output": "copper_ingot",
+									"output": {
+										"type": "projecte:item",
+										"id": "copper_ingot"
+									},
 									"count": 3,
 									"ingredients": [
-										"stone",
-										"stone",
-										"stone"
+										{
+											"type": "projecte:item",
+											"id": "minecraft:stone",
+											"amount": 3
+										}
 									]
 								}
 							]
@@ -346,7 +463,7 @@ class CustomConversionMapperTest {
 		Assertions.assertEquals(2, group.size());
 		List<CustomConversion> conversions = group.conversions();
 		{
-			CustomConversion conversion = conversions.get(0);
+			CustomConversion conversion = conversions.getFirst();
 			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
 			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();

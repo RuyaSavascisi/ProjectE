@@ -4,19 +4,16 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSTag;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.Util;
 import net.minecraft.util.ExtraCodecs;
-import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 
 /**
  * Represents a conversion
@@ -30,32 +27,17 @@ public record CustomConversion(int count, NormalizedSimpleStack output, Map<Norm
 
 	private static final CustomConversion INVALID = new CustomConversion(0, null, Collections.emptyMap(), false);
 
-	private static final Codec<Integer> NON_ZERO_INT = Codec.INT.validate(
-			value -> value == 0 ? DataResult.error(() -> "Value must not be zero: " + value) : DataResult.success(value)
-	);
-
-	private static final Codec<Map<NormalizedSimpleStack, Integer>> INGREDIENT_CODEC = NeoForgeExtraCodecs.withAlternative(
-			ExtraCodecs.nonEmptyList(IPECodecHelper.INSTANCE.nssCodec().listOf()).flatComapMap(
-					//Note: During deserialization we allow duplicates and merge them together to form the count,
-					// though during serialization we only allow serializing to an array if each ingredient has a count of one
-					list -> list.stream().collect(Collectors.toMap(Function.identity(), stack -> 1, Integer::sum)),
-					map -> {
-						List<NormalizedSimpleStack> list = new ArrayList<>(map.size());
-						for (Map.Entry<NormalizedSimpleStack, Integer> entry : map.entrySet()) {
-							if (entry.getValue() != 1) {
-								return DataResult.error(() -> "Ingredients can only be represented as an array if all elements have an amount of one");
-							}
-							list.add(entry.getKey());
-						}
-						return DataResult.success(list);
-					}
-			), IPECodecHelper.INSTANCE.modifiableMap(
-					//Note: We need to use the legacy codec as map keys for json are required to be able to be converted to strings
-					Codec.unboundedMap(IPECodecHelper.INSTANCE.legacyNSSCodec(), NON_ZERO_INT).validate(
-							map -> map.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(map)
-					)
-			)
-	);
+	private static final Codec<Map<NormalizedSimpleStack, Integer>> INGREDIENT_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.unboundedMap(
+			IPECodecHelper.INSTANCE.nssMapCodec(),
+			Codec.INT.validate(
+					value -> value == 0 ? DataResult.error(() -> "Value must not be zero: " + value) : DataResult.success(value)
+			).optionalFieldOf("amount", 1),
+			(map, nss, amount) -> {
+				map.merge(nss, amount, Integer::sum);
+				//Note: Return null as we allow duplicates
+				return null;
+			}
+	).validate(map -> map.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(map)));
 
 	private static final MapCodec<CustomConversion> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			ExtraCodecs.POSITIVE_INT.optionalFieldOf("count", 1).forGetter(CustomConversion::count),

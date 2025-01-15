@@ -16,19 +16,19 @@ import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
  * @param setValueAfter  Map of {@link NormalizedSimpleStack} to the value to set after applying conversions.
  * @param conversions    List of conversions
  */
-public record FixedValues(Map<NormalizedSimpleStack, Long> setValueBefore, Map<NormalizedSimpleStack, Long> setValueAfter,
-						  List<CustomConversion> conversions) implements IHasConversions {
+public record FixedValues(Map<NormalizedSimpleStack, Long> setValueBefore, Map<NormalizedSimpleStack, Long> setValueAfter, List<CustomConversion> conversions)
+		implements IHasConversions {
 
-	private static final Codec<Map<NormalizedSimpleStack, Long>> VALUE_CODEC = IPECodecHelper.INSTANCE.modifiableMap(
-			//Note: We need to use the legacy codec as map keys for json are required to be able to be converted to strings
-			IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(IPECodecHelper.INSTANCE.legacyNSSCodec(), NeoForgeExtraCodecs.withAlternative(
+	private static final Codec<Map<NormalizedSimpleStack, Long>> VALUE_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(
+			IPECodecHelper.INSTANCE.nssMapCodec(),
+			NeoForgeExtraCodecs.withAlternative(
 					IPECodecHelper.INSTANCE.positiveLong(),
 					Codec.stringResolver(
 							val -> val == ProjectEAPI.FREE_ARITHMETIC_VALUE ? "free" : null,
 							str -> str.equalsIgnoreCase("free") ? ProjectEAPI.FREE_ARITHMETIC_VALUE : null
 					)
-			))
-	);
+			).fieldOf("value")
+	));
 
 	public static final Codec<FixedValues> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			VALUE_CODEC.optionalFieldOf("before").forGetter(values -> IPECodecHelper.INSTANCE.ifNotEmpty(values.setValueBefore())),

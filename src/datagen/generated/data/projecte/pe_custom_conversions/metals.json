@@ -1,95 +1,195 @@
 {
   "comment": "Sets default conversions for various metals from other mods and their default values.",
   "values": {
-    "before": {
-      "#c:gems/amethyst": 32,
-      "#c:gems/peridot": 2048,
-      "#c:gems/ruby": 2048,
-      "#c:gems/sapphire": 2048,
-      "#c:ingots/iron": 256,
-      "#c:ingots/uranium": 4096
-    },
+    "before": [
+      {
+        "type": "projecte:item",
+        "tag": "c:ingots/iron",
+        "value": 256
+      },
+      {
+        "type": "projecte:item",
+        "tag": "c:ingots/uranium",
+        "value": 4096
+      },
+      {
+        "type": "projecte:item",
+        "tag": "c:gems/amethyst",
+        "value": 32
+      },
+      {
+        "type": "projecte:item",
+        "tag": "c:gems/ruby",
+        "value": 2048
+      },
+      {
+        "type": "projecte:item",
+        "tag": "c:gems/sapphire",
+        "value": 2048
+      },
+      {
+        "type": "projecte:item",
+        "tag": "c:gems/peridot",
+        "value": 2048
+      }
+    ],
     "conversion": [
       {
-        "ingredients": {
-          "#c:ingots/iron": 8
+        "ingredients": [
+          {
+            "type": "projecte:item",
+            "amount": 8,
+            "tag": "c:ingots/iron"
+          }
+        ],
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/gold"
         },
-        "output": "#c:ingots/gold",
         "propagateTags": true
       },
       {
         "count": 2,
         "ingredients": [
-          "#c:ingots/iron"
+          {
+            "type": "projecte:item",
+            "tag": "c:ingots/iron"
+          }
         ],
-        "output": "#c:ingots/copper",
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/copper"
+        },
         "propagateTags": true
       },
       {
         "ingredients": [
-          "#c:ingots/iron"
+          {
+            "type": "projecte:item",
+            "tag": "c:ingots/iron"
+          }
         ],
-        "output": "#c:ingots/tin",
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/tin"
+        },
         "propagateTags": true
       },
       {
         "count": 4,
-        "ingredients": {
-          "#c:ingots/copper": 3,
-          "#c:ingots/tin": 1
+        "ingredients": [
+          {
+            "type": "projecte:item",
+            "amount": 3,
+            "tag": "c:ingots/copper"
+          },
+          {
+            "type": "projecte:item",
+            "tag": "c:ingots/tin"
+          }
+        ],
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/bronze"
         },
-        "output": "#c:ingots/bronze",
         "propagateTags": true
       },
       {
-        "ingredients": {
-          "#c:ingots/iron": 2
+        "ingredients": [
+          {
+            "type": "projecte:item",
+            "amount": 2,
+            "tag": "c:ingots/iron"
+          }
+        ],
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/silver"
         },
-        "output": "#c:ingots/silver",
         "propagateTags": true
       },
       {
-        "ingredients": {
-          "#c:ingots/iron": 2
+        "ingredients": [
+          {
+            "type": "projecte:item",
+            "amount": 2,
+            "tag": "c:ingots/iron"
+          }
+        ],
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/lead"
         },
-        "output": "#c:ingots/lead",
         "propagateTags": true
       },
       {
-        "ingredients": {
-          "#c:ingots/iron": 2
+        "ingredients": [
+          {
+            "type": "projecte:item",
+            "amount": 2,
+            "tag": "c:ingots/iron"
+          }
+        ],
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/osmium"
         },
-        "output": "#c:ingots/osmium",
         "propagateTags": true
       },
       {
-        "ingredients": {
-          "#c:ingots/iron": 4
+        "ingredients": [
+          {
+            "type": "projecte:item",
+            "amount": 4,
+            "tag": "c:ingots/iron"
+          }
+        ],
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/nickel"
         },
-        "output": "#c:ingots/nickel",
         "propagateTags": true
       },
       {
         "count": 2,
         "ingredients": [
-          "#c:ingots/iron"
+          {
+            "type": "projecte:item",
+            "tag": "c:ingots/iron"
+          }
         ],
-        "output": "#c:ingots/aluminum",
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/aluminum"
+        },
         "propagateTags": true
       },
       {
-        "ingredients": {
-          "#c:ingots/iron": 16
+        "ingredients": [
+          {
+            "type": "projecte:item",
+            "amount": 16,
+            "tag": "c:ingots/iron"
+          }
+        ],
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/platinum"
         },
-        "output": "#c:ingots/platinum",
         "propagateTags": true
       },
       {
         "count": 4,
         "ingredients": [
-          "#c:ingots/uranium"
+          {
+            "type": "projecte:item",
+            "tag": "c:ingots/uranium"
+          }
         ],
-        "output": "#c:ingots/cyanite",
+        "output": {
+          "type": "projecte:item",
+          "tag": "c:ingots/cyanite"
+        },
         "propagateTags": true
       }
     ]

@@ -5,9 +5,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import java.util.function.Function;
+import java.io.Reader;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -23,16 +24,12 @@ public class CodecTestHelper {
 				.build();
 	});
 
-	public static void initBuiltinNSS() {
-		PECodecHelper.initBuiltinNSS();
-	}
-
+	/**
+	 * @apiNote Similar to {@link PECodecHelper#read(Provider, Reader, Codec, String)} except without any extra logging.
+	 */
 	public static <OBJ> OBJ parseJson(HolderLookup.Provider registryAccess, Codec<OBJ> codec, String description, String rawJson) throws JsonParseException {
-		//Similar to PECodecHelper#read except without any extra logging
 		JsonElement json = JsonParser.parseString(rawJson);
 		return codec.parse(registryAccess.createSerializationContext(JsonOps.INSTANCE), json)
-				.mapOrElse(Function.identity(), error -> {
-					throw new JsonParseException("Failed to deserialize json (" + description + "): " + error.message());
-				});
+				.getOrThrow(error -> new JsonParseException("Failed to deserialize json (" + description + "): " + error));
 	}
 }

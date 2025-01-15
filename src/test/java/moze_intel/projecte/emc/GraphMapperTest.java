@@ -12,7 +12,6 @@ import moze_intel.projecte.api.mapper.generator.IValueGenerator;
 import moze_intel.projecte.emc.arithmetic.HiddenBigFractionArithmetic;
 import moze_intel.projecte.emc.collector.LongToBigFractionCollector;
 import moze_intel.projecte.emc.generator.BigFractionToLongGenerator;
-import moze_intel.projecte.utils.Constants;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,24 +19,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-//@RunWith(value = Parameterized.class)
 @Timeout(3000)
 @DisplayName("Test graph mapper")
 class GraphMapperTest {
 
-	/*@Parameterized.Parameters
-	public static Collection  parameters() {
-		Object[][] data = new Object[][] { { new ComplexGraphMapper<String, Integer>(new IntArithmetic())  }};
-		return Arrays.asList(data);
-	}
-
-	public GraphMapperTest(GraphMapper<String, Integer> mappingCollector) {
-		this.mappingCollector = mappingCollector;
-	}*/
-
 	@BeforeEach
 	void setup() {
-		//mappingCollector = new SimpleGraphMapper<String, Integer>(new IntArithmetic());
 		SimpleGraphMapper<String, BigFraction, IValueArithmetic<BigFraction>> mapper = new SimpleGraphMapper<>(new HiddenBigFractionArithmetic());
 		valueGenerator = new BigFractionToLongGenerator<>(mapper);
 		mappingCollector = new LongToBigFractionCollector<>(mapper);

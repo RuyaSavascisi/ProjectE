@@ -1,6 +1,6 @@
 package moze_intel.projecte.gameObjs.block_entities;
 
-import java.util.Optional;
+import com.mojang.serialization.DataResult;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.event.PlayerAttemptCondenserSetEvent;
 import moze_intel.projecte.emc.EMCMappingHandler;
@@ -223,7 +223,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 		super.loadAdditional(tag, registries);
 		inputInventory.deserializeNBT(registries, tag.getCompound("Input"));
 		if (tag.contains("LockInfo")) {
-			lockInfo = ItemInfo.EXPLICIT_CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("LockInfo")).result().orElse(null);
+			lockInfo = ItemInfo.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("LockInfo")).result().orElse(null);
 		} else {
 			lockInfo = null;
 		}
@@ -234,10 +234,9 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 		super.saveAdditional(tag, registries);
 		tag.put("Input", inputInventory.serializeNBT(registries));
 		if (lockInfo != null) {
-			Optional<Tag> result = ItemInfo.EXPLICIT_CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), lockInfo).result();
-			//noinspection OptionalIsPresent - Capturing lambda
-			if (result.isPresent()) {
-				tag.put("LockInfo", result.get());
+			DataResult<Tag> result = ItemInfo.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), lockInfo);
+			if (result.isSuccess()) {
+				tag.put("LockInfo", result.getOrThrow());
 			}
 		}
 	}

@@ -39,7 +39,7 @@ public class CrTExpandNormalizedSimpleStack {
 	 */
 	@ZenCodeType.Caster
 	public static IData asData(NormalizedSimpleStack internal) {
-		return IPECodecHelper.INSTANCE.explicitNSSCodec()
+		return IPECodecHelper.INSTANCE.nssCodec()
 				.encode(internal, IDataOps.INSTANCE.withRegistryAccess(), new MapData())
 				.getOrThrow();
 	}

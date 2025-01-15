@@ -1,7 +1,7 @@
 package moze_intel.projecte.api.nss;
 
+import com.mojang.serialization.MapCodec;
 import java.util.function.Consumer;
-import moze_intel.projecte.api.codec.NSSCodecHolder;
 
 /**
  * Represents a "stack" to be used by the EMC mapper.
@@ -9,9 +9,9 @@ import moze_intel.projecte.api.codec.NSSCodecHolder;
 public interface NormalizedSimpleStack {
 
 	/**
-	 * @return A codec holder containing the legacy and explicit codec for this stack.
+	 * @return A codec for this stack.
 	 */
-	NSSCodecHolder<?> codecs();
+	MapCodec<? extends NormalizedSimpleStack> codec();
 
 	/**
 	 * Run the consumer for this {@link NormalizedSimpleStack} and if it is an {@link NSSTag} any elements in the tag.

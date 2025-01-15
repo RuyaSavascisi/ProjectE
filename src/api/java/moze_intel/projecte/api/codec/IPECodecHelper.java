@@ -15,8 +15,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import net.minecraft.core.Registry;
-import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.Nullable;
 
 public interface IPECodecHelper {
@@ -28,30 +26,14 @@ public interface IPECodecHelper {
 			.orElseThrow(() -> new IllegalStateException("No valid ServiceImpl for IPECodecHelper found, ProjectE may be absent, damaged, or outdated"));
 
 	/**
-	 * <STRONG>DO NOT CALL THIS METHOD</STRONG>
-	 * <p>
-	 * Called after the {@link moze_intel.projecte.api.ProjectERegistries#NSS_SERIALIZER} registry is baked to initialize the legacy codecs.
-	 *
-	 * @apiNote This method is for internal use only.
-	 */
-	@Internal
-	void setSerializers(Registry<NSSCodecHolder<?>> registry);
-
-	/**
-	 * A legacy codec capable of reading and writing {@link NormalizedSimpleStack NormalizedSimpleStacks} to/from strings.
-	 */
-	Codec<NormalizedSimpleStack> legacyNSSCodec();
-
-	/**
-	 * An explicit codec capable of reading and writing {@link NormalizedSimpleStack NormalizedSimpleStacks} to/from strings.
-	 */
-	Codec<NormalizedSimpleStack> explicitNSSCodec();
-
-	/**
-	 * Alternative {@link Codec} that tries to encode and decode first using a {@link #legacyNSSCodec()} followed by an {@link #explicitNSSCodec()} if decoding as legacy
-	 * failed.
+	 * {@link Codec} that tries to encode a {@link NormalizedSimpleStack}..
 	 */
 	Codec<NormalizedSimpleStack> nssCodec();
+
+	/**
+	 * {@link MapCodec} that tries to encode a {@link NormalizedSimpleStack}..
+	 */
+	MapCodec<NormalizedSimpleStack> nssMapCodec();
 
 	/**
 	 * {@return Big Integer Codec that validates the value is greater than or equal to zero}
@@ -92,19 +74,41 @@ public interface IPECodecHelper {
 	Codec<Long> longRangeWithMessage(long min, long max, Function<Long, String> errorMessage);
 
 	/**
-	 * Helper to produce a string Codec that prepends the given prefix when serializing and validates it is present and then trims it when deserializing.
+	 * Helper to create a Codec for a map that logs an error but does not fail on invalid keys. Invalid values still cause a failure though.
 	 *
-	 * @param prefix A string representing the prefix to use for serialization. Must end with '|' to properly work. Anything without a '|' is assumed to be an item.
+	 * @param keyCodec     Codec to serialize the keys with. Does not have to be string serializable.
+	 * @param elementCodec Codec to serialize the values with.
 	 */
-	Codec<String> withPrefix(String prefix);
+	<K, V> Codec<Map<K, V>> lenientKeyUnboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec, MapProcessor<K, V> processor);
 
 	/**
 	 * Helper to create a Codec for a map that logs an error but does not fail on invalid keys. Invalid values still cause a failure though.
 	 *
-	 * @param keyCodec     Codec to serialize the keys with.
+	 * @param keyCodec     Codec to serialize the keys with. Does not have to be string serializable.
 	 * @param elementCodec Codec to serialize the values with.
 	 */
-	<K, V> Codec<Map<K, V>> lenientKeyUnboundedMap(Codec<K> keyCodec, Codec<V> elementCodec);
+	default <K, V> Codec<Map<K, V>> lenientKeyUnboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec) {
+		return lenientKeyUnboundedMap(keyCodec, elementCodec, MapProcessor.putIfAbsent());
+	}
+
+	/**
+	 * Helper to create a Codec for an unbounded map. Unlike {@link Codec#unboundedMap(Codec, Codec)} this method allows for a custom merge function on duplicate keys,
+	 * and does not require keys to be string serializable.
+	 *
+	 * @param keyCodec     Codec to serialize the keys with. Does not have to be string serializable.
+	 * @param elementCodec Codec to serialize the values with.
+	 */
+	<K, V> Codec<Map<K, V>> unboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec, MapProcessor<K, V> processor);
+
+	/**
+	 * Helper to create a Codec for an unbounded map. Unlike {@link Codec#unboundedMap(Codec, Codec)} this method does not require keys to be string serializable.
+	 *
+	 * @param keyCodec     Codec to serialize the keys with. Does not have to be string serializable.
+	 * @param elementCodec Codec to serialize the values with.
+	 */
+	default <K, V> Codec<Map<K, V>> unboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec) {
+		return unboundedMap(keyCodec, elementCodec, MapProcessor.putIfAbsent());
+	}
 
 	/**
 	 * Helper to validate that the element being passed into the codec is not null and if it is produce the given error.

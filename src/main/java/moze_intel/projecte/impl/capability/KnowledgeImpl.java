@@ -292,7 +292,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 
 		private static final int LOCK_SLOTS = 9;
 
-		private static final Codec<Set<ItemInfo>> MUTABLE_KNOWLEDGE_CODEC = ItemInfo.EXPLICIT_CODEC.listOf().xmap(HashSet::new, ImmutableList::copyOf);
+		private static final Codec<Set<ItemInfo>> MUTABLE_KNOWLEDGE_CODEC = ItemInfo.CODEC.listOf().xmap(HashSet::new, ImmutableList::copyOf);
 		public static final Codec<KnowledgeAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 				MUTABLE_KNOWLEDGE_CODEC.fieldOf("knowledge").forGetter(attachment -> attachment.knowledge),
 				PECodecHelper.HANDLER_CODEC.fieldOf("input_locks").forGetter(attachment -> attachment.inputLocks),

@@ -1,10 +1,7 @@
 package moze_intel.projecte.api.nss;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
-import moze_intel.projecte.api.codec.NSSCodecHolder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
@@ -12,7 +9,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -24,23 +20,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 
-	private static final boolean ALLOW_DEFAULT = false;
-
-	private static final Codec<String> OPTIONAL_PREFIX_CODEC = Codec.of(ExtraCodecs.NON_EMPTY_STRING, ExtraCodecs.NON_EMPTY_STRING.flatMap(str -> {
-		if (str.startsWith("ITEM|")) {
-			return DataResult.success(str.substring(5));
-		}
-		return DataResult.success(str);
-	}), ExtraCodecs.NON_EMPTY_STRING + "[projecte:optionalPrefix]");
-
-	/**
-	 * Codec for encoding NSSItems to and from strings.
-	 */
-	public static final Codec<NSSItem> LEGACY_CODEC = createLegacyCodec(BuiltInRegistries.ITEM, ALLOW_DEFAULT, OPTIONAL_PREFIX_CODEC, NSSItem::new);
-
-	public static final MapCodec<NSSItem> EXPLICIT_CODEC = createExplicitCodec(BuiltInRegistries.ITEM, ALLOW_DEFAULT, NSSItem::new);
-
-	public static final NSSCodecHolder<NSSItem> CODECS = new NSSCodecHolder<>("ITEM", LEGACY_CODEC, EXPLICIT_CODEC);
+	public static final MapCodec<NSSItem> CODEC = createCodec(BuiltInRegistries.ITEM, false, NSSItem::new);
 
 	private NSSItem(@NotNull ResourceLocation resourceLocation, boolean isTag, @NotNull DataComponentPatch componentsPatch) {
 		super(resourceLocation, isTag, componentsPatch);
@@ -142,7 +122,7 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 	}
 
 	@Override
-	public NSSCodecHolder<?> codecs() {
-		return CODECS;
+	public MapCodec<NSSItem> codec() {
+		return CODEC;
 	}
 }
