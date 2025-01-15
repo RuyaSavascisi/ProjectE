@@ -36,7 +36,7 @@ public class EntityNovaCataclysmPrimed extends PrimedTnt {
 	}
 
 	@Override
-	public ItemStack getPickedResult(HitResult target) {
+	public ItemStack getPickedResult(@NotNull HitResult target) {
 		return new ItemStack(PEBlocks.NOVA_CATACLYSM);
 	}
 }

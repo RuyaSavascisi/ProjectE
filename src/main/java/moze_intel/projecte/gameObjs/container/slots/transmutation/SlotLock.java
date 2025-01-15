@@ -2,7 +2,6 @@ package moze_intel.projecte.gameObjs.container.slots.transmutation;
 
 import java.math.BigInteger;
 import java.util.Collections;
-import java.util.Optional;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider.TargetUpdateType;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;

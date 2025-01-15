@@ -4,7 +4,8 @@ import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import moze_intel.projecte.PECore;
@@ -13,8 +14,16 @@ public class ThreadCheckUUID extends Thread {
 
 	private static boolean hasRunServer = false;
 	private static boolean hasRunClient = false;
-	private static final String uuidURL = "https://raw.githubusercontent.com/sinkillerj/ProjectE/mc1.14.x/haUUID.txt";
+	private static final URI uuidURL;
 	private final boolean isServerSide;
+
+	static {
+		try {
+			uuidURL = new URI("https://raw.githubusercontent.com/sinkillerj/ProjectE/mc1.14.x/haUUID.txt");
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	public ThreadCheckUUID(boolean isServer) {
 		this.isServerSide = isServer;
@@ -23,7 +32,7 @@ public class ThreadCheckUUID extends Thread {
 
 	@Override
 	public void run() {
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new URL(uuidURL).openStream()))) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(uuidURL.toURL().openStream()))) {
 			String line = reader.readLine();
 
 			if (line == null) {

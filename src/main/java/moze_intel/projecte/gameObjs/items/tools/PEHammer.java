@@ -28,7 +28,7 @@ public class PEHammer extends PETool implements IHasConditionalAttributes {
 	}
 
 	@Override
-	public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+	public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility toolAction) {
 		return ItemAbilities.DEFAULT_PICKAXE_ACTIONS.contains(toolAction) || ToolHelper.DEFAULT_PE_HAMMER_ACTIONS.contains(toolAction);
 	}
 

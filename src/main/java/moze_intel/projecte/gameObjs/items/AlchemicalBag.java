@@ -52,7 +52,7 @@ public class AlchemicalBag extends ItemPE {
 				if (alchBagProvider == null) {
 					alchBagProvider = player.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
 					if (alchBagProvider == null) {
-						//If the player really doesn't have the capability, and it isn't just not not loaded yet, exit
+						//If the player really doesn't have the capability, and it isn't just not loaded yet, exit
 						break;
 					}
 				}

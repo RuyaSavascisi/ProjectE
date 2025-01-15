@@ -7,7 +7,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 
 public class PEDataComponents {
 
-	public static DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CHARGE = get("charge");
+	public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CHARGE = get("charge");
 
 	private PEDataComponents() {
 	}

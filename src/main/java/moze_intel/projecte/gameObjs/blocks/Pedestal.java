@@ -107,7 +107,7 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 	}
 
 	@Override
-	public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest, FluidState fluid) {
+	public boolean onDestroyedByPlayer(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, Player player, boolean willHarvest, @NotNull FluidState fluid) {
 		if (player.isCreative() && dropItem(level, pos)) {
 			//If the player is creative, try to drop the item, and if we succeeded return false to cancel removing the pedestal
 			// Note: we notify the block of an update to make sure that it re-appears visually on the client instead of having there
@@ -121,7 +121,7 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 	@NotNull
 	@Override
 	@Deprecated
-	protected ItemInteractionResult useItemOn(ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player,
+	protected ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player,
 			@NotNull InteractionHand hand, @NotNull BlockHitResult rtr) {
 		if (!level.isClientSide) {
 			DMPedestalBlockEntity pedestal = WorldHelper.getBlockEntity(DMPedestalBlockEntity.class, level, pos, true);

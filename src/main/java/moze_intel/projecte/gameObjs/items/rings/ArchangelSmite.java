@@ -58,7 +58,7 @@ public class ArchangelSmite extends PEToggleItem implements IPedestalItem {
 	}
 
 	@Override
-	public boolean onLeftClickEntity(ItemStack stack, Player player, Entity entity) {
+	public boolean onLeftClickEntity(@NotNull ItemStack stack, Player player, @NotNull Entity entity) {
 		if (!player.level().isClientSide) {
 			fireVolley(stack, player);
 		}

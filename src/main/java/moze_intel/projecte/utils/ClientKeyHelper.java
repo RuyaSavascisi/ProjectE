@@ -52,8 +52,9 @@ public class ClientKeyHelper {
 	}
 
 	public static Component getKeyName(PEKeybind k) {
-		if (peToMc.containsKey(k)) {
-			return peToMc.get(k).getTranslatedKeyMessage();
+		KeyMapping keyMapping = peToMc.get(k);
+		if (keyMapping != null) {
+			return keyMapping.getTranslatedKeyMessage();
 		}
 		//Fallback to the translation key of the key's function
 		return TextComponentUtil.build(k);

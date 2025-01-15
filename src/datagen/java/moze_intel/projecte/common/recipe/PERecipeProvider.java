@@ -13,8 +13,8 @@ import moze_intel.projecte.gameObjs.customRecipes.TomeEnabledCondition;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
 import moze_intel.projecte.gameObjs.registration.impl.ItemRegistryObject;
-import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
@@ -1112,7 +1112,7 @@ public class PERecipeProvider extends RecipeProvider {
 	private record WrappingRecipeOutput(RecipeOutput parent, UnaryOperator<Recipe<?>> recipeWrapper) implements RecipeOutput {
 
 		@Override
-		public void accept(ResourceLocation recipeId, Recipe<?> recipe, @Nullable AdvancementHolder advancementHolder, ICondition... conditions) {
+		public void accept(@NotNull ResourceLocation recipeId, @NotNull Recipe<?> recipe, @Nullable AdvancementHolder advancementHolder, ICondition @NotNull ... conditions) {
 			parent.accept(recipeId, recipe, advancementHolder, conditions);
 		}
 

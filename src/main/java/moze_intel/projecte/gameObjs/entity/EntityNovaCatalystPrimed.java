@@ -3,8 +3,6 @@ package moze_intel.projecte.gameObjs.entity;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.utils.WorldHelper;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.PrimedTnt;
@@ -38,7 +36,7 @@ public class EntityNovaCatalystPrimed extends PrimedTnt {
 	}
 
 	@Override
-	public ItemStack getPickedResult(HitResult target) {
+	public ItemStack getPickedResult(@NotNull HitResult target) {
 		return new ItemStack(PEBlocks.NOVA_CATALYST);
 	}
 }

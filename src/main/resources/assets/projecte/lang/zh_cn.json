@@ -52,11 +52,10 @@
     "item.projecte.destruction_catalyst": "毁灭燧石",
     "item.projecte.hyperkinetic_lens": "不稳定水晶",
     "item.projecte.catalytic_lens": "催化水晶",
-    "item.projecte.lens_explosive": "烈性宝珠",
-    "item.projecte.water_orb": "潮汐宝珠",
-    "item.projecte.lava_orb": "熔焰宝珠",
-    "item.projecte.randomizer": "异变宝珠",
-    "item.projecte.loot_ball": "物质宝珠",
+    "entity.projecte.lens_projectile": "烈性宝珠",
+    "entity.projecte.water_projectile": "潮汐宝珠",
+    "entity.projecte.lava_projectile": "熔焰宝珠",
+    "entity.projecte.mob_randomizer": "异变宝珠",
     "item.projecte.dm_pick": "暗物质镐",
     "item.projecte.dm_axe": "暗物质斧",
     "item.projecte.dm_shovel": "暗物质铲",
@@ -229,11 +228,6 @@
     "misc.projecte.seconds": "%s 秒",
     "misc.projecte.seconds.every_tick": "%s 秒 (/tick)",
 
-    "mode.projecte.morning_star.1": "普通模式",
-    "mode.projecte.morning_star.2": "3x 竖直模式",
-    "mode.projecte.morning_star.3": "3x 横向模式",
-    "mode.projecte.morning_star.4": "3x 直线模式",
-
     "pedestal.projecte.item_disabled": "暗物质台座的功能已被禁止!",
     "pedestal.projecte.on_pedestal": "台座功能:",
     "pedestal.projecte.tooltip.1": "Shift右键打开界面",
@@ -243,9 +237,6 @@
     "mode.projecte.philosopher.2": "平面",
     "mode.projecte.philosopher.3": "直线",
     "tooltip.projecte.philostone": "按[%s]键打开合成界面",
-
-    "mode.projecte.red_sword.1": "虐杀敌对生物",
-    "mode.projecte.red_sword.2": "虐杀一切生物",
 
     "gui.projecte.relay.mk1": "反物质继电器 MKI",
     "gui.projecte.relay.mk2": "反物质继电器 MKII",

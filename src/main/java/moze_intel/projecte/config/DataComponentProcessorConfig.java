@@ -79,7 +79,7 @@ public class DataComponentProcessorConfig extends BasePEConfig {
 		String name = processor.getName();
 		ProcessorConfig processorConfig = INSTANCE.processorConfigs.get(name);
 		if (processorConfig == null) {
-			PECore.LOGGER.warn("Processor Config: '{}' is missing from the config.", name);
+			PECore.LOGGER.warn("Persistent processor Config: '{}' is missing from the config.", name);
 			return false;
 		} else if (processorConfig.persistent == null) {
 			if (processor.hasPersistentComponents()) {

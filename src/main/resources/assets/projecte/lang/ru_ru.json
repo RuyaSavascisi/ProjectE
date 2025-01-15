@@ -52,11 +52,10 @@
     "item.projecte.destruction_catalyst": "Катализатор разрушения",
     "item.projecte.hyperkinetic_lens": "Гиперкинетическая линза",
     "item.projecte.catalytic_lens": "Каталитическая линза",
-    "item.projecte.lens_explosive": "Взрывная линза",
-    "item.projecte.water_orb": "Водяной шар",
-    "item.projecte.lava_orb": "Лавовый шар",
-    "item.projecte.randomizer": "Случайный шар",
-    "item.projecte.loot_ball": "Шар добычи",
+    "entity.projecte.lens_projectile": "Взрывная линза",
+    "entity.projecte.water_projectile": "Водяной шар",
+    "entity.projecte.lava_projectile": "Лавовый шар",
+    "entity.projecte.mob_randomizer": "Случайный шар",
     "item.projecte.dm_pick": "Кирка из тёмной материи",
     "item.projecte.dm_axe": "Топор из тёмной материи",
     "item.projecte.dm_shovel": "Лопата из тёмной материи",
@@ -257,11 +256,6 @@
     "misc.projecte.seconds.every_tick": "%s секунд(-ы) (каждый такт)",
     "tooltip.projecte.stored_xp": "Накоплено опыта: %s",
 
-    "mode.projecte.morning_star.1": "Стандартный",
-    "mode.projecte.morning_star.2": "3x блока в высоту",
-    "mode.projecte.morning_star.3": "3x блока в ширину",
-    "mode.projecte.morning_star.4": "3x блока в длину",
-
     "pedestal.projecte.item_disabled": "Функционал пьедестала отключен!",
     "pedestal.projecte.on_pedestal": "На пьедестале:",
     "pedestal.projecte.tooltip.1": "Shift-ПКМ, чтобы открыть интерфейс",
@@ -271,9 +265,6 @@
     "mode.projecte.philosopher.2": "Панель",
     "mode.projecte.philosopher.3": "Линия",
     "tooltip.projecte.philostone": "Нажмите %s, чтобы открыть сетку создания",
-
-    "mode.projecte.red_sword.1": "Убивать враждебных",
-    "mode.projecte.red_sword.2": "Убивать всех",
 
     "gui.projecte.relay.mk1": "Реле MKI",
     "gui.projecte.relay.mk2": "Реле MKII",

@@ -141,7 +141,6 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 		);
 	}
 
-	@SuppressWarnings("unchecked")
 	private void addArmor() {
 		tag(ItemTags.TRIMMABLE_ARMOR).add(
 				PEItems.GEM_HELMET.get(),

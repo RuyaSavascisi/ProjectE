@@ -52,11 +52,10 @@
     "item.projecte.destruction_catalyst": "Cataliseur de déstruction",
     "item.projecte.hyperkinetic_lens": "Lentille hyperkinétique",
     "item.projecte.catalytic_lens": "Lentille catalytique",
-    "item.projecte.lens_explosive": "Lentille explosive",
-    "item.projecte.water_orb": "Orbe d'eau",
-    "item.projecte.lava_orb": "Orbe de lave",
-    "item.projecte.randomizer": "Orbe de la RANDOMISATION",
-    "item.projecte.loot_ball": "Boule de loot",
+    "entity.projecte.lens_projectile": "Lentille explosive",
+    "entity.projecte.water_projectile": "Orbe d'eau",
+    "entity.projecte.lava_projectile": "Orbe de lave",
+    "entity.projecte.mob_randomizer": "Orbe de la RANDOMISATION",
     "item.projecte.dm_pick": "Pioche de matière noire",
     "item.projecte.dm_axe": "Hache de matière noire",
     "item.projecte.dm_shovel": "Pelle de matière noire",
@@ -264,11 +263,6 @@
     "misc.projecte.seconds.every_tick": "%s secondes (chaque tick)",
     "tooltip.projecte.stored_xp": "XP stockés: %s",
 
-    "mode.projecte.morning_star.1": "Standard",
-    "mode.projecte.morning_star.2": "3x Tir Haut",
-    "mode.projecte.morning_star.3": "3x Tir Large",
-    "mode.projecte.morning_star.4": "3x Tir Long",
-
     "pedestal.projecte.item_disabled": "Les fonctions du piédestal ont été désactivée!",
     "pedestal.projecte.on_pedestal": "Sur le piédestal:",
     "pedestal.projecte.tooltip.1": "Clic droit pour insèrer un objet, clique gauche pour le retirer.",
@@ -278,9 +272,6 @@
     "mode.projecte.philosopher.2": "Panneau",
     "mode.projecte.philosopher.3": "Ligne",
     "tooltip.projecte.philostone": "Appuyez sur %s pour ouvrir une grille de craft",
-
-    "mode.projecte.red_sword.1": "Tuer les hostiles",
-    "mode.projecte.red_sword.2": "Tuer tout",
 
     "gui.projecte.relay.mk1": "Relais MKI",
     "gui.projecte.relay.mk2": "Relais MKII",

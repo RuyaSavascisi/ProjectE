@@ -48,10 +48,11 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IPedes
 	}
 
 	@Override
-	public boolean hasCraftingRemainingItem(ItemStack stack) {
+	public boolean hasCraftingRemainingItem(@NotNull ItemStack stack) {
 		return true;
 	}
 
+	@NotNull
 	@Override
 	public ItemStack getCraftingRemainingItem(ItemStack stack) {
 		return stack.copy();
@@ -167,13 +168,13 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IPedes
 		}
 
 		@Override
-		public int fill(FluidStack resource, FluidAction action) {
+		public int fill(@NotNull FluidStack resource, @NotNull FluidAction action) {
 			return isWater(resource) ? resource.getAmount() : 0;
 		}
 
 		@NotNull
 		@Override
-		public FluidStack drain(FluidStack resource, FluidAction action) {
+		public FluidStack drain(@NotNull FluidStack resource, @NotNull FluidAction action) {
 			return isWater(resource) ? resource : FluidStack.EMPTY;
 		}
 
@@ -183,7 +184,7 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IPedes
 
 		@NotNull
 		@Override
-		public FluidStack drain(int maxDrain, FluidAction action) {
+		public FluidStack drain(int maxDrain, @NotNull FluidAction action) {
 			return new FluidStack(Fluids.WATER, maxDrain);
 		}
 	}

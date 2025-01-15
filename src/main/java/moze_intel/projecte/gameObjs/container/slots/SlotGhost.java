@@ -40,7 +40,7 @@ public class SlotGhost extends SlotItemHandler {
 	}
 
 	@Override
-	public boolean mayPickup(Player player) {
+	public boolean mayPickup(@NotNull Player player) {
 		return false;
 	}
 

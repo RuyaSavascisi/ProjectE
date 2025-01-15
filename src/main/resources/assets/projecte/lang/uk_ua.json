@@ -52,11 +52,10 @@
     "item.projecte.destruction_catalyst": "Каталізатор знищення",
     "item.projecte.hyperkinetic_lens": "Гіперкінетична лінза",
     "item.projecte.catalytic_lens": "Каталітична лінза",
-    "item.projecte.lens_explosive": "Вибухова лінза",
-    "item.projecte.water_orb": "Водяна куля",
-    "item.projecte.lava_orb": "Лавова куля",
-    "item.projecte.randomizer": "Випадкова куля",
-    "item.projecte.loot_ball": "Куля добування",
+    "entity.projecte.lens_projectile": "Вибухова лінза",
+    "entity.projecte.water_projectile": "Водяна куля",
+    "entity.projecte.lava_projectile": "Лавова куля",
+    "entity.projecte.mob_randomizer": "Випадкова куля",
     "item.projecte.dm_pick": "Кирка з темної матерії",
     "item.projecte.dm_axe": "Сокира з темної матерії",
     "item.projecte.dm_shovel": "Лопата з темної матерії",
@@ -255,11 +254,6 @@
     "misc.projecte.seconds.every_tick": "%s секунд(-и) (кожний тік)",
     "tooltip.projecte.stored_xp": "Наявно досвіду: %s",
 
-    "mode.projecte.morning_star.1": "Стандартний!",
-    "mode.projecte.morning_star.2": "3x блока у висоту",
-    "mode.projecte.morning_star.3": "3x блока у ширину",
-    "mode.projecte.morning_star.4": "3x блока у довжину",
-
     "pedestal.projecte.item_disabled": "Функціонал п'єдестала вимкнений!",
     "pedestal.projecte.on_pedestal": "На п'єдесталі:",
     "pedestal.projecte.tooltip.1": "Shift-ПКМ, щоб відкрити інтерфейс",
@@ -269,9 +263,6 @@
     "mode.projecte.philosopher.2": "Панель",
     "mode.projecte.philosopher.3": "Лінія",
     "tooltip.projecte.philostone": "Натисніть %s, аби відкрити сітку крафта",
-
-    "mode.projecte.red_sword.1": "Вбивати ворожих",
-    "mode.projecte.red_sword.2": "Вбивати всіх",
 
     "gui.projecte.relay.mk1": "Реле вер.1",
     "gui.projecte.relay.mk2": "Реле вер.2",

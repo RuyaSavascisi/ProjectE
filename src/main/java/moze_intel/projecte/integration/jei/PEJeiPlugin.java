@@ -92,7 +92,7 @@ public class PEJeiPlugin implements IModPlugin {
 	}
 
 	@Override
-	public void registerItemSubtypes(ISubtypeRegistration registry) {
+	public void registerItemSubtypes(@NotNull ISubtypeRegistration registry) {
 		registerItemSubtypes(registry, PEItems.ITEMS.getEntries());
 		registerItemSubtypes(registry, PEBlocks.BLOCKS.getSecondaryEntries());
 	}

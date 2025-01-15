@@ -61,10 +61,11 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 	}
 
 	@Override
-	public boolean hasCraftingRemainingItem(ItemStack stack) {
+	public boolean hasCraftingRemainingItem(@NotNull ItemStack stack) {
 		return true;
 	}
 
+	@NotNull
 	@Override
 	public ItemStack getCraftingRemainingItem(ItemStack stack) {
 		return stack.copy();

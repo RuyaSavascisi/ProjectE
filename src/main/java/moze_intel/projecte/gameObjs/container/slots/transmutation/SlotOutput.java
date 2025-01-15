@@ -56,7 +56,7 @@ public class SlotOutput extends InventoryContainerSlot {
 	}
 
 	@Override
-	public boolean mayPickup(Player player) {
+	public boolean mayPickup(@NotNull Player player) {
 		return !hasItem() || BigInteger.valueOf(EMCHelper.getEmcValue(getItem())).compareTo(inv.getAvailableEmc()) <= 0;
 	}
 }

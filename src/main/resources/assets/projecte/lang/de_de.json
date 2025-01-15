@@ -52,11 +52,10 @@
     "item.projecte.destruction_catalyst": "Vernichtungskatalysator",
     "item.projecte.hyperkinetic_lens": "Hyperkinetische Linse",
     "item.projecte.catalytic_lens": "Katalytische Linse",
-    "item.projecte.lens_explosive": "Explosive Linse",
-    "item.projecte.water_orb": "Wasser-Orbis",
-    "item.projecte.lava_orb": "Lava-Orbis",
-    "item.projecte.randomizer": "Zufalls-Orbis",
-    "item.projecte.loot_ball": "Beutekugel",
+    "entity.projecte.lens_projectile": "Explosive Linse",
+    "entity.projecte.water_projectile": "Wasser-Orbis",
+    "entity.projecte.lava_projectile": "Lava-Orbis",
+    "entity.projecte.mob_randomizer": "Zufalls-Orbis",
     "item.projecte.dm_pick": "Spitzhacke aus Dunkler Materie",
     "item.projecte.dm_axe": "Axt aus Dunkler Materie",
     "item.projecte.dm_shovel": "Schaufel aus Dunkler Materie",
@@ -168,7 +167,7 @@
     "command.projecte.clear_knowledge.notify": "Dein Transmutationswissen wurde von %s gelöscht!",
     "command.projecte.clear_knowledge.success": "Transmutationswissen von %s gelöscht",
 
-    "command.projecte.remove.invalid_item": "Fehler: Das Item \"%s\" wurde nicht gefunden!",
+    "command.projecte.emc.invalid_item": "Fehler: Das Item \"%s\" wurde nicht gefunden!",
     "command.projecte.remove.success": "EMC-Wert von %s entfernt.",
 
     "command.projecte.reset.success": "EMC-Wert von %s zurückgesetzt.",
@@ -257,11 +256,6 @@
     "misc.projecte.seconds.every_tick": "%s Sekunden (jeden Tick)",
     "tooltip.projecte.stored_xp": "Gespeicherte XP: %s",
 
-    "mode.projecte.morning_star.1": "Standard",
-    "mode.projecte.morning_star.2": "3x Übereinander",
-    "mode.projecte.morning_star.3": "3x Nebeneinander",
-    "mode.projecte.morning_star.4": "3x Hintereinander",
-
     "pedestal.projecte.item_disabled": "Podestfunktion wurde deaktiviert!",
     "pedestal.projecte.on_pedestal": "Auf Podest:",
     "pedestal.projecte.tooltip.1": "Shift + Rechtsklick, um GUI zu öffnen.",
@@ -272,11 +266,8 @@
     "mode.projecte.philosopher.3": "Linie",
     "tooltip.projecte.philostone": "%s drücken, um Crafting-GUI zu öffnen.",
 
-    "mode.projecte.red_sword.1": "Feindliche töten",
-    "mode.projecte.red_sword.2": "Alle töten",
-
     "gui.projecte.relay.mk1": "Relais MKI",
-    "gui.projecterelay.mk2": "Relais MKII",
+    "gui.projecte.relay.mk2": "Relais MKII",
     "gui.projecte.relay.mk3": "Relais MKIII",
 
     "pedestal.projecte.repair_talisman.1": "Repariert die Items naher Spieler.",

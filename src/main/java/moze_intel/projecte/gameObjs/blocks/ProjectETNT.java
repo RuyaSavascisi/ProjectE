@@ -30,7 +30,7 @@ public class ProjectETNT extends TntBlock {
 	}
 
 	@Override
-	public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction face) {
+	public int getFlammability(@NotNull BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos, @NotNull Direction face) {
 		return 100;
 	}
 

@@ -48,7 +48,7 @@ public class PEMorningStar extends PETool implements IItemMode<PickaxeMode>, IHa
 	}
 
 	@Override
-	public boolean canPerformAction(ItemStack stack, ItemAbility toolAction) {
+	public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility toolAction) {
 		return ItemAbilities.DEFAULT_PICKAXE_ACTIONS.contains(toolAction) || ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(toolAction) ||
 			   ToolHelper.DEFAULT_PE_HAMMER_ACTIONS.contains(toolAction) || ToolHelper.DEFAULT_PE_MORNING_STAR_ACTIONS.contains(toolAction);
 	}
