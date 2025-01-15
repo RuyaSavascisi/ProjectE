@@ -3,8 +3,6 @@ package moze_intel.projecte.rendering;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 import moze_intel.projecte.gameObjs.block_entities.EmcChestBlockEntity;
 import moze_intel.projecte.gameObjs.registration.impl.BlockRegistryObject;
 import net.minecraft.client.model.geom.ModelLayers;
@@ -15,7 +13,6 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.jetbrains.annotations.NotNull;
@@ -28,12 +25,12 @@ public class ChestRenderer implements BlockEntityRenderer<EmcChestBlockEntity> {
 	private final ModelPart bottom;
 	private final ModelPart lock;
 
-	private final Predicate<Block> blockChecker;
+	private final BlockRegistryObject<?, ?> type;
 	private final ResourceLocation texture;
 
-	public ChestRenderer(BlockEntityRendererProvider.Context context, ResourceLocation texture, Supplier<BlockRegistryObject<?, ?>> type) {
+	public ChestRenderer(BlockEntityRendererProvider.Context context, ResourceLocation texture, BlockRegistryObject<?, ?> type) {
 		this.texture = texture;
-		this.blockChecker = block -> block == type.get().getBlock();
+		this.type = type;
 		ModelPart modelpart = context.bakeLayer(ModelLayers.CHEST);
 		this.bottom = modelpart.getChild("bottom");
 		this.lid = modelpart.getChild("lid");
@@ -45,7 +42,7 @@ public class ChestRenderer implements BlockEntityRenderer<EmcChestBlockEntity> {
 		matrix.pushPose();
 		if (chest.getLevel() != null && !chest.isRemoved()) {
 			BlockState state = chest.getLevel().getBlockState(chest.getBlockPos());
-			if (blockChecker.test(state.getBlock())) {
+			if (state.is(type.getBlock())) {
 				matrix.translate(0.5D, 0.5D, 0.5D);
 				matrix.mulPose(Axis.YP.rotationDegrees(-state.getValue(BlockStateProperties.HORIZONTAL_FACING).toYRot()));
 				matrix.translate(-0.5D, -0.5D, -0.5D);

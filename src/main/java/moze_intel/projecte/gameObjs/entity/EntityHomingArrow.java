@@ -113,7 +113,7 @@ public class EntityHomingArrow extends Arrow {
 
 		if (!candidates.isEmpty()) {
 			candidates.sort(Comparator.comparingDouble(EntityHomingArrow.this::distanceToSqr));
-			entityData.set(DW_TARGET_ID, candidates.get(0).getId());
+			entityData.set(DW_TARGET_ID, candidates.getFirst().getId());
 		}
 
 		newTargetCooldown = 5;

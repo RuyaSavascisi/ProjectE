@@ -3,6 +3,7 @@ package moze_intel.projecte.integration.jei.world_transmute;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -73,22 +74,33 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 
 	@Override
 	public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull WorldTransmuteEntry recipe, @NotNull IFocusGroup focuses) {
-		recipe.getInput().ifPresent(recipeInput ->
-				recipeInput.ifLeft(input -> builder.addSlot(RecipeIngredientRole.INPUT, 16, 16)
-						.addItemStack(input)
-				).ifRight(input -> builder.addSlot(RecipeIngredientRole.INPUT, 16, 16)
-						.addIngredient(NeoForgeTypes.FLUID_STACK, input)
-						.setFluidRenderer(FluidType.BUCKET_VOLUME, false, 16, 16)
-				)
-		);
+		Optional<Either<ItemStack, FluidStack>> recipeInput = recipe.getInput();
+		if (recipeInput.isPresent()) {
+			Either<ItemStack, FluidStack> input = recipeInput.get();
+			Optional<ItemStack> left = input.left();
+			//noinspection OptionalIsPresent - Capturing lambda
+			if (left.isPresent()) {
+				builder.addSlot(RecipeIngredientRole.INPUT, 16, 16)
+						.addItemStack(left.get());
+			}
+			Optional<FluidStack> right = input.right();
+			//noinspection OptionalIsPresent - Capturing lambda
+			if (right.isPresent()) {
+				builder.addSlot(RecipeIngredientRole.INPUT, 16, 16)
+						.addIngredient(NeoForgeTypes.FLUID_STACK, right.get())
+						.setFluidRenderer(FluidType.BUCKET_VOLUME, false, 16, 16);
+			}
+		}
 		int xPos = 96;
 		for (Either<ItemStack, FluidStack> output : recipe.getOutput()) {
 			IRecipeSlotBuilder slot = builder.addSlot(RecipeIngredientRole.OUTPUT, xPos, 16);
-			output.ifLeft(slot::addItemStack)
-					.ifRight(input -> slot
-							.addIngredient(NeoForgeTypes.FLUID_STACK, input)
-							.setFluidRenderer(FluidType.BUCKET_VOLUME, false, 16, 16)
-					);
+			output.ifLeft(slot::addItemStack);
+			Optional<FluidStack> right = output.right();
+			//noinspection OptionalIsPresent - Capturing lambda
+			if (right.isPresent()) {
+				slot.addIngredient(NeoForgeTypes.FLUID_STACK, right.get())
+						.setFluidRenderer(FluidType.BUCKET_VOLUME, false, 16, 16);
+			}
 			xPos += 16;
 		}
 	}
@@ -105,23 +117,35 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 		//All the ones that have a block state that can be rendered in JEI.
 		//For example only render one pumpkin to melon transmutation
 		List<WorldTransmuteEntry> visible = new ArrayList<>();
-		allWorldTransmutations.forEach(entry -> {
+		for (WorldTransmutationEntry entry : allWorldTransmutations) {
 			WorldTransmuteEntry e = new WorldTransmuteEntry(entry);
 			if (e.isRenderable()) {
-				boolean alreadyHas;
+				boolean alreadyHas = false;
 				FluidStack inputFluid = e.getInputFluid();
 				if (inputFluid.isEmpty()) {
 					ItemStack inputItem = e.getInputItem();
-					alreadyHas = visible.stream().map(WorldTransmuteEntry::getInputItem).anyMatch(otherInputItem -> !otherInputItem.isEmpty() && ItemStack.isSameItemSameComponents(inputItem, otherInputItem));
+					for (WorldTransmuteEntry worldTransmuteEntry : visible) {
+						ItemStack otherInputItem = worldTransmuteEntry.getInputItem();
+						if (!otherInputItem.isEmpty() && ItemStack.isSameItemSameComponents(inputItem, otherInputItem)) {
+							alreadyHas = true;
+							break;
+						}
+					}
 				} else {
-					alreadyHas = visible.stream().map(WorldTransmuteEntry::getInputFluid).anyMatch(otherInputFluid -> !otherInputFluid.isEmpty() && FluidStack.isSameFluidSameComponents(inputFluid, otherInputFluid));
+					for (WorldTransmuteEntry worldTransmuteEntry : visible) {
+						FluidStack otherInputFluid = worldTransmuteEntry.getInputFluid();
+						if (!otherInputFluid.isEmpty() && FluidStack.isSameFluidSameComponents(inputFluid, otherInputFluid)) {
+							alreadyHas = true;
+							break;
+						}
+					}
 				}
 				if (!alreadyHas) {
 					//Only add items that we haven't already had.
 					visible.add(e);
 				}
 			}
-		});
+		}
 		return visible;
 	}
 }

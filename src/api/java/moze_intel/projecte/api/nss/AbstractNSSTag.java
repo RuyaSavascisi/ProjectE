@@ -11,11 +11,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import net.minecraft.core.DefaultedRegistry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.HolderSet.Named;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
+import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -90,7 +93,7 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 *
 	 * @param type Object the stack represents.
 	 */
-	protected abstract NormalizedSimpleStack createNew(TYPE type);
+	protected abstract NormalizedSimpleStack createNew(Holder<TYPE> type);
 
 	@Override
 	public boolean representsTag() {
@@ -99,10 +102,22 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 
 	@Override
 	public void forEachElement(Consumer<NormalizedSimpleStack> consumer) {
-		getTag(getRegistry()).ifPresent(tag -> tag.stream()
-				.map(holder -> createNew(holder.value()))
-				.forEach(consumer)
-		);
+		Optional<Named<TYPE>> tag = getTag(getRegistry());
+		if (tag.isPresent()) {
+			for (Holder<TYPE> holder : tag.get()) {
+				consumer.accept(createNew(holder));
+			}
+		}
+	}
+
+	@Override
+	public <CONTEXT, DATA> void forEachElement(CONTEXT context, DATA data, TriConsumer<CONTEXT, NormalizedSimpleStack, DATA> consumer) {
+		Optional<Named<TYPE>> tag = getTag(getRegistry());
+		if (tag.isPresent()) {
+			for (Holder<TYPE> holder : tag.get()) {
+				consumer.accept(context, createNew(holder), data);
+			}
+		}
 	}
 
 	@Override

@@ -5,13 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 
-//TODO - 1.21: Whitelist don't allow duplicates (and maybe make it a strict size of nine?)
+//TODO - 1.21: Whitelist don't allow duplicates (and maybe make it a strict size of nine?). Maybe just make it a set???
 //TODO - 1.21: Do we want to enforce whitelist and consumed being unmodifiable views?
 public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemStack> consumed) {
 
@@ -31,8 +30,16 @@ public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemS
 			GemData::new
 	);
 
-	public boolean whitelistMatches(Predicate<ItemStack> predicate) {
-		return whitelist.stream().anyMatch(predicate);
+	public boolean whitelistMatches(ItemStack stack) {
+		if (stack.isEmpty()) {
+			return false;
+		}
+		for (ItemStack itemStack : whitelist) {
+			if (ItemStack.isSameItemSameComponents(stack, itemStack)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public GemData toggleWhitelist() {

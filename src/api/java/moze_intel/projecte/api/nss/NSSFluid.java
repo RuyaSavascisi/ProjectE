@@ -2,6 +2,7 @@ package moze_intel.projecte.api.nss;
 
 import com.mojang.serialization.MapCodec;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -59,6 +60,22 @@ public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 	}
 
 	/**
+	 * Helper method to create an {@link NSSFluid} representing a fluid from a {@link Holder} with no data components.
+	 */
+	@NotNull
+	public static NSSFluid createFluid(@NotNull Holder<Fluid> item) {
+		return createFluid(item, DataComponentPatch.EMPTY);
+	}
+
+	/**
+	 * Helper method to create an {@link NSSFluid} representing a fluid from a {@link Holder} and an optional {@link DataComponentPatch}
+	 */
+	@NotNull
+	public static NSSFluid createFluid(@NotNull Holder<Fluid> fluid, @NotNull DataComponentPatch componentsPatch) {
+		return createFluid(fluid.value(), componentsPatch);
+	}
+
+	/**
 	 * Helper method to create an {@link NSSFluid} representing a fluid from a {@link ResourceLocation}
 	 */
 	@NotNull
@@ -97,7 +114,7 @@ public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 	}
 
 	@Override
-	protected NSSFluid createNew(Fluid fluid) {
+	protected NSSFluid createNew(Holder<Fluid> fluid) {
 		return createFluid(fluid);
 	}
 

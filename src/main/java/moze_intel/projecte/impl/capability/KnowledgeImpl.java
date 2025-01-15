@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -270,7 +271,9 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 	public final boolean pruneStaleKnowledge() {
 		KnowledgeAttachment attachment = attachment();
 		List<ItemInfo> toAdd = new ArrayList<>();
-		boolean hasRemoved = attachment.knowledge.removeIf(info -> {
+		boolean hasRemoved = false;
+		for (Iterator<ItemInfo> iterator = attachment.knowledge.iterator(); iterator.hasNext(); ) {
+			ItemInfo info = iterator.next();
 			ItemInfo persistentInfo = DataComponentManager.getPersistentInfo(info);
 			if (!info.equals(persistentInfo)) {
 				//If the new persistent variant has an EMC value though we add it because that is what they would have learned
@@ -280,11 +283,14 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 				}
 				//If something about the persistence changed and the item we have is no longer directly learnable
 				// we remove it from our knowledge
-				return true;
+				iterator.remove();
+				hasRemoved = true;
+			} else if (!EMCHelper.doesItemHaveEmc(info)) {
+				//If the items do match but it just no longer has an EMC value, then we remove it as well
+				iterator.remove();
+				hasRemoved = true;
 			}
-			//If the items do match but it just no longer has an EMC value, then we remove it as well
-			return !EMCHelper.doesItemHaveEmc(info);
-		});
+		}
 		return attachment.knowledge.addAll(toAdd) || hasRemoved;
 	}
 

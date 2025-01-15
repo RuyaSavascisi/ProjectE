@@ -79,9 +79,9 @@ public final class InternalAbilities {
 	}
 
 	private static boolean shouldPlayerFly(Player player) {
-		return PlayerHelper.checkHotbarCurios(player, stack -> {
+		return PlayerHelper.checkHotbarCurios(player, (p, stack) -> {
 			if (!stack.isEmpty() && stack.is(PEItems.SWIFTWOLF_RENDING_GALE)) {
-				return ItemPE.getEmc(stack) > 0 || ItemPE.consumeFuel(player, stack, 64, false);
+				return ItemPE.getEmc(stack) > 0 || ItemPE.consumeFuel(p, stack, 64, false);
 			}
 			return false;
 		});

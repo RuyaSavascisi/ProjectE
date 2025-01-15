@@ -7,8 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.conversion.ConversionGroup;
 import moze_intel.projecte.api.conversion.CustomConversion;
 import moze_intel.projecte.api.conversion.CustomConversionFile;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -23,11 +23,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import org.apache.logging.log4j.util.TriConsumer;
 
 @EMCMapper
 public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	private static final FileToIdConverter CONVERSION_LISTER = FileToIdConverter.json("pe_custom_conversions");
+	private static final TriConsumer<IMappingCollector<NormalizedSimpleStack, Long>, NormalizedSimpleStack, CustomConversion> CONVERSION_CONSUMER =
+			(collector, nss, conversion) ->
+			collector.setValueFromConversion(conversion.count(), nss, conversion.ingredients());
 
 	@Override
 	public String getName() {
@@ -77,25 +81,29 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	}
 
 	private static void addMappingsFromFile(CustomConversionFile file, IMappingCollector<NormalizedSimpleStack, Long> mapper) {
-		file.groups().forEach((name, group) -> {
-			PECore.debugLog("Adding conversions from group '{}' with comment '{}'", name, group.comment());
+		for (Map.Entry<String, ConversionGroup> entry : file.groups().entrySet()) {
+			ConversionGroup group = entry.getValue();
+			PECore.debugLog("Adding conversions from group '{}' with comment '{}'", entry.getKey(), group.comment());
 			for (CustomConversion conversion : group.conversions()) {
 				mapper.addConversion(conversion.count(), conversion.output(), conversion.ingredients());
 			}
-		});
+		}
 
 		//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-		file.values().setValueBefore().forEach((stack, value) -> stack.forSelfAndEachElement(nss -> mapper.setValueBefore(nss, value)));
+		for (Map.Entry<NormalizedSimpleStack, Long> entry : file.values().setValueBefore().entrySet()) {
+			entry.getKey().forSelfAndEachElement(mapper, entry.getValue(), IMappingCollector::setValueBefore);
+		}
 
 		//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-		file.values().setValueAfter().forEach((stack, value) -> stack.forSelfAndEachElement(nss -> mapper.setValueAfter(nss, value)));
+		for (Map.Entry<NormalizedSimpleStack, Long> entry : file.values().setValueAfter().entrySet()) {
+			entry.getKey().forSelfAndEachElement(mapper, entry.getValue(), IMappingCollector::setValueAfter);
+		}
 
-		for (CustomConversion conversion : file.values().conversions()) {
-			Consumer<NormalizedSimpleStack> consumer = nss -> mapper.setValueFromConversion(conversion.count(), nss, conversion.ingredients());
-			if (conversion.propagateTags()) {
-				conversion.output().forSelfAndEachElement(consumer);
+		for (CustomConversion customConversion : file.values().conversions()) {
+			if (customConversion.propagateTags()) {
+				customConversion.output().forSelfAndEachElement(mapper, customConversion, CONVERSION_CONSUMER);
 			} else {
-				consumer.accept(conversion.output());
+				CONVERSION_CONSUMER.accept(mapper, customConversion.output(), customConversion);
 			}
 		}
 	}

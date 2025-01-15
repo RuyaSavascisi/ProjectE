@@ -60,8 +60,10 @@ public class BlackHoleBand extends PEToggleItem implements IAlchBagItem, IAlchCh
 			Optional<SoundEvent> sound = pickup.getPickupSound(state);
 			ItemStack itemStack = pickup.pickupBlock(player, level, fluidPos, state);
 			if (!itemStack.isEmpty()) {
-				sound.ifPresent(soundEvent -> player.level().playSound(null, player.getX(), player.getY(), player.getZ(), soundEvent,
-						SoundSource.PLAYERS, 1.0F, 1.0F));
+				//noinspection OptionalIsPresent - Capturing lambda
+				if (sound.isPresent()) {
+					player.level().playSound(null, player.getX(), player.getY(), player.getZ(), sound.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+				}
 				return InteractionResult.sidedSuccess(level.isClientSide);
 			}
 		}
@@ -101,7 +103,11 @@ public class BlackHoleBand extends PEToggleItem implements IAlchBagItem, IAlchCh
 			if (!level.isClientSide && item.distanceToSqr(target) < 1.21) {
 				for (Direction dir : Direction.values()) {
 					//Cache the item handlers in various spots so that we only query each neighboring position once
-					IItemHandler inv = nearbyHandlers.computeIfAbsent(dir, direction -> WorldHelper.getCapability(level, ItemHandler.BLOCK, pos.relative(dir), dir));
+					IItemHandler inv = nearbyHandlers.get(dir);
+					if (inv == null) {
+						inv = WorldHelper.getCapability(level, ItemHandler.BLOCK, pos.relative(dir), dir);
+						nearbyHandlers.put(dir, inv);
+					}
 					ItemStack result = ItemHandlerHelper.insertItemStacked(inv, item.getItem(), false);
 					if (result.isEmpty()) {
 						item.discard();

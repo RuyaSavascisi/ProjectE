@@ -3,6 +3,7 @@ package moze_intel.projecte.gameObjs.customRecipes;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone;
@@ -44,10 +45,7 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 		}
 		//If we have at least one matching recipe, return the output
 		//Note: It is multiplied by seven as we have seven inputs
-		ItemStack output = matchingRecipes.stream().findFirst()
-				.map(RecipeHolder::value)
-				.map(recipe -> recipe.getResultItem(registryAccess))
-				.get();
+		ItemStack output = matchingRecipes.stream().findFirst().get().value().getResultItem(registryAccess);
 		return output.copyWithCount(output.getCount() * 7);
 	}
 
@@ -90,8 +88,15 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 									if (!matchingRecipes.addAll(level.getRecipeManager().getRecipesFor(RecipeType.SMELTING, furnaceInput, level))) {
 										return Collections.emptySet();
 									}
-								} else if (matchingRecipes.removeIf(recipe -> !recipe.value().matches(furnaceInput, level))) {
-									//If any matching recipes are no longer valid (so got removed), check if our set of matching recipes is now empty now
+								} else {
+									//noinspection Java8CollectionRemoveIf - Capturing lambda
+									for (Iterator<RecipeHolder<SmeltingRecipe>> iterator = matchingRecipes.iterator(); iterator.hasNext(); ) {
+										RecipeHolder<SmeltingRecipe> recipe = iterator.next();
+										if (!recipe.value().matches(furnaceInput, level)) {
+											iterator.remove();
+										}
+									}
+									//Because we might have removed some recipes, check one more time if they are empty
 									if (matchingRecipes.isEmpty()) {
 										//If it is exit due to there being no match
 										return Collections.emptySet();

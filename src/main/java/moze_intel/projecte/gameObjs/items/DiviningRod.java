@@ -35,7 +35,6 @@ import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 
 public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
@@ -63,7 +62,7 @@ public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 		int numBlocks = 0;
 		int depth = getDepthFromMode(ctx.getItemInHand());
 		//Lazily retrieve the values for the furnace recipes
-		Lazy<List<RecipeHolder<SmeltingRecipe>>> furnaceRecipes = Lazy.of(() -> level.getRecipeManager().getAllRecipesFor(RecipeType.SMELTING));
+		List<RecipeHolder<SmeltingRecipe>> furnaceRecipes = null;
 		for (BlockPos digPos : WorldHelper.getPositionsInBox(WorldHelper.getDeepBox(ctx.getClickedPos(), ctx.getClickedFace(), depth))) {
 			BlockState state = level.getBlockState(digPos);
 			if (state.isAir()) {
@@ -73,12 +72,15 @@ public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 			if (drops.isEmpty()) {
 				continue;
 			}
-			ItemStack blockStack = drops.get(0);
+			ItemStack blockStack = drops.getFirst();
 			long blockEmc = EMCHelper.getEmcValue(blockStack);
 			if (blockEmc == 0) {
-				for (RecipeHolder<SmeltingRecipe> furnaceRecipeHolder : furnaceRecipes.get()) {
+				if (furnaceRecipes == null) {//Lazily init the list of furnace recipes
+					furnaceRecipes = level.getRecipeManager().getAllRecipesFor(RecipeType.SMELTING);
+				}
+				for (RecipeHolder<SmeltingRecipe> furnaceRecipeHolder : furnaceRecipes) {
 					SmeltingRecipe furnaceRecipe = furnaceRecipeHolder.value();
-					if (furnaceRecipe.getIngredients().get(0).test(blockStack)) {
+					if (furnaceRecipe.getIngredients().getFirst().test(blockStack)) {
 						long currentValue = EMCHelper.getEmcValue(furnaceRecipe.getResultItem(level.registryAccess()));
 						if (currentValue != 0) {
 							if (!emcValues.contains(currentValue)) {

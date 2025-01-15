@@ -7,9 +7,7 @@ import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ToolHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -95,19 +93,17 @@ public class PEShovel extends ShovelItem implements IItemCharge, IBarHelper {
 		if (player == null) {
 			return InteractionResult.PASS;
 		}
-		InteractionHand hand = context.getHand();
 		Level level = context.getLevel();
 		BlockPos pos = context.getClickedPos();
-		Direction sideHit = context.getClickedFace();
-		ItemStack stack = context.getItemInHand();
-		BlockState state = level.getBlockState(pos);
-		return ToolHelper.performActions(ToolHelper.flattenAOE(context, state, 0),
-				() -> ToolHelper.dowseCampfire(context, state),
-				() -> {
+		BlockState blockState = level.getBlockState(pos);
+		return ToolHelper.performActions(context, blockState, ToolHelper.flattenAOE(context, blockState, 0),
+				ToolHelper::dowseCampfire,
+				(ctx, state) -> {
 					if (state.is(Tags.Blocks.GRAVELS) || state.is(Blocks.CLAY)) {
-						return ToolHelper.tryVeinMine(player, stack, pos, sideHit);
+						return ToolHelper.tryVeinMine(ctx.getPlayer(), ctx.getItemInHand(), ctx.getClickedPos(), ctx.getClickedFace());
 					}
 					return InteractionResult.PASS;
-				}, () -> ToolHelper.digAOE(level, player, hand, stack, pos, sideHit, false, 0));
+				}, (ctx, state) -> ToolHelper.digAOE(ctx.getLevel(), ctx.getPlayer(), ctx.getHand(), ctx.getItemInHand(), ctx.getClickedPos(),
+						ctx.getClickedFace(), false, 0));
 	}
 }

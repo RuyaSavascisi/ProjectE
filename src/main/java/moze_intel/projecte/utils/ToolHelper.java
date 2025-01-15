@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import moze_intel.projecte.PECore;
@@ -59,6 +59,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour.BlockStateBase;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
@@ -98,14 +99,15 @@ public class ToolHelper {
 	 * @implNote Only returns that we failed if all the tested actions failed.
 	 */
 	@SafeVarargs
-	public static InteractionResult performActions(InteractionResult firstAction, Supplier<InteractionResult>... secondaryActions) {
+	public static InteractionResult performActions(UseOnContext context, BlockState state, InteractionResult firstAction,
+			BiFunction<UseOnContext, BlockState, InteractionResult>... secondaryActions) {
 		if (firstAction.consumesAction()) {
 			return firstAction;
 		}
 		InteractionResult result = firstAction;
 		boolean hasFailed = result == InteractionResult.FAIL;
-		for (Supplier<InteractionResult> secondaryAction : secondaryActions) {
-			result = secondaryAction.get();
+		for (BiFunction<UseOnContext, BlockState, InteractionResult> secondaryAction : secondaryActions) {
+			result = secondaryAction.apply(context, state);
 			if (result.consumesAction()) {
 				//If we were successful
 				return result;
@@ -517,9 +519,9 @@ public class ToolHelper {
 			return InteractionResult.FAIL;
 		}
 		AABB area = WorldHelper.getBroadDeepBox(pos, sideHit, getCharge(stack));
-		return harvestVein(level, player, stack, area, state -> state.is(target.getBlock()), drops -> {
-			WorldHelper.createLootDrop(drops, level, pos);
-			level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.DESTRUCT.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+		return harvestVein(level, player, pos, stack, area, target.getBlock(), BlockStateBase::is, (drops, lvl, p) -> {
+			WorldHelper.createLootDrop(drops, lvl, p);
+			lvl.playSound(null, p.getX(), p.getY(), p.getZ(), PESoundEvents.DESTRUCT.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 		});
 	}
 
@@ -532,20 +534,20 @@ public class ToolHelper {
 		}
 		Level level = player.level();
 		ItemStack stack = player.getItemInHand(hand);
-		Predicate<BlockState> stateChecker = state -> ItemHelper.isOre(state) && stack.isCorrectToolForDrops(state);
+		BiPredicate<BlockState, ItemStack> stateChecker = (state, itemStack) -> ItemHelper.isOre(state) && itemStack.isCorrectToolForDrops(state);
 		AABB area = player.getBoundingBox().inflate(getCharge(stack) + 3);
-		return harvestVein(level, player, stack, area, stateChecker, drops -> WorldHelper.createLootDrop(drops, level, player.position()));
+		return harvestVein(level, player, player.blockPosition(), stack, area, stack, stateChecker, WorldHelper::createLootDrop);
 	}
 
-	public static InteractionResult harvestVein(Level level, Player player, ItemStack stack, AABB area, Predicate<BlockState> stateChecker,
-			Consumer<List<ItemStack>> spawnDrops) {
+	public static <DATA> InteractionResult harvestVein(Level level, Player player, BlockPos dropPos, ItemStack stack, AABB area, DATA data,
+			BiPredicate<BlockState, DATA> stateChecker, DropSpawner spawnDrops) {
 		if (ProjectEConfig.server.items.disableAllRadiusMining.get()) {
 			return InteractionResult.PASS;
 		}
 		List<ItemStack> drops = new ArrayList<>();
-		if (WorldHelper.harvestVein(level, player, stack, area, drops, stateChecker) > 0) {
+		if (WorldHelper.harvestVein(level, player, stack, area, drops, data, stateChecker) > 0) {
 			if (!level.isClientSide) {
-				spawnDrops.accept(drops);
+				spawnDrops.drop(drops, level, dropPos);
 			}
 			return InteractionResult.sidedSuccess(level.isClientSide);
 		}
@@ -574,6 +576,12 @@ public class ToolHelper {
 		if (charge > 0) {
 			event.addModifier(Attributes.ATTACK_DAMAGE, new AttributeModifier(CHARGE_MODIFIER_ID, charge, Operation.ADD_VALUE), EquipmentSlotGroup.MAINHAND);
 		}
+	}
+
+	@FunctionalInterface
+	public interface DropSpawner {
+
+		void drop(List<ItemStack> drops, Level level, BlockPos pos);
 	}
 
 	private interface IToolAOEData {

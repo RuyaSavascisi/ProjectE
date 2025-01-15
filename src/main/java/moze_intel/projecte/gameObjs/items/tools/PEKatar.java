@@ -98,25 +98,24 @@ public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunct
 			return InteractionResult.PASS;
 		}
 		Level level = context.getLevel();
-		BlockPos pos = context.getClickedPos();
-		BlockState state = level.getBlockState(pos);
+		BlockState blockState = level.getBlockState(context.getClickedPos());
 		//Order that it attempts to use the item:
 		// Strip logs, hoe ground, carve pumpkin, shear beehive, AOE remove logs, AOE remove leaves
-		return ToolHelper.performActions(ToolHelper.stripLogsAOE(context, state, 0),
-				() -> ToolHelper.scrapeAOE(context, state, 0),
-				() -> ToolHelper.waxOffAOE(context, state, 0),
-				() -> ToolHelper.tillAOE(context, state, 0),
-				() -> {
+		return ToolHelper.performActions(context, blockState, ToolHelper.stripLogsAOE(context, blockState, 0),
+				(ctx, state) -> ToolHelper.scrapeAOE(ctx, state, 0),
+				(ctx, state) -> ToolHelper.waxOffAOE(ctx, state, 0),
+				(ctx, state) -> ToolHelper.tillAOE(ctx, state, 0),
+				(ctx, state) -> {
 					if (state.is(BlockTags.LOGS)) {
 						//Mass clear (acting as an axe)
 						//Note: We already tried to strip the log in an earlier action
-						return ToolHelper.clearTagAOE(level, player, context.getHand(), context.getItemInHand(), 0, BlockTags.LOGS);
+						return ToolHelper.clearTagAOE(ctx.getLevel(), ctx.getPlayer(), ctx.getHand(), ctx.getItemInHand(), 0, BlockTags.LOGS);
 					}
 					return InteractionResult.PASS;
-				}, () -> {
+				}, (ctx, state) -> {
 					if (state.is(BlockTags.LEAVES)) {
 						//Mass clear (acting as shears)
-						return ToolHelper.clearTagAOE(level, player, context.getHand(), context.getItemInHand(), 0, BlockTags.LEAVES);
+						return ToolHelper.clearTagAOE(ctx.getLevel(), ctx.getPlayer(), ctx.getHand(), ctx.getItemInHand(), 0, BlockTags.LEAVES);
 					}
 					return InteractionResult.PASS;
 				});

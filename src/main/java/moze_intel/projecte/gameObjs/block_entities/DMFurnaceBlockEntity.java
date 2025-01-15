@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.gameObjs.blocks.MatterFurnace;
@@ -344,9 +345,12 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		}
 		//Note: We copy the input and fuel so that if anyone attempts to mutate the input from assemble then there is no side effects that occur
 		SingleRecipeInput recipeInput = new SingleRecipeInput(input.copyWithCount(1));
-		return quickCheck.getRecipeFor(recipeInput, level)
-				.map(recipeHolder -> new RecipeResult(recipeHolder, recipeHolder.value().assemble(recipeInput, level.registryAccess())))
-				.orElse(RecipeResult.EMPTY);
+		Optional<RecipeHolder<SmeltingRecipe>> optionalRecipe = quickCheck.getRecipeFor(recipeInput, level);
+		if (optionalRecipe.isPresent()) {
+			RecipeHolder<SmeltingRecipe> recipeHolder = optionalRecipe.get();
+			return new RecipeResult(recipeHolder, recipeHolder.value().assemble(recipeInput, level.registryAccess()));
+		}
+		return RecipeResult.EMPTY;
 	}
 
 	public boolean hasSmeltingResult(ItemStack input) {
@@ -436,7 +440,9 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		tag.put("Fuel", fuelInv.serializeNBT(registries));
 		//[VanillaCopy] AbstractFurnaceBlockEntity
 		CompoundTag usedRecipes = new CompoundTag();
-		this.recipesUsed.forEach((recipeId, timesUsed) -> usedRecipes.putInt(recipeId.toString(), timesUsed));
+		for (Object2IntMap.Entry<ResourceLocation> entry : this.recipesUsed.object2IntEntrySet()) {
+			usedRecipes.putInt(entry.getKey().toString(), entry.getIntValue());
+		}
 		tag.put("RecipesUsed", usedRecipes);
 	}
 
@@ -479,13 +485,15 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		RecipeManager recipeManager = level.getRecipeManager();
 		List<RecipeHolder<?>> list = new ArrayList<>();
 		for (Object2IntMap.Entry<ResourceLocation> entry : this.recipesUsed.object2IntEntrySet()) {
-			recipeManager.byKey(entry.getKey()).ifPresent(recipeHolder -> {
+			Optional<RecipeHolder<?>> optionalRecipe = recipeManager.byKey(entry.getKey());
+			if (optionalRecipe.isPresent()) {
+				RecipeHolder<?> recipeHolder = optionalRecipe.get();
 				list.add(recipeHolder);
 				//Validate it is actually a cooking recipe
 				if (recipeHolder.value() instanceof SmeltingRecipe recipe) {
 					createExperience(level, popVec, entry.getIntValue(), recipe.getExperience());
 				}
-			});
+			}
 		}
 		return list;
 	}

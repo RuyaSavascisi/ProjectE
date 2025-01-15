@@ -1,6 +1,5 @@
 package moze_intel.projecte.gameObjs.container.inventory;
 
-import java.util.ArrayList;
 import java.util.List;
 import moze_intel.projecte.components.GemData;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
@@ -70,22 +69,39 @@ public class EternalDensityInventory implements IItemHandlerModifiable {
 		writeBack();
 	}
 
+	//TODO - 1.21: Test this
 	private void writeBack() {
-		for (int i = 0; i < inventory.getSlots(); ++i) {
+		//TODO: I think we can remove this
+		/*for (int i = 0; i < inventory.getSlots(); ++i) {
 			if (inventory.getStackInSlot(i).isEmpty()) {
 				inventory.setStackInSlot(i, ItemStack.EMPTY);
 			}
-		}
-		//TODO - 1.21: Test this
-		List<ItemStack> targets = new ArrayList<>(inventoryStacks.size());
-		for (int i = 0, size = inventoryStacks.size(); i < size; i++) {
+		}*/
+		//Create a list that will be the correct size
+		int size = inventoryStacks.size();
+		List<ItemStack> targets = NonNullList.withSize(size, ItemStack.EMPTY);
+		for (int i = 0; i < size; i++) {
+			//Get the item in the slot
 			ItemStack target = inventoryStacks.get(i);
-			if (!target.isEmpty() && targets.stream().noneMatch(r -> ItemStack.isSameItemSameComponents(r, target))) {
+			//If it isn't empty and none of the
+			if (noneMatch(targets, target)) {
 				targets.set(i, target.copy());
 			}
 		}
 		gemData = gemData.withWhitelist(targets);
 		invItem.set(PEDataComponentTypes.GEM_DATA, gemData);
+	}
+
+	private boolean noneMatch(List<ItemStack> targets, @NotNull ItemStack stack) {
+		if (stack.isEmpty()) {
+			return false;
+		}
+		for (ItemStack s : targets) {
+			if (ItemStack.isSameItemSameComponents(s, stack)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public void changeMode() {

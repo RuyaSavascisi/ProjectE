@@ -34,7 +34,7 @@ public record UpdateGemModePKT(boolean mode) implements IPEPacket {
 		}
 		//Note: Void Ring extends gem of eternal density, so we only need to check if it is an instance of the base class
 		if (!stack.isEmpty() && stack.getItem() instanceof GemEternalDensity) {
-			stack.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, data -> data.withWhitelist(mode));
+			stack.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, mode, GemData::withWhitelist);
 		}
 	}
 }

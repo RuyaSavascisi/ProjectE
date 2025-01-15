@@ -2,7 +2,7 @@ package moze_intel.projecte.gameObjs.items;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IAlchBagItem;
@@ -34,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestItem, IPedestalItem, ICapabilityAware {
 
-	private static final Predicate<ItemStack> CAN_REPAIR_ITEM = stack -> !stack.isEmpty() &&
+	private static final BiPredicate<ItemStack, Void> CAN_REPAIR_ITEM = (stack, ignored) -> !stack.isEmpty() &&
 																		 stack.getCapability(PECapabilities.MODE_CHANGER_ITEM_CAPABILITY) == null &&
 																		 ItemHelper.isRepairableDamagedItem(stack);
 
@@ -100,7 +100,7 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 		if (coolDown > 0) {
 			stack.set(PEDataComponentTypes.COOLDOWN, (byte) (coolDown - 1));
 			return true;
-		} else if (repairAllItems(inv, CAN_REPAIR_ITEM)) {
+		} else if (repairAllItems(inv, null, CAN_REPAIR_ITEM)) {
 			stack.set(PEDataComponentTypes.COOLDOWN, (byte) 19);
 			return true;
 		}
@@ -113,19 +113,19 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 	}
 
 	private static void repairAllItems(Player player) {
-		Predicate<ItemStack> canRepairPlayerItem = CAN_REPAIR_ITEM.and(stack -> stack != player.getMainHandItem() || !player.swinging);
-		repairAllItems(player.getCapability(ItemHandler.ENTITY), canRepairPlayerItem);
-		repairAllItems(player.getCapability(IntegrationHelper.CURIO_ITEM_HANDLER), canRepairPlayerItem);
+		BiPredicate<ItemStack, Player> canRepairPlayerItem = (stack, p) -> CAN_REPAIR_ITEM.test(stack, null) && (stack != p.getMainHandItem() || !p.swinging);
+		repairAllItems(player.getCapability(ItemHandler.ENTITY), player, canRepairPlayerItem);
+		repairAllItems(player.getCapability(IntegrationHelper.CURIO_ITEM_HANDLER), player, canRepairPlayerItem);
 	}
 
-	private static boolean repairAllItems(@Nullable IItemHandler inv, Predicate<ItemStack> canRepairStack) {
+	private static <DATA> boolean repairAllItems(@Nullable IItemHandler inv, DATA data, BiPredicate<ItemStack, DATA> canRepairStack) {
 		if (inv == null) {
 			return false;
 		}
 		boolean hasAction = false;
 		for (int i = 0; i < inv.getSlots(); i++) {
 			ItemStack invStack = inv.getStackInSlot(i);
-			if (canRepairStack.test(invStack)) {
+			if (canRepairStack.test(invStack, data)) {
 				invStack.setDamageValue(invStack.getDamageValue() - 1);
 				if (!hasAction) {
 					hasAction = true;

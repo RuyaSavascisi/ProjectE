@@ -5,10 +5,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
-import javax.annotation.Nonnull;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.PETags;
@@ -17,6 +18,7 @@ import moze_intel.projecte.network.packets.to_client.NovaExplosionSyncPKT;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet.Named;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -83,7 +85,6 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.common.IShearable;
 import net.neoforged.neoforge.common.util.ItemStackMap;
-import net.neoforged.neoforge.common.util.TriPredicate;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -551,23 +552,39 @@ public final class WorldHelper {
 	}
 
 	private static BlockState getRandomState(TagKey<Block> key, RandomSource random, BlockState fallback) {
-		return BuiltInRegistries.BLOCK.getTag(key)
-				.flatMap(holderSet -> holderSet.getRandomElement(random))
-				.map(holder -> holder.value().defaultBlockState())
-				.orElse(fallback);
+		Optional<Named<Block>> optionalTag = BuiltInRegistries.BLOCK.getTag(key);
+		if (optionalTag.isPresent()) {
+			return optionalTag.get().getRandomElement(random)
+					.map(holder -> holder.value().defaultBlockState())
+					.orElse(fallback);
+		}
+		return fallback;
 	}
 
-	public static int harvestVein(Level level, Player player, ItemStack stack, AABB area, List<ItemStack> currentDrops, Predicate<BlockState> stateChecker) {
+	private static <DATA> boolean validState(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, BlockPos pos, Player player) {
+		return stateChecker.test(state, data) && state.getDestroySpeed(player.level(), pos) != -1 && PlayerHelper.hasEditPermission(player, pos);
+	}
+
+	public static <DATA> int harvestVein(Level level, Player player, ItemStack stack, AABB area, List<ItemStack> currentDrops, DATA data,
+			BiPredicate<BlockState, DATA> stateChecker) {
 		record TargetInfo(BlockPos pos, BlockState state) {
 		}
 		int numMined = 0;
 		Set<BlockPos> traversed = new HashSet<>();
 		Queue<TargetInfo> frontier = new ArrayDeque<>();
-		TriPredicate<BlockState, BlockPos, Player> validState = getVeinStateChecker(stateChecker, level.isClientSide);
+		VeinStateChecker<DATA> validState;
+		//Ensure the block can be destroyed and the player can target the block at that position
+		if (level.isClientSide) {
+			validState = WorldHelper::validState;
+		} else {
+			//If we are server side we want to perform an extra check to determine if the player can break the block
+			validState = (dat, checker, state, pos, p) ->
+					validState(dat, checker, state, pos, p) && PlayerHelper.checkBreakPermission((ServerPlayer) p, pos);
+		}
 
 		for (BlockPos pos : WorldHelper.getPositionsInBox(area)) {
 			BlockState state = level.getBlockState(pos);
-			if (validState.test(state, pos, player)) {
+			if (validState.test(data, stateChecker, state, pos, player)) {
 				if (level.isClientSide) {
 					return 1;
 				}
@@ -595,24 +612,13 @@ public final class WorldHelper {
 				nextPos = nextPos.immutable();
 				if (traversed.add(nextPos) && isBlockLoaded(level, nextPos)) {
 					BlockState nextState = level.getBlockState(nextPos);
-					if (validState.test(nextState, nextPos, player)) {
+					if (validState.test(data, stateChecker, nextState, nextPos, player)) {
 						frontier.add(new TargetInfo(nextPos, nextState));
 					}
 				}
 			}
 		}
 		return numMined;
-	}
-
-	@Nonnull
-	private static TriPredicate<BlockState, BlockPos, Player> getVeinStateChecker(Predicate<BlockState> stateChecker, boolean isClientSide) {
-		//Ensure the block can be destroyed and the player can target the block at that position
-		TriPredicate<BlockState, BlockPos, Player> validState = (state, pos, player) -> stateChecker.test(state) && state.getDestroySpeed(player.level(), pos) != -1 && PlayerHelper.hasEditPermission(player, pos);
-		if (!isClientSide) {
-			//If we are server side we want to perform an extra check to determine if the player can break the block
-			return validState.and((state, pos, player) -> PlayerHelper.checkBreakPermission((ServerPlayer) player, pos));
-		}
-		return validState;
 	}
 
 	public static void igniteNearby(Level level, Player player) {
@@ -880,5 +886,11 @@ public final class WorldHelper {
 			PECore.LOGGER.warn("Unexpected block entity class at {}, expected {}, but found: {}", pos, clazz, blockEntity.getClass());
 		}
 		return null;
+	}
+
+	@FunctionalInterface
+	private interface VeinStateChecker<DATA> {
+
+		boolean test(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, BlockPos pos, Player player);
 	}
 }

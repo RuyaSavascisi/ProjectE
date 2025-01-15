@@ -1,8 +1,7 @@
 package moze_intel.projecte.utils;
 
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.integration.IntegrationHelper;
 import net.minecraft.core.BlockPos;
@@ -67,22 +66,27 @@ public final class PlayerHelper {
 	}
 
 	public static ItemStack findFirstItem(Player player, Item consumeFrom) {
-		return player.getInventory().items.stream().filter(s -> !s.isEmpty() && s.is(consumeFrom)).findFirst().orElse(ItemStack.EMPTY);
+		for (ItemStack s : player.getInventory().items) {
+			if (!s.isEmpty() && s.is(consumeFrom)) {
+				return s;
+			}
+		}
+		return ItemStack.EMPTY;
 	}
 
-	public static boolean checkHotbarCurios(Player player, Predicate<ItemStack> checker) {
+	public static boolean checkHotbarCurios(Player player, BiPredicate<Player, ItemStack> checker) {
 		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
-			if (checker.test(player.getInventory().getItem(i))) {
+			if (checker.test(player, player.getInventory().getItem(i))) {
 				return true;
 			}
 		}
-		if (checker.test(player.getOffhandItem())) {
+		if (checker.test(player, player.getOffhandItem())) {
 			return true;
 		}
 		IItemHandler curios = player.getCapability(IntegrationHelper.CURIO_ITEM_HANDLER);
 		if (curios != null) {
 			for (int i = 0, slots = curios.getSlots(); i < slots; i++) {
-				if (checker.test(curios.getStackInSlot(i))) {
+				if (checker.test(player, curios.getStackInSlot(i))) {
 					return true;
 				}
 			}
@@ -114,7 +118,15 @@ public final class PlayerHelper {
 	}
 
 	public static boolean hasEditPermission(Player player, BlockPos pos) {
-		return player.mayInteract(player.level(), pos) && Arrays.stream(Direction.values()).allMatch(e -> player.mayUseItemAt(pos, e, ItemStack.EMPTY));
+		if (!player.mayInteract(player.level(), pos)) {
+			return false;
+		}
+		for (Direction e : Direction.values()) {
+			if (!player.mayUseItemAt(pos, e, ItemStack.EMPTY)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static void resetCooldown(Player player) {

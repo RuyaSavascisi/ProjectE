@@ -48,7 +48,9 @@ public record CustomConversionFile(boolean replace, @Nullable String comment, Ma
 		if (right.replace) {
 			return right;
 		}
-		right.groups.forEach((name, group) -> left.groups.merge(name, group, ConversionGroup::merge));
+		for (Map.Entry<String, ConversionGroup> entry : right.groups.entrySet()) {
+			left.groups.merge(entry.getKey(), entry.getValue(), ConversionGroup::merge);
+		}
 		left.values.merge(right.values);
 		return left;
 	}

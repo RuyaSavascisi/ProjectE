@@ -2,7 +2,6 @@ package moze_intel.projecte.gameObjs.block_entities;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 import moze_intel.projecte.api.block_entity.BaseEmcBlockEntity;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage;
@@ -172,7 +171,13 @@ public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 		@Override
 		protected void onLoad() {
 			super.onLoad();
-			empty = IntStream.range(0, getSlots()).allMatch(slot -> getStackInSlot(slot).isEmpty());
+			empty = true;
+			for (int slot = 0, slots = getSlots(); slot < slots; slot++) {
+				if (!getStackInSlot(slot).isEmpty()) {
+					empty = false;
+					break;
+				}
+			}
 		}
 
 		/**

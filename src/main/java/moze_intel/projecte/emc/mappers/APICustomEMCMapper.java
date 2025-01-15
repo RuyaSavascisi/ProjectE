@@ -78,7 +78,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 					long emc = entry.getValue();
 					if (isAllowedToSet(modId, normStack, emc, config)) {
 						//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-						normStack.forSelfAndEachElement(nss -> mapper.setValueBefore(nss, emc));
+						normStack.forSelfAndEachElement(mapper, emc, IMappingCollector::setValueBefore);
 						PECore.debugLog("{} setting value for {} to {}", modIdOrUnknown, normStack, emc);
 					} else {
 						PECore.debugLog("Disallowed {} to set the value for {} to {}", modIdOrUnknown, normStack, emc);

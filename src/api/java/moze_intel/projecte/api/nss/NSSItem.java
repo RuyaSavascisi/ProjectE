@@ -46,6 +46,14 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 	}
 
 	/**
+	 * Helper method to create an {@link NSSItem} representing an item from a {@link Holder} with no data components.
+	 */
+	@NotNull
+	public static NSSItem createItem(@NotNull Holder<Item> item) {
+		return createItem(item, DataComponentPatch.EMPTY);
+	}
+
+	/**
 	 * Helper method to create an {@link NSSItem} representing an item from a {@link Holder} and an optional {@link DataComponentPatch}
 	 */
 	@NotNull
@@ -117,7 +125,7 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 	}
 
 	@Override
-	protected NSSItem createNew(Item item) {
+	protected NSSItem createNew(Holder<Item> item) {
 		return createItem(item);
 	}
 

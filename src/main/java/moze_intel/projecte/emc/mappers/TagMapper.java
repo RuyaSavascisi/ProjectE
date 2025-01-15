@@ -5,6 +5,7 @@ import java.util.Collections;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.AbstractNSSTag;
+import moze_intel.projecte.api.nss.NSSTag;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
@@ -15,12 +16,14 @@ public class TagMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, final CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		AbstractNSSTag.getAllCreatedTags().forEach(stack -> stack.forEachElement(normalizedSimpleStack -> {
-			//Tag -> element
-			mapper.addConversion(1, stack, Collections.singletonList(normalizedSimpleStack));
-			//Element -> tag
-			mapper.addConversion(1, normalizedSimpleStack, Collections.singletonList(stack));
-		}));
+		for (NSSTag stack : AbstractNSSTag.getAllCreatedTags()) {
+			stack.forEachElement(mapper, stack, (collector, normalizedSimpleStack, tag) -> {
+				//Tag -> element
+				collector.addConversion(1, tag, Collections.singletonList(normalizedSimpleStack));
+				//Element -> tag
+				collector.addConversion(1, normalizedSimpleStack, Collections.singletonList(tag));
+			});
+		}
 	}
 
 	@Override

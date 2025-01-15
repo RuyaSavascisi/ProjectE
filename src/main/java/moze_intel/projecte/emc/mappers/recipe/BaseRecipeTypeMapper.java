@@ -88,7 +88,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 					return addConversionsAndReturn(mapper, dummyGroupInfos, false);
 				} else if (count == 1) {
 					//There is only actually one non-empty ingredient
-					if (addIngredient(ingredientMap, stacks.get(0).copy(), recipeID)) {
+					if (addIngredient(ingredientMap, stacks.getFirst().copy(), recipeID)) {
 						//Failed to add ingredient, bail but mark that we handled it as there is a 99% chance a later
 						// mapper would fail as well due to it being an invalid recipe
 						return addConversionsAndReturn(mapper, dummyGroupInfos, true);

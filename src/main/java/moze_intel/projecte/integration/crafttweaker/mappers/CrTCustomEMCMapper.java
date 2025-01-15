@@ -29,11 +29,13 @@ public class CrTCustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		customEmcValues.forEach((normStack, value) -> {
+		for (Map.Entry<NormalizedSimpleStack, Long> entry : customEmcValues.entrySet()) {
+			NormalizedSimpleStack normStack = entry.getKey();
+			Long value = entry.getValue();
 			//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-			normStack.forSelfAndEachElement(nss -> mapper.setValueBefore(nss, value));
+			normStack.forSelfAndEachElement(mapper, value, IMappingCollector::setValueBefore);
 			PECore.debugLog("CraftTweaker setting value for {} to {}", normStack, value);
-		});
+		}
 	}
 
 	@Override

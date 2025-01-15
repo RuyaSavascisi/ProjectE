@@ -46,7 +46,6 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
@@ -91,13 +90,15 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			if (stack.isEmpty()) {
 				continue;
 			}
-			GemData finalGemData = gemData;
-			Lazy<Boolean> filtered = Lazy.of(() -> finalGemData.whitelistMatches(s -> ItemStack.isSameItemSameComponents(s, stack)));
+			Boolean filtered = null;
 			if (!stack.isStackable()) {
 				//Only skip unstackable items if they are not explicitly whitelisted
-				if (!gemData.isWhitelist() || !filtered.get()) {
+				if (!gemData.isWhitelist()) {
+					continue;
+				} else if (!gemData.whitelistMatches(stack)) {
 					continue;
 				}
+				filtered = true;
 			}
 
 			long emcValue = EMCHelper.getEmcValue(stack);
@@ -105,7 +106,10 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 				continue;
 			}
 
-			if (gemData.isWhitelist() == filtered.get()) {
+			if (filtered == null) {
+				filtered = gemData.whitelistMatches(stack);
+			}
+			if (gemData.isWhitelist() == filtered) {
 				ItemStack copy = inv.extractItem(i, stack.getCount() == 1 ? 1 : stack.getCount() / 2, false);
 				//Note: We add the emc to the stack before adding it to the consumed gem data
 				// so that we don't need to worry about addToList mutating the stack
