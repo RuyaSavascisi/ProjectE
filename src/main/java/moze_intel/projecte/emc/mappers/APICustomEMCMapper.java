@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.function.ToIntFunction;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.imc.CustomEMCRegistration;
+import moze_intel.projecte.api.imc.IMCMethods;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
@@ -18,6 +19,7 @@ import moze_intel.projecte.emc.EMCMappingHandler;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 
 @EMCMapper
 public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
@@ -33,17 +35,17 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 
 	private final Map<String, Map<NormalizedSimpleStack, Long>> customEMCforMod = new HashMap<>();
 
-	public void registerCustomEMC(String modid, CustomEMCRegistration customEMCRegistration) {
-		NormalizedSimpleStack stack = customEMCRegistration.stack();
-		if (stack == null) {
-			return;
-		}
-		long emcValue = customEMCRegistration.value();
-		if (emcValue < 0) {
-			emcValue = 0;
-		}
-		PECore.debugLog("Mod: '{}' registered a custom EMC value of: '{}' for the NormalizedSimpleStack: '{}'", modid, emcValue, stack);
-		customEMCforMod.computeIfAbsent(modid, k -> new HashMap<>()).put(stack, emcValue);
+	public static void handleIMC(InterModProcessEvent event) {
+		event.getIMCStream(IMCMethods.REGISTER_CUSTOM_EMC::equals).forEach(msg -> {
+			if (msg.messageSupplier().get() instanceof CustomEMCRegistration(NormalizedSimpleStack stack, long value) && stack != null) {
+				if (value < 0) {
+					value = 0;
+				}
+				String modid = msg.senderModId();
+				PECore.debugLog("Mod: '{}' registered a custom EMC value of: '{}' for the NormalizedSimpleStack: '{}'", modid, value, stack);
+				INSTANCE.customEMCforMod.computeIfAbsent(modid, k -> new HashMap<>()).put(stack, value);
+			}
+		});
 	}
 
 	@Override

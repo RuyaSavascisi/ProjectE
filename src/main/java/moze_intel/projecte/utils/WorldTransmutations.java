@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Objects;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.imc.IMCMethods;
 import moze_intel.projecte.api.imc.WorldTransmutationEntry;
@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
 import org.jetbrains.annotations.Nullable;
 
 public final class WorldTransmutations {
@@ -114,8 +115,19 @@ public final class WorldTransmutations {
 		return ENTRIES;
 	}
 
-	public static void setWorldTransmutation(Stream<WorldTransmutationEntry> entries) {
-		DEFAULT_ENTRIES = entries.toList();
+	public static void handleIMC(InterModProcessEvent event) {
+		DEFAULT_ENTRIES = event.getIMCStream(IMCMethods.REGISTER_WORLD_TRANSMUTATION::equals).map(msg -> {
+			Object message = msg.messageSupplier().get();
+			if (message instanceof WorldTransmutationEntry(BlockState origin, BlockState result, BlockState altResult)) {
+				if (altResult == null) {
+					PECore.debugLog("Mod: '{}' registered World Transmutation from: '{}', to: '{}'", msg.senderModId(), origin, result);
+				} else {
+					PECore.debugLog("Mod: '{}' registered World Transmutation from: '{}', to: '{}', with sneak output of: '{}'", msg.senderModId(), origin, result, altResult);
+				}
+				return (WorldTransmutationEntry) message;
+			}
+			return null;
+		}).filter(Objects::nonNull).toList();
 		resetWorldTransmutations();
 	}
 

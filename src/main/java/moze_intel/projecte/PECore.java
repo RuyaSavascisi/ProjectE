@@ -14,6 +14,7 @@ import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.emc.components.DataComponentManager;
+import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
 import moze_intel.projecte.emc.mappers.recipe.CraftingMapper;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.rings.Arcana;
@@ -32,7 +33,6 @@ import moze_intel.projecte.gameObjs.registries.PENormalizedSimpleStacks;
 import moze_intel.projecte.gameObjs.registries.PERecipeConditions;
 import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
-import moze_intel.projecte.impl.IMCHandler;
 import moze_intel.projecte.impl.TransmutationOffline;
 import moze_intel.projecte.impl.capability.AlchBagImpl;
 import moze_intel.projecte.impl.capability.KnowledgeImpl;
@@ -136,7 +136,8 @@ public class PECore {
 
 		modEventBus.addListener(this::commonSetup);
 		modEventBus.addListener(this::imcQueue);
-		modEventBus.addListener(IMCHandler::handleMessages);
+		modEventBus.addListener(WorldTransmutations::handleIMC);
+		modEventBus.addListener(APICustomEMCMapper::handleIMC);
 		modEventBus.addListener(this::registerCapabilities);
 		modEventBus.addListener(this::registerRegistries);
 		PEAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
