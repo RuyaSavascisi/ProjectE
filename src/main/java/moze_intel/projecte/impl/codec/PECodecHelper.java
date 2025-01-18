@@ -53,7 +53,7 @@ public class PECodecHelper implements IPECodecHelper {
 		}
 	});
 
-	//TODO - 1.21: How does optional codec this handle if an item was removed and is no longer registered
+	//TODO - 1.21: How do codec and optional codec handle this if an item was removed and is no longer registered
 	public static final Codec<ItemStackHandler> HANDLER_CODEC = NonNullList.codecOf(ItemStack.OPTIONAL_CODEC).flatComapMap(ItemStackHandler::new, handler -> {
 		try {
 			return DataResult.success((NonNullList<ItemStack>) HANDLER_STACK_FIELD.invokeExact(handler));

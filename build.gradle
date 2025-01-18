@@ -1,5 +1,7 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
+import moze_intel.projecte.UpdateJson
 
 import java.util.function.Consumer
 
@@ -12,7 +14,7 @@ plugins {
     id('net.neoforged.moddev') version('2.0.73')
 }
 
-tasks.named('wrapper', Wrapper).configure {
+tasks.named('wrapper', Wrapper) {
     //Define wrapper values here so as to not have to always do so when updating gradlew.properties
     gradleVersion = '8.12'
     distributionType = Wrapper.DistributionType.ALL
@@ -127,17 +129,17 @@ neoForge {
 
     mods {
         projecte {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.api
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.api)
         }
         projecte_datagen {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.api
-            sourceSet sourceSets.datagen
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.api)
+            sourceSet(sourceSets.datagen)
         }
         projecte_test {
-            sourceSet sourceSets.main
-            sourceSet sourceSets.api
+            sourceSet(sourceSets.main)
+            sourceSet(sourceSets.api)
         }
     }
 
@@ -269,12 +271,12 @@ dependencies {
 }
 
 //Set the various variables/settings for the different process resources tasks
-tasks.named('processResources', ProcessResources).configure { ProcessResources process ->
-    process.duplicatesStrategy = DuplicatesStrategy.FAIL
-    process.exclude('META-INF/neoforge.mods.toml')
-    process.finalizedBy(replaceResources)
+tasks.named('processResources', ProcessResources) {
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    exclude('META-INF/neoforge.mods.toml')
+    finalizedBy(replaceResources)
     def files = fileTree(dir: outputs.files.asPath, includes: ['**/*.json', '**/*.mcmeta'])
-    process.doLast {
+    doLast {
         for (def file : files) {
             file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
         }
@@ -282,7 +284,7 @@ tasks.named('processResources', ProcessResources).configure { ProcessResources p
 }
 
 //Make the various classes tasks depend on the corresponding replaceResources tasks in addition to the default processResources tasks they depend on
-tasks.named('classes').configure { dependsOn(replaceResources) }
+tasks.named('classes') { dependsOn(replaceResources) }
 
 def getManifestAttributes() {
     return [
@@ -297,21 +299,21 @@ def getManifestAttributes() {
     ]
 }
 
-tasks.named('jar', Jar).configure {
+tasks.named('jar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.FAIL
     from([sourceSets.api.output, sourceSets.main.output])
     manifest.attributes(getManifestAttributes())
-    finalizedBy shadowJar
+    finalizedBy(shadowJar)
 }
 
-tasks.register('apiJar', Jar) {
+def apiJar = tasks.register('apiJar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.FAIL
     archiveClassifier.set("api")
-    from sourceSets.api.output
+    from(sourceSets.api.output)
     manifest.attributes(getManifestAttributes())
 }
 
-shadowJar {
+def shadowJar = tasks.named('shadowJar', ShadowJar) {
     //Note: We use the include duplicate strategy instead of FAIL as minimize causes
     // the things to get "added" twice but it is filtered separately by the shadow
     // plugin anyways
@@ -323,25 +325,12 @@ shadowJar {
     exclude('META-INF/maven/**')
     exclude('META-INF/*.txt')
     // Relocate apache commons-math3 to prevent conflicts with other mods that include it
-    relocate 'org.apache.commons.math3', 'moze_intel.projecte.shaded.org.apache.commons.math3'
+    relocate('org.apache.commons.math3', 'moze_intel.projecte.shaded.org.apache.commons.math3')
     // Minimize the required files so we only include what is needed
     minimize()
 }
 
-tasks.register('updateJSON') {
-    doLast {
-        def updateJsonFile = file('update.json')
-        def updateJson = new JsonSlurper().parse(updateJsonFile) as Map
-
-        updateJson."${minecraft_version}"."${project.version}" = "See https://www.curseforge.com/minecraft/mc-mods/projecte/files for detailed information."
-
-        // Update promos
-        updateJson.promos."${minecraft_version}-latest" = "${project.version}"
-        updateJson.promos."${minecraft_version}-recommended" = "${project.version}"
-
-        updateJsonFile.write(JsonOutput.prettyPrint(JsonOutput.toJson(updateJson)))
-    }
-}
+tasks.register('updateJSON', UpdateJson);
 
 tasks.withType(JavaCompile).configureEach({
     options.encoding = 'UTF-8'
@@ -358,6 +347,6 @@ tasks.withType(Javadoc).configureEach({
 })
 
 artifacts {
-    archives apiJar
-    archives shadowJar
+    archives(apiJar)
+    archives(shadowJar)
 }

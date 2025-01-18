@@ -38,7 +38,11 @@ public abstract class AbstractDataComponentHolderNSSTag<TYPE> extends AbstractNS
 
 	@Override
 	public String toString() {
-		return super.toString() + LegacyNSSCodec.convertComponentPatchToString(componentsPatch);
+		//noinspection ConstantValue - Can be null during super construction
+		if (componentsPatch == null || componentsPatch.isEmpty()) {
+			return super.toString();
+		}
+		return super.toString() + " " + componentsPatch;
 	}
 
 	@Override

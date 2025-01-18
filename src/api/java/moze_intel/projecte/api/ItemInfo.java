@@ -55,7 +55,6 @@ public final class ItemInfo {
 	@NotNull
 	private final DataComponentPatch componentsPatch;
 
-	//TODO - 1.21: Should this use the components patch or the components map of the stack???
 	private ItemInfo(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
 		//TODO - 1.21: Do we want to throw if holder instanceof Holder.Direct as is(ResourceKey) and stuff returns bad values for that
 		this.item = item;

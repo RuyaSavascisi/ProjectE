@@ -8,6 +8,7 @@ import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.PELang;
@@ -25,6 +26,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BonemealableBlock;
@@ -138,11 +140,14 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 				if (stack.getItem() instanceof SpecialPlantable plantable && plantable.canPlacePlantAtPosition(stack, level, plantPos, Direction.DOWN)) {
 					plantable.spawnPlantAtPosition(stack, level, plantPos, Direction.DOWN);
 					planted = true;
-				} else if (!stack.isEmpty() && stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) && stack.getItem() instanceof BlockItem blockItem && level.isEmptyBlock(plantPos)) {
+				} else if (!stack.isEmpty() && stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) && stack.getItem() instanceof BlockItem && level.isEmptyBlock(plantPos)) {
 					//TODO - 1.21: Which way should we get the state for placement
-					BlockState plantState = blockItem.getBlock().defaultBlockState();
-					/*plantState = blockItem.getBlock().getStateForPlacement(new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND,
-							new BlockHitResult(Vec3.ZERO, Direction.UP, pos, false))));*/
+					BlockPlaceContext context = null;/*new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND,
+							new BlockHitResult(Vec3.ZERO, Direction.UP, pos, false)));*/
+					BlockState plantState = ItemHelper.stackToState(stack, context);
+					if (plantState == null) {
+						continue;
+					}
 					TriState canSustain = state.canSustainPlant(level, currentPos, Direction.UP, plantState);
 					//TODO - 1.21: Support the case when canSustain is default
 					if (canSustain.isTrue()) {
