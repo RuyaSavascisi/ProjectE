@@ -2,7 +2,6 @@ package moze_intel.projecte.gameObjs.container.slots;
 
 import java.util.function.Supplier;
 import moze_intel.projecte.api.ItemInfo;
-import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Player;
@@ -25,7 +24,7 @@ public class SlotCondenserLock extends Slot {
 	@Override
 	public boolean mayPlace(@NotNull ItemStack stack) {
 		if (!stack.isEmpty() && SlotPredicates.HAS_EMC.test(stack)) {
-			this.set(ItemHelper.getNormalizedStack(stack));
+			this.set(stack.copyWithCount(1));
 		}
 		return false;
 	}

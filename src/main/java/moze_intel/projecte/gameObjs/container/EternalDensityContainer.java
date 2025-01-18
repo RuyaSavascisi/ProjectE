@@ -1,10 +1,11 @@
 package moze_intel.projecte.gameObjs.container;
 
+import moze_intel.projecte.components.GemData;
 import moze_intel.projecte.gameObjs.container.inventory.EternalDensityInventory;
 import moze_intel.projecte.gameObjs.container.slots.SlotGhost;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.registries.PEContainerTypes;
-import moze_intel.projecte.utils.ItemHelper;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
@@ -17,15 +18,19 @@ import org.jetbrains.annotations.NotNull;
 
 public class EternalDensityContainer extends PEHandContainer {
 
-	public final EternalDensityInventory inventory;
+	private final EternalDensityInventory inventory;
 
 	public static EternalDensityContainer fromNetwork(int windowId, Inventory playerInv, FriendlyByteBuf data) {
-		return new EternalDensityContainer(windowId, playerInv, data.readEnum(InteractionHand.class), data.readByte(), null);
+		return new EternalDensityContainer(windowId, playerInv, data.readEnum(InteractionHand.class), data.readByte(), true);
 	}
 
-	public EternalDensityContainer(int windowId, Inventory playerInv, InteractionHand hand, int selected, EternalDensityInventory gemInv) {
+	public EternalDensityContainer(int windowId, Inventory playerInv, InteractionHand hand, int selected) {
+		this(windowId, playerInv, hand, selected, false);
+	}
+
+	private EternalDensityContainer(int windowId, Inventory playerInv, InteractionHand hand, int selected, boolean remote) {
 		super(PEContainerTypes.ETERNAL_DENSITY_CONTAINER, windowId, playerInv, hand, selected);
-		inventory = gemInv == null ?  new EternalDensityInventory(this.stack) : gemInv;
+		inventory = new EternalDensityInventory(this.stack, remote);
 		for (int i = 0; i < 3; ++i) {
 			for (int j = 0; j < 3; ++j) {
 				this.addSlot(new SlotGhost(inventory, j + i * 3, 62 + j * 18, 26 + i * 18, SlotPredicates.HAS_EMC));
@@ -34,13 +39,18 @@ public class EternalDensityContainer extends PEHandContainer {
 		addPlayerInventory(8, 93);
 	}
 
+	public boolean isWhitelistMode() {
+		//TODO  1.21: Fix that this doesn't work properly after the first update as the offhand isn't synced to the client when a container is open
+		return getStack().getOrDefault(PEDataComponentTypes.GEM_DATA, GemData.EMPTY).isWhitelist();
+	}
+
 	@NotNull
 	@Override
 	public ItemStack quickMoveStack(@NotNull Player player, int slotIndex) {
 		if (slotIndex > 8) {
 			Slot slot = tryGetSlot(slotIndex);
 			if (slot != null) {
-				ItemHandlerHelper.insertItem(inventory, ItemHelper.getNormalizedStack(slot.getItem()), false);
+				ItemHandlerHelper.insertItem(inventory, slot.getItem().copyWithCount(1), false);
 			}
 		}
 		return ItemStack.EMPTY;

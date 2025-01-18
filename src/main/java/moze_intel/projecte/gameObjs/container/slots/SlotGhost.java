@@ -1,7 +1,6 @@
 package moze_intel.projecte.gameObjs.container.slots;
 
 import java.util.function.Predicate;
-import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -18,25 +17,25 @@ public class SlotGhost extends SlotItemHandler {
 	}
 
 	public boolean isValid(@NotNull ItemStack stack) {
-		return validator.test(stack);
+		return validator.test(stack) && getItemHandler().isItemValid(index, stack);
 	}
 
 	@Override
 	public boolean mayPlace(@NotNull ItemStack stack) {
 		if (!stack.isEmpty() && isValid(stack)) {
-			this.set(stack);
+			set(stack);
 		}
 		return false;
 	}
 
 	@Override
 	public void initialize(@NotNull ItemStack stack) {
-		super.initialize(ItemHelper.getNormalizedStack(stack));
+		super.initialize(stack.copyWithCount(1));
 	}
 
 	@Override
 	public void set(@NotNull ItemStack stack) {
-		super.set(ItemHelper.getNormalizedStack(stack));
+		super.set(stack.copyWithCount(1));
 	}
 
 	@Override

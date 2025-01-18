@@ -19,11 +19,18 @@ public class PEHandContainer extends PEContainer {
 		super(typeRO, windowId, playerInv);
 		this.hand = hand;
 		this.selected = selected;
-		if (this.hand == null) {//Transmutation container, placed
-			this.stack = ItemStack.EMPTY;
-		} else {
-			this.stack = this.hand == InteractionHand.OFF_HAND ? this.playerInv.player.getOffhandItem() : this.playerInv.getItem(selected);
+		this.stack = getStack();
+	}
+
+	protected ItemStack getStack() {
+		return getStack(this.playerInv, this.hand, this.selected);
+	}
+
+	public static ItemStack getStack(Inventory playerInv, InteractionHand hand, int selected) {
+		if (hand == null) {//Transmutation container, placed
+			return ItemStack.EMPTY;
 		}
+		return hand == InteractionHand.OFF_HAND ? playerInv.player.getOffhandItem() : playerInv.getItem(selected);
 	}
 
 	@Override

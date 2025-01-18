@@ -11,7 +11,7 @@ import moze_intel.projecte.api.capabilities.item.IAlchBagItem;
 import moze_intel.projecte.api.capabilities.item.IAlchChestItem;
 import moze_intel.projecte.components.GemData;
 import moze_intel.projecte.gameObjs.container.EternalDensityContainer;
-import moze_intel.projecte.gameObjs.container.inventory.EternalDensityInventory;
+import moze_intel.projecte.gameObjs.container.PEHandContainer;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity.GemMode;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
@@ -50,6 +50,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChestItem, IItemMode<GemMode>, ICapabilityAware {
 
@@ -135,8 +136,6 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			//TODO - 1.21: Re-evaluate what this is meant to be doing
 			gemData = gemData.clearConsumed();
 			gem.set(PEDataComponentTypes.GEM_DATA, gemData);
-
-			//gem.removeData(PEDataComponentTypes.GEM_CONSUMED);
 			hasChanged = true;
 		}
 		return hasChanged;
@@ -159,9 +158,10 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 					stack.set(PEDataComponentTypes.ACTIVE, true);
 				}
 			} else {
-				player.openMenu(new ContainerProvider(hand, stack), buf -> {
+				int selected = player.getInventory().selected;
+				player.openMenu(new ContainerProvider(hand, selected), buf -> {
 					buf.writeEnum(hand);
-					buf.writeByte(player.getInventory().selected);
+					buf.writeByte(selected);
 				});
 			}
 		}
@@ -169,12 +169,11 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 	}
 
 	private static ItemStack getTarget(ItemStack stack) {
-		Item item = stack.getItem();
-		if (!(item instanceof GemEternalDensity gem)) {
-			PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Invalid gem of eternal density: {}", stack);
-			return ItemStack.EMPTY;
+		if (stack.getItem() instanceof GemEternalDensity gem) {
+			return gem.getMode(stack).getTarget();
 		}
-		return gem.getMode(stack).getTarget();
+		PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Invalid gem of eternal density: {}", stack);
+		return ItemStack.EMPTY;
 	}
 
 	@Override
@@ -221,12 +220,15 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 		IntegrationHelper.registerCuriosCapability(event, this);
 	}
 
-	private record ContainerProvider(InteractionHand hand, ItemStack stack) implements MenuProvider {
+	private record ContainerProvider(InteractionHand hand, int selected) implements MenuProvider {
 
-		@NotNull
+		@Nullable
 		@Override
 		public AbstractContainerMenu createMenu(int windowId, @NotNull Inventory playerInventory, @NotNull Player player) {
-			return new EternalDensityContainer(windowId, playerInventory, hand, playerInventory.selected, new EternalDensityInventory(stack));
+			if (PEHandContainer.getStack(playerInventory, hand, selected).getItem() instanceof GemEternalDensity) {
+				return new EternalDensityContainer(windowId, playerInventory, hand, playerInventory.selected);
+			}
+			return null;
 		}
 
 		@NotNull

@@ -53,13 +53,6 @@ public final class ItemHelper {
 		return temp.isEmpty();
 	}
 
-	/**
-	 * Returns an ItemStack with stacksize 1.
-	 */
-	public static ItemStack getNormalizedStack(ItemStack stack) {
-		return stack.copyWithCount(1);
-	}
-
 	public static IItemHandlerModifiable immutableCopy(IItemHandler toCopy) {
 		final List<ItemStack> list = new ArrayList<>(toCopy.getSlots());
 		for (int i = 0; i < toCopy.getSlots(); i++) {

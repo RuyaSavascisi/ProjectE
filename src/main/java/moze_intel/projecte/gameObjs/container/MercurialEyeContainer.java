@@ -49,7 +49,7 @@ public class MercurialEyeContainer extends PEHandContainer {
 	public ItemStack quickMoveStack(@NotNull Player player, int slotID) {
 		//If we are in the inventory start by trying to insert into the ghost slot if it isn't empty
 		if (slotID > 1 && !mercurialTarget.hasItem()) {
-			Slot currentSlot = getSlot(slotID);
+			Slot currentSlot = tryGetSlot(slotID);
 			if (currentSlot == null || !currentSlot.hasItem()) {
 				return ItemStack.EMPTY;
 			}

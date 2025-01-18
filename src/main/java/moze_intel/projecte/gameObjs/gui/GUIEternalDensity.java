@@ -2,12 +2,14 @@ package moze_intel.projecte.gameObjs.gui;
 
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.EternalDensityContainer;
+import moze_intel.projecte.network.packets.to_server.UpdateGemModePKT;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 
 public class GUIEternalDensity extends PEContainerScreen<EternalDensityContainer> {
@@ -23,9 +25,11 @@ public class GUIEternalDensity extends PEContainerScreen<EternalDensityContainer
 	@Override
 	public void init() {
 		super.init();
-		addRenderableWidget(Button.builder((menu.inventory.isWhitelistMode() ? PELang.WHITELIST : PELang.BLACKLIST).translate(), b -> {
-					menu.inventory.changeMode();
-					b.setMessage(menu.inventory.isWhitelistMode() ? PELang.WHITELIST.translate() : PELang.BLACKLIST.translate());
+		addRenderableWidget(Button.builder((menu.isWhitelistMode() ? PELang.WHITELIST : PELang.BLACKLIST).translate(), b -> {
+					//Toggle the mode
+					boolean isWhitelistMode = !menu.isWhitelistMode();
+					PacketDistributor.sendToServer(new UpdateGemModePKT(isWhitelistMode));
+					b.setMessage(isWhitelistMode ? PELang.WHITELIST.translate() : PELang.BLACKLIST.translate());
 				}).pos(leftPos + 62, topPos + 4)
 				.size(52, 20)
 				.build());

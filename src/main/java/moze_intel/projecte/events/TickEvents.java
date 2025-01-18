@@ -10,9 +10,8 @@ import moze_intel.projecte.gameObjs.container.AlchBagContainer;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.IFireProtector;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
-import moze_intel.projecte.integration.IntegrationHelper;
+import moze_intel.projecte.utils.PlayerHelper;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -70,22 +69,8 @@ public class TickEvents {
 				return true;
 			}
 		}
-		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
-			ItemStack stack = player.getInventory().getItem(i);
-			if (!stack.isEmpty() && stack.getItem() instanceof IFireProtector protector && protector.canProtectAgainstFire(stack, player)) {
-				return true;
-			}
-		}
-		IItemHandler curios = player.getCapability(IntegrationHelper.CURIO_ITEM_HANDLER);
-		if (curios != null) {
-			for (int i = 0; i < curios.getSlots(); i++) {
-				ItemStack stack = curios.getStackInSlot(i);
-				if (!stack.isEmpty() && stack.getItem() instanceof IFireProtector protector && protector.canProtectAgainstFire(stack, player)) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return PlayerHelper.checkHotbarCurios(player, (p, stack) ->
+				!stack.isEmpty() && stack.getItem() instanceof IFireProtector protector && protector.canProtectAgainstFire(stack, p));
 	}
 
 	private static Set<DyeColor> getBagColorsPresent(Player player) {

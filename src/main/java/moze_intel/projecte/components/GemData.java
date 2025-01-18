@@ -2,61 +2,82 @@ package moze_intel.projecte.components;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenCustomHashSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackLinkedSet;
+import org.jetbrains.annotations.ApiStatus.Internal;
 
-//TODO - 1.21: Whitelist don't allow duplicates (and maybe make it a strict size of nine?). Maybe just make it a set???
-//TODO - 1.21: Do we want to enforce whitelist and consumed being unmodifiable views?
-public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemStack> consumed) {
+//TODO - 1.21: Should we make the whitelist size be strictly checked to ensure it doesn't exceed 9
+//TODO - 1.21: Do we want to enforce whitelist and consumed being unmodifiable views? Such as for GemData that gets initialized on the client
+public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemStack> consumed) {
 
-	public static final GemData EMPTY = new GemData(false, Collections.emptyList(), Collections.emptyList());
+	public static final GemData EMPTY = new GemData(false, Collections.emptySet(), Collections.emptyList());
 
 	public static final Codec<GemData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Codec.BOOL.fieldOf("isWhitelist").forGetter(GemData::isWhitelist),
-			ItemStack.OPTIONAL_CODEC.listOf().fieldOf("whitelist").forGetter(GemData::whitelist),
-			ItemStack.OPTIONAL_CODEC.listOf().fieldOf("consumed").forGetter(GemData::consumed)
+			ItemStack.CODEC.listOf().<Set<ItemStack>>xmap(list -> {
+				if (list.isEmpty()) {
+					return Collections.emptySet();
+				}
+				//Ensure the backing set when loading gem data from save properly handles comparing the type and ignores count
+				Set<ItemStack> whitelist = ItemStackLinkedSet.createTypeAndComponentsSet();
+				whitelist.addAll(list);
+				return Collections.unmodifiableSet(whitelist);
+			}, List::copyOf).fieldOf("whitelist").forGetter(GemData::whitelist),
+			ItemStack.CODEC.listOf().fieldOf("consumed").forGetter(GemData::consumed)
 	).apply(instance, GemData::new));
 	//TODO: Theoretically it will work as is because neo has builtin packet splitting for everything now
 	// but we may want to evaluate moving this off to world save data (and also removing the ItemHelper method)
 	public static final StreamCodec<RegistryFriendlyByteBuf, GemData> STREAM_CODEC = StreamCodec.composite(
 			ByteBufCodecs.BOOL, GemData::isWhitelist,
-			ItemStack.OPTIONAL_LIST_STREAM_CODEC, GemData::whitelist,
-			ItemStack.OPTIONAL_LIST_STREAM_CODEC, GemData::consumed,
+			ItemStack.STREAM_CODEC.apply(
+					//Like ItemStackLinkedSet.createTypeAndComponentsSet() except makes use of the expected size
+					ByteBufCodecs.collection(size -> new ObjectLinkedOpenCustomHashSet<>(size, ItemStackLinkedSet.TYPE_AND_TAG))
+			), GemData::whitelist,
+			ItemStack.LIST_STREAM_CODEC, GemData::consumed,
 			GemData::new
 	);
 
 	public boolean whitelistMatches(ItemStack stack) {
-		if (stack.isEmpty()) {
-			return false;
-		}
-		for (ItemStack itemStack : whitelist) {
-			if (ItemStack.isSameItemSameComponents(stack, itemStack)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public GemData toggleWhitelist() {
-		return withWhitelist(!isWhitelist);
+		return !stack.isEmpty() && whitelist.contains(stack);
 	}
 
 	public GemData withWhitelist(boolean isWhitelist) {
+		if (isWhitelist == isWhitelist()) {
+			return this;
+		}
 		return new GemData(isWhitelist, whitelist, consumed);
 	}
 
-	public GemData withWhitelist(List<ItemStack> whitelist) {
-		return new GemData(isWhitelist, List.copyOf(whitelist), consumed);
+	public GemData withWhitelist(Set<ItemStack> whitelist) {
+		Set<ItemStack> newWhitelist = ItemStackLinkedSet.createTypeAndComponentsSet();
+		for (ItemStack stack : whitelist) {
+			newWhitelist.add(stack.copyWithCount(1));
+		}
+		return withWhitelistSafe(newWhitelist);
+	}
+
+	@Internal
+	public GemData withWhitelistSafe(Set<ItemStack> whitelist) {
+		if (whitelist.isEmpty()) {
+			if (whitelist().isEmpty()) {
+				return this;
+			}
+			return new GemData(isWhitelist, Collections.emptySet(), consumed);
+		}
+		return new GemData(isWhitelist, Collections.unmodifiableSet(whitelist), consumed);
 	}
 
 	public GemData clearConsumed() {
-		if (this == EMPTY) {
-			return EMPTY;
+		if (consumed().isEmpty()) {
+			return this;
 		}
 		return new GemData(isWhitelist, whitelist, Collections.emptyList());
 	}
@@ -105,13 +126,21 @@ public record GemData(boolean isWhitelist, List<ItemStack> whitelist, List<ItemS
 			return false;
 		}
 		GemData other = (GemData) o;
-		return isWhitelist == other.isWhitelist && ItemStack.listMatches(whitelist, other.whitelist) && ItemStack.listMatches(consumed, other.consumed);
+		return isWhitelist == other.isWhitelist && whitelist.equals(other.whitelist) && ItemStack.listMatches(consumed, other.consumed);
 	}
 
 	@Override
 	@SuppressWarnings("deprecation")
 	public int hashCode() {
-		int hash = 31 * Boolean.hashCode(isWhitelist) + ItemStack.hashStackList(whitelist);
+		int hash = 31 * Boolean.hashCode(isWhitelist) + hashStackSet(whitelist);
 		return 31 * hash + ItemStack.hashStackList(consumed);
+	}
+
+	private static int hashStackSet(Set<ItemStack> set) {
+		int i = 0;
+		for (ItemStack stack : set) {
+			i = i * 31 + ItemStack.hashItemAndComponents(stack);
+		}
+		return i;
 	}
 }
