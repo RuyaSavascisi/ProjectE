@@ -66,7 +66,7 @@ public class CommonInternalAbilities {
 	}
 
 	private WalkOnType canWalkOnWater(Player player) {
-		if (PlayerHelper.checkHotbarCurios(player, (p, stack) -> !stack.isEmpty() && stack.is(PEItems.EVERTIDE_AMULET))) {
+		if (PlayerHelper.checkHotbarCurios(player, (p, stack) -> stack.is(PEItems.EVERTIDE_AMULET))) {
 			return WalkOnType.ABLE_WITH_SPEED;
 		}
 		ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
@@ -74,7 +74,7 @@ public class CommonInternalAbilities {
 	}
 
 	private WalkOnType canWalkOnLava(Player player) {
-		if (PlayerHelper.checkHotbarCurios(player, (p, stack) -> !stack.isEmpty() && stack.is(PEItems.VOLCANITE_AMULET))) {
+		if (PlayerHelper.checkHotbarCurios(player, (p, stack) -> stack.is(PEItems.VOLCANITE_AMULET))) {
 			return WalkOnType.ABLE_WITH_SPEED;
 		}
 		ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);

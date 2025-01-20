@@ -85,7 +85,7 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 	/**
 	 * @param stack May be modified by the method
 	 */
-	public GemData addToList(ItemStack stack) {
+	public GemData addConsumed(ItemStack stack) {
 		if (stack.isEmpty()) {
 			//Nothing to do, just return this element
 			return this;

@@ -80,13 +80,11 @@ public final class InternalAbilities {
 
 	private static boolean shouldPlayerFly(Player player) {
 		return PlayerHelper.checkHotbarCurios(player, (p, stack) -> {
-			if (stack.isEmpty()) {
-				return false;
+			if (stack.is(PEItems.SWIFTWOLF_RENDING_GALE)) {
+				return ItemPE.getEmc(stack) > 0 || ItemPE.consumeFuel(p, stack, 64, false);
 			} /*else if (stack.is(PEItems.ARCANA_RING)) {
 				return true;
-			}*/ else if (stack.is(PEItems.SWIFTWOLF_RENDING_GALE)) {
-				return ItemPE.getEmc(stack) > 0 || ItemPE.consumeFuel(p, stack, 64, false);
-			}
+			}*/
 			return false;
 		});
 	}

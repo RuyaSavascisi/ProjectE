@@ -69,8 +69,7 @@ public class TickEvents {
 				return true;
 			}
 		}
-		return PlayerHelper.checkHotbarCurios(player, (p, stack) ->
-				!stack.isEmpty() && stack.getItem() instanceof IFireProtector protector && protector.canProtectAgainstFire(stack, p));
+		return PlayerHelper.checkHotbarCurios(player, (p, stack) -> stack.getItem() instanceof IFireProtector protector && protector.canProtectAgainstFire(stack, p));
 	}
 
 	private static Set<DyeColor> getBagColorsPresent(Player player) {

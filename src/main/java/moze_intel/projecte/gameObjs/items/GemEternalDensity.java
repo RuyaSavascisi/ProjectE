@@ -1,12 +1,10 @@
 package moze_intel.projecte.gameObjs.items;
 
-import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.IntFunction;
-import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.capabilities.item.IAlchBagItem;
 import moze_intel.projecte.api.capabilities.item.IAlchChestItem;
 import moze_intel.projecte.components.GemData;
@@ -48,7 +46,7 @@ import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.items.wrapper.EntityHandsInvWrapper;
+import net.neoforged.neoforge.items.wrapper.PlayerMainInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -66,79 +64,110 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 	public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean isHeld) {
 		super.inventoryTick(stack, level, entity, slot, isHeld);
 		if (!level.isClientSide && entity instanceof Player player) {
-			condense(stack, new EntityHandsInvWrapper(player));
+			condense(stack, new PlayerMainInvWrapper(player.getInventory()));
 		}
 	}
 
 	/**
 	 * @return Whether the inventory was changed
 	 */
-	private static boolean condense(ItemStack gem, IItemHandler inv) {
-		boolean isActive = gem.getOrDefault(PEDataComponentTypes.ACTIVE, false);
-		if (!isActive || ItemPE.getEmc(gem) == Constants.BLOCK_ENTITY_MAX_EMC) {
+	private boolean condense(ItemStack gem, IItemHandler inv) {
+		if (!gem.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			return false;
 		}
-		ItemStack target = getTarget(gem);
-		long targetEmc = EMCHelper.getEmcValue(target);
+		final ItemLike target = getMode(gem).getTarget();
+		final long targetEmc = EMCHelper.getEmcValue(target);
 		if (targetEmc == 0) {
 			//Target doesn't have an EMC value set, just exit early
 			return false;
 		}
-		boolean hasChanged = false;
+		long gemEmc = getEmc(gem);
+		if (gemEmc == Constants.BLOCK_ENTITY_MAX_EMC) {
+			//If we have max stored, just try to condense whatever we currently have stored, and skip attempting to convert more items into stored emc
+			return condenseFromStoredEmc(inv, gem, gemEmc, target, targetEmc);
+		}
+		long emcRoomFor = Constants.BLOCK_ENTITY_MAX_EMC - gemEmc;
 		GemData gemData = gem.getOrDefault(PEDataComponentTypes.GEM_DATA, GemData.EMPTY);
-		for (int i = 0; i < inv.getSlots(); i++) {
+		for (int i = 0, slots = inv.getSlots(); i < slots; i++) {
 			ItemStack stack = inv.getStackInSlot(i);
 			if (stack.isEmpty()) {
 				continue;
 			}
 			Boolean filtered = null;
 			if (!stack.isStackable()) {
-				//Only skip unstackable items if they are not explicitly whitelisted
-				if (!gemData.isWhitelist()) {
-					continue;
-				} else if (!gemData.whitelistMatches(stack)) {
+				//Only process unstackable items if they are explicitly whitelisted
+				if (!gemData.isWhitelist() || !gemData.whitelistMatches(stack)) {
 					continue;
 				}
 				filtered = true;
 			}
 
 			long emcValue = EMCHelper.getEmcValue(stack);
-			if (emcValue == 0 || emcValue >= targetEmc || inv.extractItem(i, stack.getCount() == 1 ? 1 : stack.getCount() / 2, true).isEmpty()) {
+			if (emcValue == 0 || emcValue >= targetEmc || emcValue > emcRoomFor) {
+				//Continue if the item has no EMC, it is more valuable than our target, or to consume it would make our stored emc overflow
 				continue;
 			}
-
-			if (filtered == null) {
-				filtered = gemData.whitelistMatches(stack);
-			}
-			if (gemData.isWhitelist() == filtered) {
-				ItemStack copy = inv.extractItem(i, stack.getCount() == 1 ? 1 : stack.getCount() / 2, false);
-				//Note: We add the emc to the stack before adding it to the consumed gem data
-				// so that we don't need to worry about addToList mutating the stack
-				addEmcToStack(gem, EMCHelper.getEmcValue(copy) * copy.getCount());
-				gemData = gemData.addToList(copy);
-				gem.set(PEDataComponentTypes.GEM_DATA, gemData);
-				hasChanged = true;
-				break;
+			//Note: We know emcValue is strictly smaller or equal to emcRoomFor, so this should always be at least one
+			long maxToAdd = emcRoomFor / emcValue;
+			int halfStack = stack.getCount() == 1 ? 1 : stack.getCount() / 2;
+			//Try to extract half the stack, clamped at the amount we have room for the emc of
+			ItemStack simulatedExtraction = inv.extractItem(i, (int) Math.min(maxToAdd, halfStack), true);
+			//If we couldn't extract anything, or for some reason the handler gave a different type of item than it says is stored in that slot
+			// don't bother processing it
+			if (!simulatedExtraction.isEmpty() || !ItemStack.isSameItemSameComponents(stack, simulatedExtraction)) {
+				if (filtered == null) {
+					filtered = gemData.whitelistMatches(stack);
+				}
+				if (gemData.isWhitelist() == filtered) {
+					//Extract the item from the inventory
+					ItemStack copy = inv.extractItem(i, simulatedExtraction.getCount(), false);
+					if (!copy.isEmpty()) {
+						// and add how much emc we got from it to our stored emc
+						gemEmc += emcValue * copy.getCount();
+						gem.set(PEDataComponentTypes.STORED_EMC, gemEmc);
+						gem.set(PEDataComponentTypes.GEM_DATA, gemData.addConsumed(copy));
+						condenseFromStoredEmc(inv, gem, gemEmc, target, targetEmc);
+						return true;
+					}
+				}
 			}
 		}
+		return condenseFromStoredEmc(inv, gem, gemEmc, target, targetEmc);
+	}
 
-		long value = EMCHelper.getEmcValue(target);
-		if (value == 0) {
-			return hasChanged;
-		}
-
-		while (getEmc(gem) >= value) {
-			ItemStack remain = ItemHandlerHelper.insertItemStacked(inv, target.copy(), false);
-			if (!remain.isEmpty()) {
-				return false;
+	private boolean condenseFromStoredEmc(IItemHandler inv, ItemStack gem, long originalGemEmc, ItemLike target, long targetEmc) {
+		if (originalGemEmc >= targetEmc) {
+			ItemStack targetStack = new ItemStack(target);
+			int maxStackSize = targetStack.getMaxStackSize();
+			long toInsert = originalGemEmc / targetEmc;
+			long gemEmc = originalGemEmc;
+			while (toInsert > 0) {
+				//Note: We know that it can fit in an int as it is <= maxStackSize
+				ItemStack stackToInsert = targetStack.copyWithCount((int) Math.min(toInsert, maxStackSize));
+				ItemStack remaining = ItemHandlerHelper.insertItemStacked(inv, stackToInsert, false);
+				if (remaining.getCount() == stackToInsert.getCount()) {
+					//Nothing fit, we can't insert any of this item into the inventory
+					break;
+				}
+				//We inserted the amount minus however much we couldn't insert
+				int inserted = stackToInsert.getCount() - remaining.getCount();
+				//Decrement toInsert as this will either go to zero and we are done inserting,
+				// or it will decrease, and we can try to insert another stack of the material that we fit a full stack of
+				toInsert -= inserted;
+				//Reduce the amount of emc that we have stored in the gem
+				gemEmc -= targetEmc * inserted;
 			}
-			removeEmc(gem, value);
-			//TODO - 1.21: Re-evaluate what this is meant to be doing
-			gemData = gemData.clearConsumed();
-			gem.set(PEDataComponentTypes.GEM_DATA, gemData);
-			hasChanged = true;
+			if (gemEmc != originalGemEmc) {
+				//Update the stored emc if it changed
+				gem.set(PEDataComponentTypes.STORED_EMC, gemEmc);
+				// and update the data to represent we no longer have any items that were consumed
+				//TODO - 1.21: Re-evaluate this, as if some of the stored emc can still be distributed between the items that were consumed,
+				// then realistically we don't want to clear them from the consumed list
+				gem.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, GemData::clearConsumed);
+				return true;
+			}
 		}
-		return hasChanged;
+		return false;
 	}
 
 	@NotNull
@@ -166,14 +195,6 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			}
 		}
 		return InteractionResultHolder.success(stack);
-	}
-
-	private static ItemStack getTarget(ItemStack stack) {
-		if (stack.getItem() instanceof GemEternalDensity gem) {
-			return gem.getMode(stack).getTarget();
-		}
-		PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Invalid gem of eternal density: {}", stack);
-		return ItemStack.EMPTY;
 	}
 
 	@Override
@@ -268,8 +289,8 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			return target.asItem().getDescriptionId();
 		}
 
-		public ItemStack getTarget() {
-			return new ItemStack(target);
+		public ItemLike getTarget() {
+			return target;
 		}
 
 		@Override

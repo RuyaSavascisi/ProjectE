@@ -76,17 +76,20 @@ public final class PlayerHelper {
 
 	public static boolean checkHotbarCurios(Player player, BiPredicate<Player, ItemStack> checker) {
 		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
-			if (checker.test(player, player.getInventory().getItem(i))) {
+			ItemStack stack = player.getInventory().getItem(i);
+			if (!stack.isEmpty() && checker.test(player, stack)) {
 				return true;
 			}
 		}
-		if (checker.test(player, player.getOffhandItem())) {
+		ItemStack offhand = player.getOffhandItem();
+		if (!offhand.isEmpty() && checker.test(player, offhand)) {
 			return true;
 		}
 		IItemHandler curios = player.getCapability(IntegrationHelper.CURIO_ITEM_HANDLER);
 		if (curios != null) {
 			for (int i = 0, slots = curios.getSlots(); i < slots; i++) {
-				if (checker.test(player, curios.getStackInSlot(i))) {
+				ItemStack stack = curios.getStackInSlot(i);
+				if (!stack.isEmpty() && checker.test(player, stack)) {
 					return true;
 				}
 			}

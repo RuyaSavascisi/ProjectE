@@ -20,7 +20,6 @@ import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -37,6 +36,8 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 	private static final BiPredicate<ItemStack, Void> CAN_REPAIR_ITEM = (stack, ignored) -> !stack.isEmpty() &&
 																		 stack.getCapability(PECapabilities.MODE_CHANGER_ITEM_CAPABILITY) == null &&
 																		 ItemHelper.isRepairableDamagedItem(stack);
+	private static final BiPredicate<ItemStack, Player> CAN_REPAIR_PLAYER_ITEM =
+			(stack, player) -> CAN_REPAIR_ITEM.test(stack, null) && (stack != player.getMainHandItem() || !player.swinging);
 
 	public RepairTalisman(Properties props) {
 		super(props.component(PEDataComponentTypes.COOLDOWN, (byte) 0));
@@ -59,7 +60,7 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 			@NotNull PEDESTAL pedestal) {
 		if (!level.isClientSide && ProjectEConfig.server.cooldown.pedestal.repair.get() != -1) {
 			if (pedestal.getActivityCooldown() == 0) {
-				level.getEntitiesOfClass(ServerPlayer.class, pedestal.getEffectBounds()).forEach(RepairTalisman::repairAllItems);
+				level.getEntitiesOfClass(Player.class, pedestal.getEffectBounds()).forEach(RepairTalisman::repairAllItems);
 				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.repair.get());
 			} else {
 				pedestal.decrementActivityCooldown();
@@ -113,9 +114,8 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 	}
 
 	private static void repairAllItems(Player player) {
-		BiPredicate<ItemStack, Player> canRepairPlayerItem = (stack, p) -> CAN_REPAIR_ITEM.test(stack, null) && (stack != p.getMainHandItem() || !p.swinging);
-		repairAllItems(player.getCapability(ItemHandler.ENTITY), player, canRepairPlayerItem);
-		repairAllItems(player.getCapability(IntegrationHelper.CURIO_ITEM_HANDLER), player, canRepairPlayerItem);
+		repairAllItems(player.getCapability(ItemHandler.ENTITY), player, CAN_REPAIR_PLAYER_ITEM);
+		repairAllItems(player.getCapability(IntegrationHelper.CURIO_ITEM_HANDLER), player, CAN_REPAIR_PLAYER_ITEM);
 	}
 
 	private static <DATA> boolean repairAllItems(@Nullable IItemHandler inv, DATA data, BiPredicate<ItemStack, DATA> canRepairStack) {
