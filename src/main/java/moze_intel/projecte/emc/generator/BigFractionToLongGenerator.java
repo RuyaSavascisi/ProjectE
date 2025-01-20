@@ -1,6 +1,7 @@
 package moze_intel.projecte.emc.generator;
 
-import java.util.HashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.util.Map;
 import moze_intel.projecte.api.mapper.generator.IValueGenerator;
 import org.apache.commons.math3.fraction.BigFraction;
@@ -19,9 +20,9 @@ public class BigFractionToLongGenerator<T> implements IValueGenerator<T, Long> {
 	}
 
 	@Override
-	public Map<T, Long> generateValues() {
+	public Object2LongMap<T> generateValues() {
 		Map<T, BigFraction> innerResult = inner.generateValues();
-		Map<T, Long> myResult = new HashMap<>();
+		Object2LongMap<T> myResult = new Object2LongOpenHashMap<>();
 		for (Map.Entry<T, BigFraction> entry : innerResult.entrySet()) {
 			BigFraction value = entry.getValue();
 			if (value.longValue() > 0) {

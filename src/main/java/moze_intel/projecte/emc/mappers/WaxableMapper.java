@@ -1,7 +1,6 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import moze_intel.projecte.PECore;
@@ -39,7 +38,7 @@ public class WaxableMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				mapper.addConversion(1, waxed, List.of(base, wax));
 				//Scraping the block does not return the wax
 				//TODO - 1.21: Test this makes sense
-				mapper.addConversion(1, base, Collections.singleton(waxed));
+				mapper.addConversion(1, base, List.of(waxed));
 				recipeCount += 2;
 			}
 		}

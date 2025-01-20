@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -148,8 +147,10 @@ public interface IPECodecHelper {
 	 *
 	 * @implNote Only modifies the decoding and leaves encoding alone.
 	 */
-	default <K, V> Codec<Map<K, V>> modifiableMap(Codec<Map<K, V>> codec, UnaryOperator<Map<K, V>> mapConstructor) {
-		return Codec.of(codec, codec.map(mapConstructor));
+	@SuppressWarnings("unchecked")
+	default <K, V, M extends Map<K, V>> Codec<M> modifiableMap(Codec<Map<K, V>> codec, Function<Map<K, V>, M> mapConstructor) {
+		//TODO - 1.21: Evaluate all callers and see if we care about them retaining the order of the map
+		return Codec.of((Codec<M>) codec, codec.map(mapConstructor));
 	}
 
 	/**

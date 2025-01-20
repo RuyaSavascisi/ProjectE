@@ -1,8 +1,8 @@
 package moze_intel.projecte.gameObjs.items.armor;
 
-import java.util.HashMap;
+import it.unimi.dsi.fastutil.ints.Int2LongMap;
+import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap;
 import java.util.List;
-import java.util.Map;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.network.chat.Component;
@@ -34,7 +34,7 @@ public class GemLegs extends GemArmorBase {
 		tooltip.add(PELang.GEM_LORE_LEGS.translate());
 	}
 
-	private final Map<Integer, Long> lastJumpTracker = new HashMap<>();
+	private final Int2LongMap lastJumpTracker = new Int2LongOpenHashMap();
 
 	private void onJump(LivingEvent.LivingJumpEvent evt) {
 		if (evt.getEntity() instanceof Player player && player.level().isClientSide) {

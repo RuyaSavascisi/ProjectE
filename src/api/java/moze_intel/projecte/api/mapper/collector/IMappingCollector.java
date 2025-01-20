@@ -1,6 +1,6 @@
 package moze_intel.projecte.api.mapper.collector;
 
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
 import net.minecraft.core.HolderLookup;
 
@@ -25,7 +25,7 @@ public interface IMappingCollector<T, V extends Comparable<V>> {
 	 * @param output                What is produced
 	 * @param ingredientsWithAmount What is consumed and how many of it
 	 */
-	void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount);
+	void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount);
 
 	/**
 	 * Add a Conversion that produced {@code outnumber} items of {@code output} by consuming the {@code ingredients}.
@@ -90,7 +90,7 @@ public interface IMappingCollector<T, V extends Comparable<V>> {
 	 * @param something             The thing that should get the Value.
 	 * @param ingredientsWithAmount What is consumed and how many of it
 	 */
-	void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount);
+	void setValueFromConversion(int outnumber, T something, Object2IntMap<T> ingredientsWithAmount);
 
 	/**
 	 * Called when this {@link IMappingCollector} is done collecting information.

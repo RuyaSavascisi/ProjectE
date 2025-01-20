@@ -1,6 +1,6 @@
 package moze_intel.projecte.api.mapper.collector;
 
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
 
 /**
@@ -26,7 +26,7 @@ public interface IExtendedMappingCollector<T, V extends Comparable<V>, A extends
 	 * @param ingredientsWithAmount   What is consumed and how many of it
 	 * @param arithmeticForConversion The {@link IValueArithmetic} to use for calculating the conversion.
 	 */
-	void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion);
+	void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount, A arithmeticForConversion);
 
 	/**
 	 * Add a Conversion that produced {@code outnumber} items of {@code output} by consuming the {@code ingredients}, using the given {@code arithmeticForConversion}

@@ -1,7 +1,8 @@
 package moze_intel.projecte.gameObjs.container.inventory;
 
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -255,7 +256,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			removeEmc(value.negate());
 			return;
 		}
-		List<Integer> inputLocksChanged = new ArrayList<>();
+		IntList inputLocksChanged = new IntArrayList();
 		//Start by trying to add it to the EMC items on the left
 		for (int slotIndex = 0; slotIndex < inputLocks.getSlots(); slotIndex++) {
 			if (slotIndex == LOCK_INDEX) {
@@ -305,7 +306,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			//Remove from provider first
 			//This code runs first to simplify the logic
 			//But it simulates removal first by extracting the amount from value and then removing that excess from items
-			List<Integer> inputLocksChanged = new ArrayList<>();
+			IntList inputLocksChanged = new IntArrayList();
 			BigInteger toRemove = value.subtract(currentEmc);
 			value = currentEmc;
 			for (int slotIndex = 0; slotIndex < inputLocks.getSlots(); slotIndex++) {
@@ -343,7 +344,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	/**
 	 * @apiNote Call on server only
 	 */
-	public void syncChangedSlots(List<Integer> slotsChanged, TargetUpdateType updateTargets) {
+	public void syncChangedSlots(IntList slotsChanged, TargetUpdateType updateTargets) {
 		provider.syncInputAndLocks((ServerPlayer) player, slotsChanged, updateTargets);
 	}
 

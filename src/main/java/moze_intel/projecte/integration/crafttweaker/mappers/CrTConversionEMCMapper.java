@@ -1,9 +1,9 @@
 package moze_intel.projecte.integration.crafttweaker.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
@@ -59,5 +59,5 @@ public class CrTConversionEMCMapper implements IEMCMapper<NormalizedSimpleStack,
 		return "Allows adding custom conversions through CraftTweaker. This behaves similarly to if someone used a custom conversion file instead.";
 	}
 
-	public record CrTConversion(NormalizedSimpleStack output, int amount, boolean propagateTags, boolean set, Map<NormalizedSimpleStack, Integer> ingredients) {}
+	public record CrTConversion(NormalizedSimpleStack output, int amount, boolean propagateTags, boolean set, Object2IntMap<NormalizedSimpleStack> ingredients) {}
 }

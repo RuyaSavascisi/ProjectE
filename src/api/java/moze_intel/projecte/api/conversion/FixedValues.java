@@ -2,10 +2,10 @@ package moze_intel.projecte.api.conversion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import moze_intel.projecte.api.ProjectEAPI;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
@@ -16,10 +16,18 @@ import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
  * @param setValueAfter  Map of {@link NormalizedSimpleStack} to the value to set after applying conversions.
  * @param conversions    List of conversions
  */
-public record FixedValues(Map<NormalizedSimpleStack, Long> setValueBefore, Map<NormalizedSimpleStack, Long> setValueAfter, List<CustomConversion> conversions)
+public record FixedValues(Object2LongMap<NormalizedSimpleStack> setValueBefore, Object2LongMap<NormalizedSimpleStack> setValueAfter, List<CustomConversion> conversions)
 		implements IHasConversions {
 
-	private static final Codec<Map<NormalizedSimpleStack, Long>> VALUE_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(
+	private static <T> Object2LongMap<T> createEmptyValueMap() {
+		//TODO - 1.21: Re-evaluate this and the default return value (as well as when we make the value codec mutable)
+		// Also do we care about the sort order??
+		Object2LongMap<T> map = new Object2LongOpenHashMap<>();
+		map.defaultReturnValue(-1);
+		return map;
+	}
+
+	private static final Codec<Object2LongMap<NormalizedSimpleStack>> VALUE_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(
 			IPECodecHelper.INSTANCE.nssMapCodec(),
 			NeoForgeExtraCodecs.withAlternative(
 					IPECodecHelper.INSTANCE.positiveLong(),
@@ -28,16 +36,22 @@ public record FixedValues(Map<NormalizedSimpleStack, Long> setValueBefore, Map<N
 							str -> str.equalsIgnoreCase("free") ? ProjectEAPI.FREE_ARITHMETIC_VALUE : null
 					)
 			).fieldOf("value")
-	));
+	), immutableMap -> {
+		Object2LongMap<NormalizedSimpleStack> map = new Object2LongOpenHashMap<>(immutableMap);
+		map.defaultReturnValue(-1);
+		return map;
+	});
 
 	public static final Codec<FixedValues> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			VALUE_CODEC.optionalFieldOf("before").forGetter(values -> IPECodecHelper.INSTANCE.ifNotEmpty(values.setValueBefore())),
 			VALUE_CODEC.optionalFieldOf("after").forGetter(values -> IPECodecHelper.INSTANCE.ifNotEmpty(values.setValueAfter())),
 			CustomConversion.MODIFIABLE_LIST_CODEC.optionalFieldOf("conversion").forGetter(values -> IPECodecHelper.INSTANCE.ifNotEmpty(values.conversions()))
-	).apply(instance, (before, after, conversions) -> new FixedValues(before.orElseGet(HashMap::new), after.orElseGet(HashMap::new), conversions.orElseGet(ArrayList::new))));
+	).apply(instance, (before, after, conversions) -> new FixedValues(
+			before.orElseGet(FixedValues::createEmptyValueMap), after.orElseGet(FixedValues::createEmptyValueMap), conversions.orElseGet(ArrayList::new)
+	)));
 
 	public FixedValues() {
-		this(new HashMap<>(), new HashMap<>(), new ArrayList<>());
+		this(createEmptyValueMap(), createEmptyValueMap(), new ArrayList<>());
 	}
 
 	/**

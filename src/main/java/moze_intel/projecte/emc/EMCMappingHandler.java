@@ -2,10 +2,11 @@ package moze_intel.projecte.emc;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ import org.jetbrains.annotations.Range;
 public final class EMCMappingHandler {
 
 	private static final List<IEMCMapper<NormalizedSimpleStack, Long>> mappers = new ArrayList<>();
-	private static final Map<ItemInfo, Long> emc = new HashMap<>();
+	private static final Object2LongMap<ItemInfo> emc = new Object2LongOpenHashMap<>();
 	private static int loadIndex = -1;
 
 	public static void loadMappers() {
@@ -177,13 +178,16 @@ public final class EMCMappingHandler {
 		return loadIndex;
 	}
 
-	private static Map<ItemInfo, Long> filterEMCMap(Map<NormalizedSimpleStack, Long> map) {
-		Map<ItemInfo, Long> resultMap = new HashMap<>(map.size());
+	private static Object2LongMap<ItemInfo> filterEMCMap(Map<NormalizedSimpleStack, Long> map) {
+		Object2LongMap<ItemInfo> resultMap = new Object2LongOpenHashMap<>(map.size());
 		for (Map.Entry<NormalizedSimpleStack, Long> entry : map.entrySet()) {
-			if (entry.getKey() instanceof NSSItem nssItem && entry.getValue() > 0) {
-				ItemInfo info = ItemInfo.fromNSS(nssItem);
-				if (info != null) {//Ensure the item actually exists and is not a tag
-					resultMap.put(info, entry.getValue());
+			if (entry.getKey() instanceof NSSItem nssItem) {
+				long value = entry.getValue();
+				if (value > 0) {
+					ItemInfo info = ItemInfo.fromNSS(nssItem);
+					if (info != null) {//Ensure the item actually exists and is not a tag
+						resultMap.put(info, value);
+					}
 				}
 			}
 		}
@@ -203,7 +207,8 @@ public final class EMCMappingHandler {
 	 */
 	@Range(from = 0, to = Long.MAX_VALUE)
 	public static long getStoredEmcValue(@NotNull ItemInfo info) {
-		return emc.getOrDefault(info, 0L);
+		//TODO - 1.21: Validate that the default return value when not specified is actually zero
+		return emc.getLong(info);
 	}
 
 	public static void clearEmcMap() {
@@ -225,8 +230,8 @@ public final class EMCMappingHandler {
 	}
 
 	public static EmcPKTInfo[] createPacketData() {
-		return emc.entrySet().stream()
-				.map(entry -> new EmcPKTInfo(entry.getKey(), entry.getValue()))
+		return emc.object2LongEntrySet().stream()
+				.map(entry -> new EmcPKTInfo(entry.getKey(), entry.getLongValue()))
 				.toArray(EmcPKTInfo[]::new);
 	}
 }

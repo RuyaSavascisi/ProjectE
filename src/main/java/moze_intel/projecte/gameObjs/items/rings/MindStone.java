@@ -1,6 +1,5 @@
 package moze_intel.projecte.gameObjs.items.rings;
 
-import com.google.common.collect.Lists;
 import java.util.List;
 import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
@@ -178,6 +177,6 @@ public class MindStone extends PEToggleItem implements IPedestalItem {
 	@NotNull
 	@Override
 	public List<Component> getPedestalDescription(float tickRate) {
-		return Lists.newArrayList(PELang.PEDESTAL_MIND_STONE.translateColored(ChatFormatting.BLUE));
+		return List.of(PELang.PEDESTAL_MIND_STONE.translateColored(ChatFormatting.BLUE));
 	}
 }

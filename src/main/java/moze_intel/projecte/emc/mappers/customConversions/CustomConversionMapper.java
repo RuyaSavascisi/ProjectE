@@ -1,6 +1,7 @@
 package moze_intel.projecte.emc.mappers.customConversions;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
@@ -90,13 +91,13 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 		}
 
 		//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-		for (Map.Entry<NormalizedSimpleStack, Long> entry : file.values().setValueBefore().entrySet()) {
-			entry.getKey().forSelfAndEachElement(mapper, entry.getValue(), IMappingCollector::setValueBefore);
+		for (Object2LongMap.Entry<NormalizedSimpleStack> entry : file.values().setValueBefore().object2LongEntrySet()) {
+			entry.getKey().forSelfAndEachElement(mapper, entry.getLongValue(), IMappingCollector::setValueBefore);
 		}
 
 		//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-		for (Map.Entry<NormalizedSimpleStack, Long> entry : file.values().setValueAfter().entrySet()) {
-			entry.getKey().forSelfAndEachElement(mapper, entry.getValue(), IMappingCollector::setValueAfter);
+		for (Object2LongMap.Entry<NormalizedSimpleStack> entry : file.values().setValueAfter().object2LongEntrySet()) {
+			entry.getKey().forSelfAndEachElement(mapper, entry.getLongValue(), IMappingCollector::setValueAfter);
 		}
 
 		for (CustomConversion customConversion : file.values().conversions()) {

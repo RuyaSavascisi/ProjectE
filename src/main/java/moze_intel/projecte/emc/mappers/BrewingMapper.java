@@ -1,10 +1,10 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import java.util.HashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
@@ -48,7 +48,7 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 		Set<ItemInfo> allInputs = mapAllInputs(potionBrewing);
 
 		//Add conversion for empty bottle + water to water bottle
-		Map<NormalizedSimpleStack, Integer> waterIngredients = new HashMap<>();
+		Object2IntMap<NormalizedSimpleStack> waterIngredients = new Object2IntOpenHashMap<>();
 		waterIngredients.put(NSSItem.createItem(Items.GLASS_BOTTLE), 1);
 		waterIngredients.put(NSSFluid.createTag(FluidTags.WATER), FluidType.BUCKET_VOLUME / 3);
 		mapper.addConversion(1, NSSItem.createItem(PotionContents.createItemStack(Items.POTION, Potions.WATER)), waterIngredients);
@@ -66,7 +66,7 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				ItemStack validReagent = reagentInfo.createStack();
 				ItemStack output = potionBrewing.mix(validInput, validReagent);
 				if (!output.isEmpty()) {
-					Map<NormalizedSimpleStack, Integer> ingredientsWithAmount = new HashMap<>();
+					Object2IntMap<NormalizedSimpleStack> ingredientsWithAmount = new Object2IntOpenHashMap<>();
 					ingredientsWithAmount.put(nssInput, 3);
 					ingredientsWithAmount.put(NSSItem.createItem(validReagent), 1);
 					//Add the conversion, 3 input + reagent = 3 y output as the output technically could be stacked
@@ -91,7 +91,7 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				for (ItemStack validInput : validInputs) {
 					NormalizedSimpleStack nssInput = NSSItem.createItem(validInput);
 					for (ItemStack validReagent : validReagents) {
-						Map<NormalizedSimpleStack, Integer> ingredientsWithAmount = new HashMap<>();
+						Object2IntMap<NormalizedSimpleStack> ingredientsWithAmount = new Object2IntOpenHashMap<>();
 						ingredientsWithAmount.put(nssInput, 3);
 						ingredientsWithAmount.put(NSSItem.createItem(validReagent), validReagent.getCount());
 						//Add the conversion, 3 input + x reagent = 3 y output as strictly speaking the only one of the three parts

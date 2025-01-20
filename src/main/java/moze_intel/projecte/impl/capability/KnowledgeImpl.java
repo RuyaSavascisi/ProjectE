@@ -3,14 +3,15 @@ package moze_intel.projecte.impl.capability;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import moze_intel.projecte.api.ItemInfo;
@@ -235,11 +236,11 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 	}
 
 	@Override
-	public void syncInputAndLocks(@NotNull ServerPlayer player, List<Integer> slotsChanged, TargetUpdateType updateTargets) {
+	public void syncInputAndLocks(@NotNull ServerPlayer player, IntList slotsChanged, TargetUpdateType updateTargets) {
 		if (!slotsChanged.isEmpty()) {
 			KnowledgeAttachment attachment = attachment();
 			int slots = attachment.inputLocks.getSlots();
-			Map<Integer, ItemStack> stacksToSync = new HashMap<>();
+			Int2ObjectMap<ItemStack> stacksToSync = new Int2ObjectOpenHashMap<>();
 			for (int slot : slotsChanged) {
 				if (slot >= 0 && slot < slots) {
 					//Validate the slot is a valid index
@@ -254,11 +255,11 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 	}
 
 	@Override
-	public void receiveInputsAndLocks(Map<Integer, ItemStack> changes) {
+	public void receiveInputsAndLocks(Int2ObjectMap<ItemStack> changes) {
 		KnowledgeAttachment attachment = attachment();
 		int slots = attachment.inputLocks.getSlots();
-		for (Map.Entry<Integer, ItemStack> entry : changes.entrySet()) {
-			int slot = entry.getKey();
+		for (Int2ObjectMap.Entry<ItemStack> entry : changes.int2ObjectEntrySet()) {
+			int slot = entry.getIntKey();
 			if (slot >= 0 && slot < slots) {
 				//Validate the slot is a valid index
 				attachment.inputLocks.setStackInSlot(slot, entry.getValue());

@@ -1,6 +1,11 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMaps;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -33,7 +38,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 	private APICustomEMCMapper() {
 	}
 
-	private final Map<String, Map<NormalizedSimpleStack, Long>> customEMCforMod = new HashMap<>();
+	private final Map<String, Object2LongMap<NormalizedSimpleStack>> customEMCforMod = new HashMap<>();
 
 	public static void handleIMC(InterModProcessEvent event) {
 		event.getIMCStream(IMCMethods.REGISTER_CUSTOM_EMC::equals).forEach(msg -> {
@@ -43,7 +48,11 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 				}
 				String modid = msg.senderModId();
 				PECore.debugLog("Mod: '{}' registered a custom EMC value of: '{}' for the NormalizedSimpleStack: '{}'", modid, value, stack);
-				INSTANCE.customEMCforMod.computeIfAbsent(modid, k -> new HashMap<>()).put(stack, value);
+				INSTANCE.customEMCforMod.computeIfAbsent(modid, k -> {
+					Object2LongMap<NormalizedSimpleStack> map = new Object2LongOpenHashMap<>();
+					map.defaultReturnValue(-1);
+					return map;
+				}).put(stack, value);
 			}
 		});
 	}
@@ -61,30 +70,27 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		Map<String, Integer> priorityMap = new HashMap<>();
+		Object2IntMap<String> priorityMap = new Object2IntOpenHashMap<>();
 
 		for (String modId : customEMCforMod.keySet()) {
-			String configKey = getName() + ".priority." + (modId == null ? "__no_modid" : modId);
+			String configKey = getName() + ".priority." + modId;
 			int priority = EMCMappingHandler.getOrSetDefault(config, configKey, "Priority for this mod", PRIORITY_DEFAULT_VALUE);
 			priorityMap.put(modId, priority);
 		}
 
 		List<String> modIds = new ArrayList<>(customEMCforMod.keySet());
-		modIds.sort(Comparator.comparingInt((ToIntFunction<String>) priorityMap::get).reversed());
+		modIds.sort(Comparator.comparingInt((ToIntFunction<String>) priorityMap::getInt).reversed());
 
 		for (String modId : modIds) {
-			String modIdOrUnknown = modId == null ? "unknown mod" : modId;
-			if (customEMCforMod.containsKey(modId)) {
-				for (Map.Entry<NormalizedSimpleStack, Long> entry : customEMCforMod.get(modId).entrySet()) {
-					NormalizedSimpleStack normStack = entry.getKey();
-					long emc = entry.getValue();
-					if (isAllowedToSet(modId, normStack, emc, config)) {
-						//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-						normStack.forSelfAndEachElement(mapper, emc, IMappingCollector::setValueBefore);
-						PECore.debugLog("{} setting value for {} to {}", modIdOrUnknown, normStack, emc);
-					} else {
-						PECore.debugLog("Disallowed {} to set the value for {} to {}", modIdOrUnknown, normStack, emc);
-					}
+			for (Object2LongMap.Entry<NormalizedSimpleStack> entry : customEMCforMod.getOrDefault(modId, Object2LongMaps.emptyMap()).object2LongEntrySet()) {
+				NormalizedSimpleStack normStack = entry.getKey();
+				long emc = entry.getLongValue();
+				if (isAllowedToSet(modId, normStack, emc, config)) {
+					//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
+					normStack.forSelfAndEachElement(mapper, emc, IMappingCollector::setValueBefore);
+					PECore.debugLog("{} setting value for {} to {}", modId, normStack, emc);
+				} else {
+					PECore.debugLog("Disallowed {} to set the value for {} to {}", modId, normStack, emc);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 package moze_intel.projecte.emc.collector;
 
-import java.util.HashMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
 import moze_intel.projecte.api.mapper.collector.IExtendedMappingCollector;
 import net.minecraft.core.HolderLookup;
@@ -24,10 +24,10 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 		addConversion(outnumber, output, listToMapOfCounts(ingredients), arithmeticForConversion);
 	}
 
-	private Map<T, Integer> listToMapOfCounts(Iterable<T> iterable) {
-		Map<T, Integer> map = new HashMap<>();
+	private Object2IntMap<T> listToMapOfCounts(Iterable<T> iterable) {
+		Object2IntMap<T> map = new Object2IntOpenHashMap<>();
 		for (T ingredient : iterable) {
-			map.merge(ingredient, 1, Integer::sum);
+			map.mergeInt(ingredient, 1, Integer::sum);
 		}
 		return map;
 	}
@@ -38,10 +38,7 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 	}
 
 	@Override
-	public abstract void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount);
-
-	@Override
-	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount) {
+	public void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount) {
 		this.addConversion(outnumber, output, ingredientsWithAmount, getArithmetic());
 	}
 

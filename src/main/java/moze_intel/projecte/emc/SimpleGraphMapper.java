@@ -1,5 +1,6 @@
 package moze_intel.projecte.emc;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -175,15 +176,15 @@ public class SimpleGraphMapper<T, V extends Comparable<V>, A extends IValueArith
 		V value = conversion.value;
 		boolean allIngredientsAreFree = true;
 		boolean hasPositiveIngredientValues = false;
-		for (Map.Entry<T, Integer> entry : conversion.ingredientsWithAmount.entrySet()) {
+		for (Object2IntMap.Entry<T> entry : conversion.ingredientsWithAmount.object2IntEntrySet()) {
 			if (values.containsKey(entry.getKey())) {
 				//The ingredient has a value and
 				//value = value + amount * ingredientcost
-				V ingredientValue = conversion.arithmeticForConversion.mul(entry.getValue(), values.get(entry.getKey()));
+				V ingredientValue = conversion.arithmeticForConversion.mul(entry.getIntValue(), values.get(entry.getKey()));
 				if (ingredientValue.compareTo(ZERO) != 0) {
 					if (!conversion.arithmeticForConversion.isFree(ingredientValue)) {
 						value = conversion.arithmeticForConversion.add(value, ingredientValue);
-						if (ingredientValue.compareTo(ZERO) > 0 && entry.getValue() > 0) {
+						if (ingredientValue.compareTo(ZERO) > 0 && entry.getIntValue() > 0) {
 							hasPositiveIngredientValues = true;
 						}
 						allIngredientsAreFree = false;

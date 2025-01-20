@@ -82,9 +82,14 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 		if (toInsert < 0) {
 			return extractEmc(stack, -toInsert, action);
 		}
-		long toAdd = Math.min(getNeededEmc(stack), toInsert);
+		long maxEmc = getMaximumEmc(stack);
+		long storedEmc = getStoredEmc(stack);
+		if (storedEmc >= maxEmc) {
+			return 0;
+		}
+		long toAdd = Math.min(maxEmc - storedEmc, toInsert);
 		if (action.execute()) {
-			addEmcToStack(stack, toAdd);
+			stack.set(PEDataComponentTypes.STORED_EMC, storedEmc + toAdd);
 		}
 		return toAdd;
 	}

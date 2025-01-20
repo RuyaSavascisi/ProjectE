@@ -1,7 +1,7 @@
 package moze_intel.projecte.gameObjs.container.slots.transmutation;
 
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.math.BigInteger;
-import java.util.Collections;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider.TargetUpdateType;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
@@ -34,7 +34,7 @@ public class SlotLock extends InventoryContainerSlot {
 		//Decrease the size of the stack
 		if (!stack.isEmpty() && inv.isServer()) {
 			//Sync the change to the client
-			inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.ALL);
+			inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.ALL);
 		}
 		return stack;
 	}
@@ -50,7 +50,7 @@ public class SlotLock extends InventoryContainerSlot {
 		super.set(stack);
 		if (inv.isServer()) {
 			if (stack.isEmpty()) {
-				inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.ALL);
+				inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.ALL);
 			} else {
 				if (EMCHelper.doesItemHaveEmc(stack)) {
 					inv.handleKnowledge(stack);
@@ -59,15 +59,15 @@ public class SlotLock extends InventoryContainerSlot {
 				if (emcHolder != null) {
 					long actualExtracted = emcHolder.extractEmc(stack, emcHolder.getStoredEmc(stack), EmcAction.EXECUTE);
 					if (actualExtracted > 0) {
-						inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.NONE);
+						inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.NONE);
 						inv.addEmc(BigInteger.valueOf(actualExtracted));
 					} else {
 						//If we didn't move any EMC into the inventory we still need to sync the fact the slot changed so to update targets
-						inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.ALL);
+						inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.ALL);
 					}
 				} else {
 					//If there is no capability we still need to sync the change
-					inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.ALL);
+					inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.ALL);
 				}
 			}
 		}

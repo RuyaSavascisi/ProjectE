@@ -1,8 +1,8 @@
 package moze_intel.projecte.utils;
 
+import it.unimi.dsi.fastutil.ints.Int2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import java.math.BigInteger;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
@@ -52,54 +52,43 @@ public final class EMCHelper {
 			}
 		}
 
-		ItemStack offhand = player.getOffhandItem();
-
-		if (!offhand.isEmpty()) {
-			long actualExtracted = tryExtract(offhand, minFuel);
-			if (actualExtracted > 0) {
-				player.containerMenu.broadcastChanges();
-				return actualExtracted;
-			}
-		}
-
+		//Note: The implementation of this will iterate in the order: Main inventory, Armor, Offhand
 		IItemHandler inv = player.getCapability(ItemHandler.ENTITY);
 		if (inv != null) {
 			//Ensure that we have an item handler capability, because if for example the player is dead we will not
-			Map<Integer, Integer> map = new LinkedHashMap<>();
+			//TODO - 1.21: Does this actually need to be linked?
+			Int2IntMap map = new Int2IntLinkedOpenHashMap();
 			boolean metRequirement = false;
 			long emcConsumed = 0;
-			for (int i = 0; i < inv.getSlots(); i++) {
+			for (int i = 0, slots = inv.getSlots(); i < slots; i++) {
 				ItemStack stack = inv.getStackInSlot(i);
 				if (stack.isEmpty()) {
 					continue;
 				}
 				long actualExtracted = tryExtract(stack, minFuel);
-				if (actualExtracted > 0) {
+				if (actualExtracted > 0) { //Prioritize extracting from emc storage items
 					player.containerMenu.broadcastChanges();
 					return actualExtracted;
 				} else if (!metRequirement) {
+					//TODO - 1.21: Should we be validating we simulate that we will be able to extract the stack and how much of it?
 					if (FuelMapper.isStackFuel(stack)) {
 						long emc = getEmcValue(stack);
 						int toRemove = Mth.ceil((double) (minFuel - emcConsumed) / emc);
-
-						if (stack.getCount() >= toRemove) {
-							map.put(i, toRemove);
-							emcConsumed += emc * toRemove;
-							metRequirement = true;
-						} else {
-							map.put(i, stack.getCount());
-							emcConsumed += emc * stack.getCount();
-							if (emcConsumed >= minFuel) {
-								metRequirement = true;
-							}
+						int actualRemoved = Math.min(stack.getCount(), toRemove);
+						if (actualRemoved > 0) {
+							map.put(i, actualRemoved);
+							emcConsumed += emc * actualRemoved;
+							metRequirement = emcConsumed >= minFuel;
 						}
 					}
 				}
 			}
 			if (metRequirement) {
-				for (Map.Entry<Integer, Integer> entry : map.entrySet()) {
-					inv.extractItem(entry.getKey(), entry.getValue(), false);
+				for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+					//TODO - 1.21: Should we be validating we were able to actually extract the items?
+					inv.extractItem(entry.getIntKey(), entry.getIntValue(), false);
 				}
+				//TODO - 1.21: Does this update offhand if we are in a block's gui?
 				player.containerMenu.broadcastChanges();
 				return emcConsumed;
 			}

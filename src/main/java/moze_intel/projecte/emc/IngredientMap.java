@@ -1,19 +1,18 @@
 package moze_intel.projecte.emc;
 
-import com.google.common.collect.Maps;
-import java.util.HashMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 
 public class IngredientMap<T> {
 
-	private final Map<T, Integer> ingredients = new HashMap<>();
+	private final Object2IntMap<T> ingredients = new Object2IntOpenHashMap<>();
 
 	public void addIngredient(T thing, int amount) {
-		ingredients.merge(thing, amount, Integer::sum);
+		ingredients.mergeInt(thing, amount, Integer::sum);
 	}
 
-	public Map<T, Integer> getMap() {
-		return Maps.newHashMap(ingredients);
+	public Object2IntMap<T> getMap() {
+		return new Object2IntOpenHashMap<>(ingredients);
 	}
 
 	@Override

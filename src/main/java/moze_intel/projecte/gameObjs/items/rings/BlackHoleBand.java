@@ -1,6 +1,5 @@
 package moze_intel.projecte.gameObjs.items.rings;
 
-import com.google.common.collect.Lists;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -123,8 +122,10 @@ public class BlackHoleBand extends PEToggleItem implements IAlchBagItem, IAlchCh
 	@NotNull
 	@Override
 	public List<Component> getPedestalDescription(float tickRate) {
-		return Lists.newArrayList(PELang.PEDESTAL_BLACK_HOLE_BAND_1.translateColored(ChatFormatting.BLUE),
-				PELang.PEDESTAL_BLACK_HOLE_BAND_2.translateColored(ChatFormatting.BLUE));
+		return List.of(
+				PELang.PEDESTAL_BLACK_HOLE_BAND_1.translateColored(ChatFormatting.BLUE),
+				PELang.PEDESTAL_BLACK_HOLE_BAND_2.translateColored(ChatFormatting.BLUE)
+		);
 	}
 
 	@Override

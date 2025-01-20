@@ -1,7 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import java.util.Collections;
+import java.util.List;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.AbstractNSSTag;
@@ -19,9 +19,9 @@ public class TagMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 		for (NSSTag stack : AbstractNSSTag.getAllCreatedTags()) {
 			stack.forEachElement(mapper, stack, (collector, normalizedSimpleStack, tag) -> {
 				//Tag -> element
-				collector.addConversion(1, tag, Collections.singletonList(normalizedSimpleStack));
+				collector.addConversion(1, tag, List.of(normalizedSimpleStack));
 				//Element -> tag
-				collector.addConversion(1, normalizedSimpleStack, Collections.singletonList(tag));
+				collector.addConversion(1, normalizedSimpleStack, List.of(tag));
 			});
 		}
 	}

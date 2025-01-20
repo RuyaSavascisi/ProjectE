@@ -1,8 +1,8 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import java.util.HashMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
@@ -27,7 +27,7 @@ public class TippedArrowMapper implements IEMCMapper<NormalizedSimpleStack, Long
 		int recipeCount = 0;
 		NSSItem nssArrow = NSSItem.createItem(Items.ARROW);
 		for (Holder<Potion> potionType : BuiltInRegistries.POTION.holders().toList()) {
-			Map<NormalizedSimpleStack, Integer> ingredientsWithAmount = new HashMap<>();
+			Object2IntMap<NormalizedSimpleStack> ingredientsWithAmount = new Object2IntOpenHashMap<>();
 			ingredientsWithAmount.put(nssArrow, 8);
 			ingredientsWithAmount.put(NSSItem.createItem(PotionContents.createItemStack(Items.LINGERING_POTION, potionType)), 1);
 			mapper.addConversion(8, NSSItem.createItem(PotionContents.createItemStack(Items.TIPPED_ARROW, potionType)), ingredientsWithAmount);

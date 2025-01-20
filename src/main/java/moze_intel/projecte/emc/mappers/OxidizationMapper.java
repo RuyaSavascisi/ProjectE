@@ -1,7 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -33,8 +33,8 @@ public class OxidizationMapper implements IEMCMapper<NormalizedSimpleStack, Long
 			if (block != null) {
 				NSSItem unweathered = NSSItem.createItem(block);
 				NSSItem weathered = NSSItem.createItem(entry.getValue().nextOxidationStage());
-				mapper.addConversion(1, weathered, Collections.singleton(unweathered));
-				mapper.addConversion(1, unweathered, Collections.singleton(weathered));
+				mapper.addConversion(1, weathered, List.of(unweathered));
+				mapper.addConversion(1, unweathered, List.of(weathered));
 				recipeCount += 2;
 			}
 		}

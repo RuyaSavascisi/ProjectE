@@ -1,6 +1,8 @@
 package moze_intel.projecte.impl;
 
 import com.mojang.serialization.DataResult;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -8,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -158,12 +159,12 @@ public class TransmutationOffline {
 			}
 
 			@Override
-			public void syncInputAndLocks(@NotNull ServerPlayer player, List<Integer> slotsChanged, TargetUpdateType updateTargets) {
+			public void syncInputAndLocks(@NotNull ServerPlayer player, IntList slotsChanged, TargetUpdateType updateTargets) {
 				toCopy.syncInputAndLocks(player, slotsChanged, updateTargets);
 			}
 
 			@Override
-			public void receiveInputsAndLocks(Map<Integer, ItemStack> changes) {
+			public void receiveInputsAndLocks(Int2ObjectMap<ItemStack> changes) {
 			}
 		};
 	}

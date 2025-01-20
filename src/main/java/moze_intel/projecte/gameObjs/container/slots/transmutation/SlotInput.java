@@ -1,7 +1,7 @@
 package moze_intel.projecte.gameObjs.container.slots.transmutation;
 
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.math.BigInteger;
-import java.util.Collections;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider.TargetUpdateType;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
@@ -35,7 +35,7 @@ public class SlotInput extends InventoryContainerSlot {
 		//Decrease the size of the stack
 		if (!stack.isEmpty() && inv.isServer()) {
 			//Sync the change to the client
-			inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.IF_NEEDED);
+			inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.IF_NEEDED);
 		}
 		return stack;
 	}
@@ -51,7 +51,7 @@ public class SlotInput extends InventoryContainerSlot {
 		super.set(stack);
 		if (inv.isServer()) {
 			if (stack.isEmpty()) {
-				inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.ALL);
+				inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.ALL);
 			} else {
 				if (EMCHelper.doesItemHaveEmc(stack)) {
 					inv.handleKnowledge(stack);
@@ -65,20 +65,20 @@ public class SlotInput extends InventoryContainerSlot {
 					if (actualInserted > 0) {
 						//if we actually managed to insert some sync the slots changed, but don't update targets
 						// as that will be done by removing the emc and syncing how much is stored there
-						inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.NONE);
+						inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.NONE);
 						inv.removeEmc(BigInteger.valueOf(actualInserted));
 					} else if (emcHolder.getStoredEmc(stack) > 0) {
 						//If we didn't manage to insert any into our star, and we do have emc stored
 						// update the targets
-						inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.ALL);
+						inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.ALL);
 					} else {
 						//If we didn't manage to insert any into our star, and we don't have any emc stored
 						// don't bother updating the targets
-						inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.NONE);
+						inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.NONE);
 					}
 				} else {
 					//Update the fact the slots changed but don't bother updating targets
-					inv.syncChangedSlots(Collections.singletonList(getSlotIndex()), TargetUpdateType.NONE);
+					inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.NONE);
 				}
 			}
 		}

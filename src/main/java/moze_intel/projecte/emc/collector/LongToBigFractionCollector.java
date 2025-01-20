@@ -1,6 +1,6 @@
 package moze_intel.projecte.emc.collector;
 
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
 import moze_intel.projecte.api.mapper.collector.IExtendedMappingCollector;
 import org.apache.commons.math3.fraction.BigFraction;
@@ -15,12 +15,12 @@ public class LongToBigFractionCollector<T, A extends IValueArithmetic<?>> extend
 	}
 
 	@Override
-	public void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount) {
+	public void setValueFromConversion(int outnumber, T something, Object2IntMap<T> ingredientsWithAmount) {
 		inner.setValueFromConversion(outnumber, something, ingredientsWithAmount);
 	}
 
 	@Override
-	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion) {
+	public void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount, A arithmeticForConversion) {
 		inner.addConversion(outnumber, output, ingredientsWithAmount, arithmeticForConversion);
 	}
 

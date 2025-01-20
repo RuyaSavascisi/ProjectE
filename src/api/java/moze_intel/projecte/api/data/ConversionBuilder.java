@@ -1,7 +1,7 @@
 package moze_intel.projecte.api.data;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import javax.annotation.ParametersAreNonnullByDefault;
 import moze_intel.projecte.api.conversion.CustomConversion;
 import moze_intel.projecte.api.nss.NSSTag;
@@ -17,7 +17,7 @@ public class ConversionBuilder<PARENT> implements ConversionBuilderNSSHelper<PAR
 
 	private final PARENT parent;
 
-	private final Map<NormalizedSimpleStack, Integer> ingredients = new LinkedHashMap<>();
+	private final Object2IntMap<NormalizedSimpleStack> ingredients = new Object2IntLinkedOpenHashMap<>();
 	private final NormalizedSimpleStack output;
 	private final int outputAmount;
 	private boolean propagateTags;

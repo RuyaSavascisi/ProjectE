@@ -1,7 +1,8 @@
 package moze_intel.projecte.emc.collector;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Collections;
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -48,13 +49,12 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 
 	private void addConversionToIngredientUsages(Conversion conversion) {
 		for (T ingredient : conversion.ingredientsWithAmount.keySet()) {
-			Set<Conversion> usesForIngredient = getUsesFor(ingredient);
-			usesForIngredient.add(conversion);
+			getUsesFor(ingredient).add(conversion);
 		}
 	}
 
 	@Override
-	public void addConversion(int outnumber, T output, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion) {
+	public void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount, A arithmeticForConversion) {
 		if (output == null || ingredientsWithAmount.containsKey(null)) {
 			PECore.debugLog("Ignoring Recipe because of invalid ingredient or output: {} -> {}x{}", ingredientsWithAmount, outnumber, output);
 			return;
@@ -94,7 +94,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 	}
 
 	@Override
-	public void setValueFromConversion(int outnumber, T something, Map<T, Integer> ingredientsWithAmount) {
+	public void setValueFromConversion(int outnumber, T something, Object2IntMap<T> ingredientsWithAmount) {
 		if (something == null || ingredientsWithAmount.containsKey(null)) {
 			PECore.debugLog("Ignoring setValueFromConversion because of invalid ingredient or output: {} -> {}x{}", ingredientsWithAmount, outnumber, something);
 			return;
@@ -120,29 +120,27 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 
 		public final int outnumber;
 		public final V value;
-		public final Map<T, Integer> ingredientsWithAmount;
+		public final Object2IntMap<T> ingredientsWithAmount;
 		public final A arithmeticForConversion;
 
-		Conversion(T output, int outnumber, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion) {
+		Conversion(T output, int outnumber, Object2IntMap<T> ingredientsWithAmount, A arithmeticForConversion) {
 			this(output, outnumber, ingredientsWithAmount, arithmeticForConversion, arithmetic.getZero());
 		}
 
-		Conversion(T output, int outnumber, Map<T, Integer> ingredientsWithAmount, A arithmeticForConversion, V value) {
+		Conversion(T output, int outnumber, Object2IntMap<T> ingredientsWithAmount, A arithmeticForConversion, V value) {
 			this.output = output;
 			this.outnumber = outnumber;
 			if (ingredientsWithAmount == null || ingredientsWithAmount.isEmpty()) {
-				this.ingredientsWithAmount = Collections.emptyMap();
+				this.ingredientsWithAmount = Object2IntMaps.emptyMap();
 			} else {
-				ImmutableMap.Builder<T, Integer> builder = ImmutableMap.builder();
-				for (Map.Entry<T, Integer> ingredient : ingredientsWithAmount.entrySet()) {
-					Integer amount = ingredient.getValue();
-					if (amount == null) {
-						throw new IllegalArgumentException("ingredient amount value has to be != null");
-					} else if (amount != 0) {//Ingredients with an amount of 'zero' do not need to be handled.
-						builder.put(ingredient.getKey(), amount);
+				Object2IntMap<T> filteredMap = new Object2IntLinkedOpenHashMap<>(ingredientsWithAmount.size());
+				for (Object2IntMap.Entry<T> ingredient : ingredientsWithAmount.object2IntEntrySet()) {
+					int amount = ingredient.getIntValue();
+					if (amount != 0) {//Ingredients with an amount of 'zero' do not need to be handled.
+						filteredMap.put(ingredient.getKey(), amount);
 					}
 				}
-				this.ingredientsWithAmount = builder.build();
+				this.ingredientsWithAmount = Object2IntMaps.unmodifiable(filteredMap);
 			}
 			this.arithmeticForConversion = arithmeticForConversion;
 			this.value = value;
@@ -157,7 +155,7 @@ public abstract class MappingCollector<T, V extends Comparable<V>, A extends IVa
 			if (ingredientsWithAmount.isEmpty()) {
 				return "nothing";
 			}
-			return ingredientsWithAmount.entrySet().stream().map(e -> e.getValue() + "*" + e.getKey()).collect(Collectors.joining(" + "));
+			return ingredientsWithAmount.object2IntEntrySet().stream().map(e -> e.getIntValue() + "*" + e.getKey()).collect(Collectors.joining(" + "));
 		}
 
 		@Override

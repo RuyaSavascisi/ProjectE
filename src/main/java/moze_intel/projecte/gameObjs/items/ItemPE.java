@@ -35,14 +35,9 @@ public class ItemPE extends Item {
 		return stack.getOrDefault(PEDataComponentTypes.STORED_EMC, 0L);
 	}
 
-	public static void addEmcToStack(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {
-		if (amount > 0) {
-			stack.update(PEDataComponentTypes.STORED_EMC, 0L, amount, Long::sum);
-		}
-	}
-
 	public static void removeEmc(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {
 		if (amount > 0) {
+			//TODO - 1.21: Make this and adding safe against overflow?
 			stack.update(PEDataComponentTypes.STORED_EMC, 0L, amount, (emc, change) -> Math.max(emc - change, 0));
 		}
 	}
@@ -52,15 +47,21 @@ public class ItemPE extends Item {
 			return true;
 		}
 		long current = getEmc(stack);
+		boolean updateEmc = shouldRemove;
 		if (current < amount) {
 			long consume = EMCHelper.consumePlayerFuel(player, amount - current);
 			if (consume == -1) {
 				return false;
 			}
-			addEmcToStack(stack, consume);
+			current += consume;
+			updateEmc = true;
 		}
 		if (shouldRemove) {
-			removeEmc(stack, amount);
+			//Note: Even if current < amount when we started, we will exit early if we were not able to consume enough emc to get us to have consume >= amount
+			current -= amount;
+		}
+		if (updateEmc) {
+			stack.set(PEDataComponentTypes.STORED_EMC, current);
 		}
 		return true;
 	}

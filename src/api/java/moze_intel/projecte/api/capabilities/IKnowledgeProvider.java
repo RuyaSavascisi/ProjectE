@@ -1,9 +1,9 @@
 package moze_intel.projecte.api.capabilities;
 
 import io.netty.buffer.ByteBuf;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntList;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.IntFunction;
 import moze_intel.projecte.api.ItemInfo;
@@ -147,14 +147,14 @@ public interface IKnowledgeProvider {
 	 * @param slotsChanged  The indices of the slots that need to be synced (may be empty, in which case nothing should happen).
 	 * @param updateTargets How the targets should be updated on the client.
 	 */
-	void syncInputAndLocks(@NotNull ServerPlayer player, List<Integer> slotsChanged, TargetUpdateType updateTargets);
+	void syncInputAndLocks(@NotNull ServerPlayer player, IntList slotsChanged, TargetUpdateType updateTargets);
 
 	/**
 	 * @param changes Slot index to stack for the changes that occurred.
 	 *
-	 * @apiNote Should only really be used on the client for purposes of receiving/handling {@link #syncInputAndLocks(ServerPlayer, List, TargetUpdateType)}
+	 * @apiNote Should only really be used on the client for purposes of receiving/handling {@link #syncInputAndLocks(ServerPlayer, IntList, TargetUpdateType)}
 	 */
-	void receiveInputsAndLocks(Map<Integer, ItemStack> changes);
+	void receiveInputsAndLocks(Int2ObjectMap<ItemStack> changes);
 
 	enum TargetUpdateType {
 		/**

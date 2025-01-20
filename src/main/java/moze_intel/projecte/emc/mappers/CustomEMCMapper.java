@@ -1,7 +1,7 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
@@ -19,9 +19,9 @@ public class CustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Long> 
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		for (Map.Entry<NSSItem, Long> entry : CustomEMCParser.currentEntries.entries().entrySet()) {
+		for (Object2LongMap.Entry<NSSItem> entry : CustomEMCParser.currentEntries.entries().object2LongEntrySet()) {
 			NSSItem item = entry.getKey();
-			Long emc = entry.getValue();
+			long emc = entry.getLongValue();
 			PECore.debugLog("Adding custom EMC value for {}: {}", item, emc);
 			//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
 			item.forSelfAndEachElement(mapper, emc, IMappingCollector::setValueBefore);

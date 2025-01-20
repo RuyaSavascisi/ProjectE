@@ -1,7 +1,7 @@
 package moze_intel.projecte.config;
 
 import com.google.gson.JsonParseException;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.config.CustomEMCParser.CustomEMCFile;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
@@ -68,11 +68,11 @@ class CustomEMCParserTest {
 						}
 					]
 				}""");
-		Map<NSSItem, Long> entries = customEMCFile.entries();
+		Object2LongMap<NSSItem> entries = customEMCFile.entries();
 		Assertions.assertEquals(3, entries.size());
-		Assertions.assertEquals(1, entries.get(NSSItem.createItem(Items.DIRT)));
-		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE)));
-		Assertions.assertEquals(3, entries.get(NSSItem.createTag(Tags.Items.INGOTS_IRON)));
+		Assertions.assertEquals(1, entries.getLong(NSSItem.createItem(Items.DIRT)));
+		Assertions.assertEquals(2, entries.getLong(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(3, entries.getLong(NSSItem.createTag(Tags.Items.INGOTS_IRON)));
 	}
 
 	@Test
@@ -87,10 +87,10 @@ class CustomEMCParserTest {
 						}
 					]
 				}""");
-		Map<NSSItem, Long> entries = customEMCFile.entries();
+		Object2LongMap<NSSItem> entries = customEMCFile.entries();
 		Assertions.assertEquals(1, entries.size());
 		//Max int + 1
-		Assertions.assertEquals(2_147_483_648L, entries.get(NSSItem.createItem(Items.DIRT)));
+		Assertions.assertEquals(2_147_483_648L, entries.getLong(NSSItem.createItem(Items.DIRT)));
 	}
 
 	@Test
@@ -146,9 +146,9 @@ class CustomEMCParserTest {
 						}
 					]
 				}""");
-		Map<NSSItem, Long> entries = customEMCFile.entries();
+		Object2LongMap<NSSItem> entries = customEMCFile.entries();
 		Assertions.assertEquals(1, entries.size());
-		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(2, entries.getLong(NSSItem.createItem(Items.STONE)));
 	}
 
 	@Test
@@ -163,9 +163,9 @@ class CustomEMCParserTest {
 						}
 					]
 				}""");
-		Map<NSSItem, Long> entries = customEMCFile.entries();
+		Object2LongMap<NSSItem> entries = customEMCFile.entries();
 		Assertions.assertEquals(1, entries.size());
-		Assertions.assertEquals(0, entries.get(NSSItem.createItem(Items.DIRT)));
+		Assertions.assertEquals(0, entries.getLong(NSSItem.createItem(Items.DIRT)));
 	}
 
 	@Test
@@ -192,9 +192,9 @@ class CustomEMCParserTest {
 						}
 					]
 				}""");
-		Map<NSSItem, Long> entries = customEMCFile.entries();
+		Object2LongMap<NSSItem> entries = customEMCFile.entries();
 		Assertions.assertEquals(2, entries.size());
-		Assertions.assertEquals(1, entries.get(NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
-		Assertions.assertEquals(2, entries.get(NSSItem.createItem(Items.STONE, CodecTestHelper.MY_TAG_PATCH)));
+		Assertions.assertEquals(1, entries.getLong(NSSItem.createItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
+		Assertions.assertEquals(2, entries.getLong(NSSItem.createItem(Items.STONE, CodecTestHelper.MY_TAG_PATCH)));
 	}
 }

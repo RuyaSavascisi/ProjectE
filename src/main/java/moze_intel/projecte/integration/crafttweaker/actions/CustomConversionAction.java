@@ -1,8 +1,9 @@
 package moze_intel.projecte.integration.crafttweaker.actions;
 
 import com.blamejared.crafttweaker.api.action.base.IUndoableAction;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.nss.NSSTag;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
@@ -14,7 +15,7 @@ public class CustomConversionAction implements IUndoableAction {
 	private final CrTConversion conversion;
 
 	public CustomConversionAction(NormalizedSimpleStack output, int amount, boolean propagateTags, boolean set, Map<NormalizedSimpleStack, Integer> ingredients) {
-		conversion = new CrTConversion(output, amount, propagateTags, set, ingredients);
+		conversion = new CrTConversion(output, amount, propagateTags, set, new Object2IntOpenHashMap<>(ingredients));
 	}
 
 	@Override
@@ -25,12 +26,12 @@ public class CustomConversionAction implements IUndoableAction {
 	@Override
 	public String describe() {
 		StringBuilder inputString = new StringBuilder();
-		for (Entry<NormalizedSimpleStack, Integer> entry : conversion.ingredients().entrySet()) {
+		for (Object2IntMap.Entry<NormalizedSimpleStack> entry : conversion.ingredients().object2IntEntrySet()) {
 			if (!inputString.isEmpty()) {
 				//If we already have elements, prepend a comma
 				inputString.append(", ");
 			}
-			int amount = entry.getValue();
+			int amount = entry.getIntValue();
 			if (amount > 1) {
 				inputString.append(amount).append(" ");
 			}

@@ -1,7 +1,7 @@
 package moze_intel.projecte.api.conversion;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.List;
-import java.util.Map;
 import moze_intel.projecte.api.ProjectEAPI;
 import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSItem;
@@ -138,29 +138,29 @@ class CustomConversionMapperTest {
 			CustomConversion conversion = conversions.getFirst();
 			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
-			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+			Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
-			Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
-			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(2, ingredients.getInt(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(3, ingredients.getInt(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(1);
 			Assertions.assertEquals(NSSItem.createItem(Items.GOLD_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
-			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+			Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.GRANITE)));
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.DIORITE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(2);
 			Assertions.assertEquals(NSSItem.createItem(Items.COPPER_INGOT), conversion.output());
 			Assertions.assertEquals(3, conversion.count());
-			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+			Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 			Assertions.assertEquals(1, ingredients.size());
-			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(3, ingredients.getInt(NSSItem.createItem(Items.STONE)));
 		}
 	}
 
@@ -197,10 +197,10 @@ class CustomConversionMapperTest {
 					}
 				}""");
 		FixedValues values = conversionFile.values();
-		Assertions.assertEquals(1, values.setValueBefore().get(NSSItem.createItem(Items.STONE)));
-		Assertions.assertEquals(2, values.setValueBefore().get(NSSItem.createItem(Items.GRANITE)));
-		Assertions.assertEquals(ProjectEAPI.FREE_ARITHMETIC_VALUE, values.setValueBefore().get(NSSItem.createItem(Items.DIORITE)));
-		Assertions.assertEquals(3, values.setValueAfter().get(NSSItem.createItem(Items.ANDESITE)));
+		Assertions.assertEquals(1, values.setValueBefore().getLong(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(2, values.setValueBefore().getLong(NSSItem.createItem(Items.GRANITE)));
+		Assertions.assertEquals(ProjectEAPI.FREE_ARITHMETIC_VALUE, values.setValueBefore().getLong(NSSItem.createItem(Items.DIORITE)));
+		Assertions.assertEquals(3, values.setValueAfter().getLong(NSSItem.createItem(Items.ANDESITE)));
 	}
 
 	@Test
@@ -231,7 +231,7 @@ class CustomConversionMapperTest {
 					}
 				}""");
 		FixedValues values = conversionFile.values();
-		Assertions.assertEquals(2, values.setValueBefore().get(NSSItem.createItem(Items.GRANITE)));
+		Assertions.assertEquals(2, values.setValueBefore().getLong(NSSItem.createItem(Items.GRANITE)));
 		Assertions.assertTrue(values.setValueAfter().isEmpty());
 	}
 
@@ -272,11 +272,11 @@ class CustomConversionMapperTest {
 		CustomConversion conversion = conversionFile.values().conversions().getFirst();
 		Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 		Assertions.assertEquals(1, conversion.count());
-		Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+		Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 		Assertions.assertEquals(3, ingredients.size());
-		Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
-		Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
-		Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
+		Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.STONE)));
+		Assertions.assertEquals(2, ingredients.getInt(NSSItem.createItem(Items.GRANITE)));
+		Assertions.assertEquals(3, ingredients.getInt(NSSItem.createItem(Items.DIORITE)));
 	}
 
 	@Test
@@ -346,21 +346,21 @@ class CustomConversionMapperTest {
 			CustomConversion conversion = conversions.getFirst();
 			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
-			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+			Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
-			Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
-			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(2, ingredients.getInt(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(3, ingredients.getInt(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(1);
 			Assertions.assertEquals(NSSItem.createItem(Items.GOLD_INGOT, CodecTestHelper.MY_TAG_PATCH), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
-			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+			Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.GRANITE)));
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.DIORITE, CodecTestHelper.MY_TAG_PATCH)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.DIORITE, CodecTestHelper.MY_TAG_PATCH)));
 		}
 	}
 
@@ -466,19 +466,19 @@ class CustomConversionMapperTest {
 			CustomConversion conversion = conversions.getFirst();
 			Assertions.assertEquals(NSSItem.createItem(Items.IRON_INGOT), conversion.output());
 			Assertions.assertEquals(1, conversion.count());
-			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+			Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 			Assertions.assertEquals(3, ingredients.size());
-			Assertions.assertEquals(1, ingredients.get(NSSItem.createItem(Items.STONE)));
-			Assertions.assertEquals(2, ingredients.get(NSSItem.createItem(Items.GRANITE)));
-			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.DIORITE)));
+			Assertions.assertEquals(1, ingredients.getInt(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(2, ingredients.getInt(NSSItem.createItem(Items.GRANITE)));
+			Assertions.assertEquals(3, ingredients.getInt(NSSItem.createItem(Items.DIORITE)));
 		}
 		{
 			CustomConversion conversion = conversions.get(1);
 			Assertions.assertEquals(NSSItem.createItem(Items.COPPER_INGOT), conversion.output());
 			Assertions.assertEquals(3, conversion.count());
-			Map<NormalizedSimpleStack, Integer> ingredients = conversion.ingredients();
+			Object2IntMap<NormalizedSimpleStack> ingredients = conversion.ingredients();
 			Assertions.assertEquals(1, ingredients.size());
-			Assertions.assertEquals(3, ingredients.get(NSSItem.createItem(Items.STONE)));
+			Assertions.assertEquals(3, ingredients.getInt(NSSItem.createItem(Items.STONE)));
 		}
 	}
 }

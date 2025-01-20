@@ -1,5 +1,7 @@
 package moze_intel.projecte.api.data;
 
+import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,8 +21,8 @@ import org.jetbrains.annotations.Nullable;
 public class CustomConversionBuilder implements CustomConversionBuilderNSSHelper {
 
 	private final Map<String, ConversionGroupBuilder> groups = new LinkedHashMap<>();
-	private final Map<NormalizedSimpleStack, Long> fixedValueBefore = new LinkedHashMap<>();
-	private final Map<NormalizedSimpleStack, Long> fixedValueAfter = new LinkedHashMap<>();
+	private final Object2LongMap<NormalizedSimpleStack> fixedValueBefore = new Object2LongLinkedOpenHashMap<>();
+	private final Object2LongMap<NormalizedSimpleStack> fixedValueAfter = new Object2LongLinkedOpenHashMap<>();
 	private final List<ConversionBuilder<?>> fixedValueConversions = new ArrayList<>();
 	private boolean replace;
 	@Nullable
@@ -100,7 +102,7 @@ public class CustomConversionBuilder implements CustomConversionBuilderNSSHelper
 	/**
 	 * Adds a fixed value to the proper map after validating it as valid.
 	 */
-	private CustomConversionBuilder fixedValue(NormalizedSimpleStack stack, long emc, Map<NormalizedSimpleStack, Long> fixedValues, String type) {
+	private CustomConversionBuilder fixedValue(NormalizedSimpleStack stack, long emc, Object2LongMap<NormalizedSimpleStack> fixedValues, String type) {
 		Objects.requireNonNull(stack, "Normalized Simple Stack cannot be null.");
 		if (emc < 1 && emc != ProjectEAPI.FREE_ARITHMETIC_VALUE) {
 			throw new IllegalArgumentException("EMC value must be at least one.");
