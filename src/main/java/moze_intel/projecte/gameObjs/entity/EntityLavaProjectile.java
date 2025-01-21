@@ -75,7 +75,7 @@ public class EntityLavaProjectile extends NoGravityThrowableProjectile {
 	protected void onHitBlock(@NotNull BlockHitResult result) {
 		super.onHitBlock(result);
 		if (!level().isClientSide && getOwner() instanceof Player player) {
-			ItemStack found = PlayerHelper.findFirstItem(player, PEItems.VOLCANITE_AMULET.get());
+			ItemStack found = PlayerHelper.findFirstItem(player, PEItems.VOLCANITE_AMULET);
 			if (!found.isEmpty() && ItemPE.consumeFuel(player, found, 32, true)) {
 				WorldHelper.placeFluid(player, level(), result.getBlockPos(), result.getDirection(), Fluids.LAVA, false);
 			}
@@ -86,7 +86,7 @@ public class EntityLavaProjectile extends NoGravityThrowableProjectile {
 	protected void onHitEntity(@NotNull EntityHitResult result) {
 		super.onHitEntity(result);
 		if (!level().isClientSide && getOwner() instanceof Player player) {
-			ItemStack found = PlayerHelper.findFirstItem(player, PEItems.VOLCANITE_AMULET.get());
+			ItemStack found = PlayerHelper.findFirstItem(player, PEItems.VOLCANITE_AMULET);
 			if (!found.isEmpty() && ItemPE.consumeFuel(player, found, 32, true)) {
 				Entity ent = result.getEntity();
 				ent.igniteForSeconds(5);

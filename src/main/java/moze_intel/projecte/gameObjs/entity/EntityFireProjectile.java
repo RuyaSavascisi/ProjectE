@@ -71,7 +71,7 @@ public class EntityFireProjectile extends NoGravityThrowableProjectile {
 	protected void onHitEntity(@NotNull EntityHitResult result) {
 		super.onHitEntity(result);
 		if (!level().isClientSide && getOwner() instanceof Player player) {
-			ItemStack found = PlayerHelper.findFirstItem(player, fromArcana ? PEItems.ARCANA_RING.get() : PEItems.IGNITION_RING.get());
+			ItemStack found = PlayerHelper.findFirstItem(player, fromArcana ? PEItems.ARCANA_RING : PEItems.IGNITION_RING);
 			if (!found.isEmpty() && ItemPE.consumeFuel(player, found, 32, true)) {
 				Entity ent = result.getEntity();
 				ent.igniteForSeconds(5);

@@ -31,18 +31,31 @@ public class ItemPE extends Item {
 	}
 
 	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getEmc(ItemStack stack) {
+	private static long getEmc(ItemStack stack) {
 		return stack.getOrDefault(PEDataComponentTypes.STORED_EMC, 0L);
+	}
+
+	public static void removeEmc(ItemStack stack, float amount) {
+		removeEmc(stack, EMCHelper.removeFractionalEMC(stack, amount));
 	}
 
 	public static void removeEmc(ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount) {
 		if (amount > 0) {
-			//TODO - 1.21: Make this and adding safe against overflow?
 			stack.update(PEDataComponentTypes.STORED_EMC, 0L, amount, (emc, change) -> Math.max(emc - change, 0));
 		}
 	}
 
-	public static boolean consumeFuel(Player player, ItemStack stack, long amount, boolean shouldRemove) {
+	public static boolean hasEmc(Player player, ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount, boolean subUnitRemoval) {
+		if (subUnitRemoval && getEmc(stack) > 0) {
+			return true;
+		}
+		return consumeFuel(player, stack, amount, false);
+	}
+
+	/**
+	 * If this method returns true (and shouldRemove is false), it can be assumed the stack has at least the given amount of emc stored.
+	 */
+	public static boolean consumeFuel(Player player, ItemStack stack, @Range(from = 0, to = Long.MAX_VALUE) long amount, boolean shouldRemove) {
 		if (amount <= 0) {
 			return true;
 		}
@@ -53,7 +66,24 @@ public class ItemPE extends Item {
 			if (consume == -1) {
 				return false;
 			}
-			current += consume;
+			long spaceFor = Long.MAX_VALUE - current;
+			if (consume > spaceFor) {
+				if (shouldRemove) {
+					//Remove the amount from consume, and mark we don't need to remove it
+					consume -= amount;
+					shouldRemove = false;
+					//Check if we can now account for all that we consumed in the space we have
+					if (consume > spaceFor) {//If it is still too large clamp it
+						current = Long.MAX_VALUE;
+					} else {//Otherwise, add it
+						current += consume;
+					}
+				} else {//If we are not removing, just clamp the amount we have
+					current = Long.MAX_VALUE;
+				}
+			} else {
+				current += consume;
+			}
 			updateEmc = true;
 		}
 		if (shouldRemove) {

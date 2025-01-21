@@ -7,7 +7,6 @@ import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.WorldHelper;
@@ -53,12 +52,11 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 			return;
 		}
 		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
-			long storedEmc = getEmc(stack);
-			if (storedEmc == 0 && !consumeFuel(player, stack, 64, true)) {
+			if (!hasEmc(player, stack, 64, true)) {
 				stack.set(PEDataComponentTypes.ACTIVE, false);
 			} else {
 				WorldHelper.growNearbyRandomly(true, level, player);
-				removeEmc(stack, EMCHelper.removeFractionalEMC(stack, 0.32F));
+				removeEmc(stack, 0.32F);
 			}
 		} else {
 			WorldHelper.growNearbyRandomly(false, level, player);

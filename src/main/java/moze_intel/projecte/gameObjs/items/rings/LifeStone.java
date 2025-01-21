@@ -40,23 +40,21 @@ public class LifeStone extends PEToggleItem implements IPedestalItem, ICapabilit
 			return;
 		}
 		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
-			if (!consumeFuel(player, stack, 2 * 64, false)) {
-				stack.set(PEDataComponentTypes.ACTIVE, false);
-			} else {
+			if (consumeFuel(player, stack, 2 * 64, false)) {
 				InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-				timers.feed.activate();
-				if (player.getFoodData().needsFood() && timers.feed.canFunction()) {
+				if (timers.feed.activateAndCanFunction(player.getFoodData().needsFood())) {
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.HEAL.get(), SoundSource.PLAYERS, 1, 1);
 					player.getFoodData().eat(2, 10);
 					player.gameEvent(GameEvent.EAT);
 					removeEmc(stack, 64);
 				}
-				timers.heal.activate();
-				if (player.getHealth() < player.getMaxHealth() && timers.heal.canFunction()) {
+				if (timers.heal.activateAndCanFunction(player.getHealth() < player.getMaxHealth())) {
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.HEAL.get(), SoundSource.PLAYERS, 1, 1);
 					player.heal(2.0F);
 					removeEmc(stack, 64);
 				}
+			} else {
+				stack.set(PEDataComponentTypes.ACTIVE, false);
 			}
 		}
 	}

@@ -16,7 +16,6 @@ import moze_intel.projecte.gameObjs.items.ItemPE;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.integration.IntegrationHelper;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.PELang;
@@ -61,7 +60,7 @@ public class SWRG extends ItemPE implements IPedestalItem, IProjectileShooter, I
 		if (player.level().isClientSide) {
 			return;
 		}
-		if (getEmc(stack) == 0 && !consumeFuel(player, stack, 64, false)) {
+		if (!hasEmc(player, stack, 64, true)) {
 			//If it is already off changeMode will just NO-OP
 			changeMode(player, stack, mode, SWRGMode.OFF);
 			return;
@@ -80,7 +79,7 @@ public class SWRG extends ItemPE implements IPedestalItem, IProjectileShooter, I
 			toRemove += 0.32F;
 		}
 
-		removeEmc(stack, EMCHelper.removeFractionalEMC(stack, toRemove));
+		removeEmc(stack, toRemove);
 		//TODO - 1.21: Re-evaluate the calls to resetFallDistance
 		player.resetFallDistance();
 	}

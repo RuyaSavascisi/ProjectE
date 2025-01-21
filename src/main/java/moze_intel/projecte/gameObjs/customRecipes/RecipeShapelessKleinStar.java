@@ -26,13 +26,23 @@ public class RecipeShapelessKleinStar extends WrappedShapelessRecipe {
 	@Override
 	public ItemStack assemble(@NotNull CraftingInput inv, @NotNull HolderLookup.Provider registryAccess) {
 		ItemStack result = getInternal().assemble(inv, registryAccess);
-		long storedEMC = 0;
-		for (ItemStack stack : inv.items()) {
-			if (!stack.isEmpty() && stack.getItem() instanceof KleinStar star) {
-				storedEMC += star.getStoredEmc(stack);
+		if (result.getItem() instanceof KleinStar resultingStar) {
+			long maxEmc = resultingStar.getMaximumEmc(result);
+			long storedEMC = 0;
+			for (ItemStack stack : inv.items()) {
+				if (!stack.isEmpty() && stack.getItem() instanceof KleinStar star) {
+					long inputEmc = star.getStoredEmc(stack);
+					if (inputEmc >= maxEmc - storedEMC) {
+						//If the emc stored in the input is more than how much we need to get to the max emc
+						// just set it to the max and break out
+						storedEMC = maxEmc;
+						break;
+					} else {
+						//Otherwise we have room for the input emc, add it. We know this shouldn't overflow
+						storedEMC += inputEmc;
+					}
+				}
 			}
-		}
-		if (storedEMC != 0 && result.getItem() instanceof KleinStar) {
 			result.set(PEDataComponentTypes.STORED_EMC, storedEMC);
 		}
 		return result;

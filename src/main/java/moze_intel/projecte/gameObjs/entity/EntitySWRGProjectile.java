@@ -64,7 +64,7 @@ public class EntitySWRGProjectile extends NoGravityThrowableProjectile {
 	protected void onHitBlock(@NotNull BlockHitResult result) {
 		super.onHitBlock(result);
 		if (!level().isClientSide && getOwner() instanceof ServerPlayer player) {
-			ItemStack found = PlayerHelper.findFirstItem(player, fromArcana ? PEItems.ARCANA_RING.get() : PEItems.SWIFTWOLF_RENDING_GALE.get());
+			ItemStack found = PlayerHelper.findFirstItem(player, fromArcana ? PEItems.ARCANA_RING : PEItems.SWIFTWOLF_RENDING_GALE);
 			if (!found.isEmpty() && ItemPE.consumeFuel(player, found, 768, true)) {
 				BlockPos pos = result.getBlockPos();
 				LightningBolt lightning = EntityType.LIGHTNING_BOLT.create(level());
@@ -92,7 +92,7 @@ public class EntitySWRGProjectile extends NoGravityThrowableProjectile {
 	protected void onHitEntity(@NotNull EntityHitResult result) {
 		super.onHitEntity(result);
 		if (!level().isClientSide && result.getEntity() instanceof LivingEntity e && getOwner() instanceof Player player) {
-			ItemStack found = PlayerHelper.findFirstItem(player, fromArcana ? PEItems.ARCANA_RING.get() : PEItems.SWIFTWOLF_RENDING_GALE.get());
+			ItemStack found = PlayerHelper.findFirstItem(player, fromArcana ? PEItems.ARCANA_RING : PEItems.SWIFTWOLF_RENDING_GALE);
 			if (!found.isEmpty() && ItemPE.consumeFuel(player, found, 64, true)) {
 				// Minor damage, so we count as the attacker for launching the mob
 				e.hurt(level().damageSources().playerAttack(player), 1F);

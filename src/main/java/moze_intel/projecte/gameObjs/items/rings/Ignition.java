@@ -11,7 +11,6 @@ import moze_intel.projecte.gameObjs.items.ICapabilityAware;
 import moze_intel.projecte.gameObjs.items.IFireProtector;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.integration.IntegrationHelper;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.PELang;
@@ -46,11 +45,11 @@ public class Ignition extends PEToggleItem implements IPedestalItem, IFireProtec
 			return;
 		}
 		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
-			if (getEmc(stack) == 0 && !consumeFuel(player, stack, 64, false)) {
+			if (!hasEmc(player, stack, 64, true)) {
 				stack.set(PEDataComponentTypes.ACTIVE, false);
 			} else {
 				WorldHelper.igniteNearby(level, player);
-				removeEmc(stack, EMCHelper.removeFractionalEMC(stack, 0.32F));
+				removeEmc(stack, 0.32F);
 			}
 		} else {
 			WorldHelper.extinguishNearby(level, player);

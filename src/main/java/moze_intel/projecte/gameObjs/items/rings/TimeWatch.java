@@ -52,7 +52,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class TimeWatch extends PEToggleItem implements IPedestalItem, IItemCharge, IBarHelper {
 
-	private static final Predicate<BlockEntity> VALID_TARGET = be -> !be.isRemoved() && !RegistryUtils.getBEHolder(be.getType()).is(BlockEntities.BLACKLIST_TIME_WATCH);
+	private static final Predicate<BlockEntity> VALID_TARGET = be -> !be.isRemoved() && be.hasLevel() && !RegistryUtils.getBEHolder(be.getType()).is(BlockEntities.BLACKLIST_TIME_WATCH);
 
 	public TimeWatch(Properties props) {
 		super(props.component(PEDataComponentTypes.CHARGE, 0)
@@ -143,20 +143,16 @@ public class TimeWatch extends PEToggleItem implements IPedestalItem, IItemCharg
 				LevelChunk chunk = level.getChunkAt(pos);
 				RebindableTickingBlockEntityWrapper tickingWrapper = chunk.tickersInLevel.get(pos);
 				if (tickingWrapper != null && !tickingWrapper.isRemoved()) {
-					//TODO - 1.21: Look at TimeTracker (basically what neo patches in for BoundTickingBlockEntity#tick)
-					// And whether the tracking data for the pedestal gets screwed up if we have to fallback to the other if branch
-					if (tickingWrapper.ticker instanceof BoundTickingBlockEntity tickingBE) {
+					if (tickingWrapper.ticker instanceof BoundTickingBlockEntity<?> tickingBE) {
 						//In general this should always be the case, so we inline some of the logic
 						// to optimize the calls to try and make extra ticks as cheap as possible
 						if (chunk.isTicking(pos)) {
 							ProfilerFiller profiler = level.getProfiler();
+							//Note: We intentionally don't start tracking with the TimeTracker that neo patches in
+							// because we don't want to override tracking for the pedestal
 							profiler.push(tickingWrapper::getType);
 							BlockState state = chunk.getBlockState(pos);
-							if (blockEntity.getType().isValid(state)) {
-								for (int i = 0; i < bonusTicks; i++) {
-									tickingBE.ticker.tick(level, pos, state, blockEntity);
-								}
-							}
+							provideBonusTicks(level, pos, state, blockEntity, tickingBE, bonusTicks);
 							profiler.pop();
 						}
 					} else {
@@ -166,6 +162,17 @@ public class TimeWatch extends PEToggleItem implements IPedestalItem, IItemCharg
 						}
 					}
 				}
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends BlockEntity> void provideBonusTicks(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity, BoundTickingBlockEntity<T> tickingBE,
+			int bonusTicks) {
+		if (blockEntity.getType().isValid(state)) {
+			T be = (T) blockEntity;
+			for (int i = 0; i < bonusTicks; i++) {
+				tickingBE.ticker.tick(level, pos, state, be);
 			}
 		}
 	}

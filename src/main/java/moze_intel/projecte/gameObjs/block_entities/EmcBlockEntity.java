@@ -6,7 +6,6 @@ import moze_intel.projecte.api.block_entity.BaseEmcBlockEntity;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
-import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
@@ -24,7 +23,7 @@ public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 	private boolean updateComparators;
 
 	public EmcBlockEntity(BlockEntityTypeRegistryObject<? extends EmcBlockEntity> type, BlockPos pos, BlockState state) {
-		this(type, pos, state, Constants.BLOCK_ENTITY_MAX_EMC);
+		this(type, pos, state, Long.MAX_VALUE);
 	}
 
 	public EmcBlockEntity(BlockEntityTypeRegistryObject<? extends EmcBlockEntity> type, BlockPos pos, BlockState state,

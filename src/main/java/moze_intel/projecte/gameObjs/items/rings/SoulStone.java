@@ -39,16 +39,15 @@ public class SoulStone extends PEToggleItem implements IPedestalItem, ICapabilit
 			return;
 		}
 		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
-			if (getEmc(stack) < 64 && !consumeFuel(player, stack, 64, false)) {
-				stack.set(PEDataComponentTypes.ACTIVE, false);
-			} else {
+			if (consumeFuel(player, stack, 64, false)) {
 				InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-				timers.heal.activate();
-				if (player.getHealth() < player.getMaxHealth() && timers.heal.canFunction()) {
+				if (timers.heal.activateAndCanFunction(player.getHealth() < player.getMaxHealth())) {
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.HEAL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 					player.heal(2.0F);
 					removeEmc(stack, 64);
 				}
+			} else {
+				stack.set(PEDataComponentTypes.ACTIVE, false);
 			}
 		}
 	}

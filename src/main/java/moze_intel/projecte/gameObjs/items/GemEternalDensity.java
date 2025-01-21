@@ -15,7 +15,6 @@ import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.ClientKeyHelper;
-import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.WorldHelper;
@@ -81,12 +80,12 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			//Target doesn't have an EMC value set, just exit early
 			return false;
 		}
-		long gemEmc = getEmc(gem);
-		if (gemEmc == Constants.BLOCK_ENTITY_MAX_EMC) {
+		long gemEmc = gem.getOrDefault(PEDataComponentTypes.STORED_EMC, 0L);
+		if (gemEmc == Long.MAX_VALUE) {
 			//If we have max stored, just try to condense whatever we currently have stored, and skip attempting to convert more items into stored emc
 			return condenseFromStoredEmc(inv, gem, gemEmc, target, targetEmc);
 		}
-		long emcRoomFor = Constants.BLOCK_ENTITY_MAX_EMC - gemEmc;
+		long emcRoomFor = Long.MAX_VALUE - gemEmc;
 		GemData gemData = gem.getOrDefault(PEDataComponentTypes.GEM_DATA, GemData.EMPTY);
 		for (int i = 0, slots = inv.getSlots(); i < slots; i++) {
 			ItemStack stack = inv.getStackInSlot(i);

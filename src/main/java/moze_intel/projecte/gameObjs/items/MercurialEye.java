@@ -262,7 +262,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 			return false;
 		} else if (oldState == newState) {
 			return false;
-		} else if (getEmc(klein) < newEMC - oldEMC) {
+		} else if (emcHolder.getStoredEmc(klein) < newEMC - oldEMC) {
 			playNoEMCSound(player);
 			return false;
 		} else if (WorldHelper.getBlockEntity(player.level(), placePos) != null) {

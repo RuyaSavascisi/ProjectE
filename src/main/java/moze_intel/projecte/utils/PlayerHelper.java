@@ -6,6 +6,7 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.integration.IntegrationHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -65,7 +66,7 @@ public final class PlayerHelper {
 		return hasBreakPermission(player, pos) && partiallyCheckedPlaceBlock(player, pos, state);
 	}
 
-	public static ItemStack findFirstItem(Player player, Item consumeFrom) {
+	public static ItemStack findFirstItem(Player player, Holder<Item> consumeFrom) {
 		for (ItemStack s : player.getInventory().items) {
 			if (!s.isEmpty() && s.is(consumeFrom)) {
 				return s;

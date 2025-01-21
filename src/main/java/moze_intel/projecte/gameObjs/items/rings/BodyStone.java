@@ -40,18 +40,16 @@ public class BodyStone extends PEToggleItem implements IPedestalItem, ICapabilit
 			return;
 		}
 		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
-			long itemEmc = getEmc(stack);
-			if (itemEmc < 64 && !consumeFuel(player, stack, 64, false)) {
-				stack.set(PEDataComponentTypes.ACTIVE, false);
-			} else {
+			if (consumeFuel(player, stack, 64, false)) {
 				InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-				timers.feed.activate();
-				if (player.getFoodData().needsFood() && timers.feed.canFunction()) {
+				if (timers.feed.activateAndCanFunction(player.getFoodData().needsFood())) {
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.HEAL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 					player.getFoodData().eat(2, 10);
 					player.gameEvent(GameEvent.EAT);
 					removeEmc(stack, 64);
 				}
+			} else {
+				stack.set(PEDataComponentTypes.ACTIVE, false);
 			}
 		}
 	}

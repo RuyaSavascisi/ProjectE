@@ -22,8 +22,8 @@ import moze_intel.projecte.gameObjs.container.PhilosStoneContainer;
 import moze_intel.projecte.gameObjs.gui.AbstractCollectorScreen;
 import moze_intel.projecte.gameObjs.gui.GUIDMFurnace;
 import moze_intel.projecte.gameObjs.gui.GUIRMFurnace;
-import moze_intel.projecte.gameObjs.items.ItemPE;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
+import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.integration.jei.collectors.CollectorRecipeCategory;
 import moze_intel.projecte.integration.jei.collectors.FuelUpgradeRecipe;
@@ -51,8 +51,8 @@ public class PEJeiPlugin implements IModPlugin {
 				if (stack.getItem() instanceof IModeChanger<?> modeChanger) {
 					mode = modeChanger.getMode(stack);
 				}
-				long stored = ItemPE.getEmc(stack);
-				if (stored > 0) {
+				Long stored = stack.get(PEDataComponentTypes.STORED_EMC);
+				if (stored != null && stored > 0) {
 					return mode == null ? stored : List.of(mode, stored);
 				}
 				return mode;
@@ -68,9 +68,9 @@ public class PEJeiPlugin implements IModPlugin {
 				if (stack.getItem() instanceof IModeChanger<?> modeChanger) {
 					mode = modeChanger.getMode(stack);
 				}
-				long stored = ItemPE.getEmc(stack);
-				if (stored > 0) {
-					return mode == null ? Long.toString(stored) : mode + ";" + stored;
+				Long stored = stack.get(PEDataComponentTypes.STORED_EMC);
+				if (stored != null && stored > 0) {
+					return mode == null ? stored.toString() : mode + ";" + stored;
 				} else if (mode != null) {
 					return mode.toString();
 				}

@@ -25,7 +25,7 @@ public class InternalTimers {
 			this.defaultTickCount = defaultTickCount;
 		}
 
-		public void activate() {
+		/*public void activate() {
 			shouldUpdate = defaultTickCount.getAsInt() != -1;
 		}
 
@@ -35,6 +35,18 @@ public class InternalTimers {
 				shouldUpdate = false;
 				return true;
 			}
+			return false;
+		}*/
+
+		//TODO - 1.21: Test this
+		public boolean activateAndCanFunction(boolean tryFunction) {
+			int defaultTickCount = this.defaultTickCount.getAsInt();
+			if (tryFunction && tickCount == 0) {
+				tickCount = defaultTickCount;
+				shouldUpdate = false;
+				return true;
+			}
+			shouldUpdate = defaultTickCount != -1;
 			return false;
 		}
 
