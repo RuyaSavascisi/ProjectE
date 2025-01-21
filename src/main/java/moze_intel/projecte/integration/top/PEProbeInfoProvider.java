@@ -21,7 +21,7 @@ public class PEProbeInfoProvider implements IProbeInfoProvider, Function<ITheOne
 
 	@Override
 	public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level level, BlockState blockState, IProbeHitData data) {
-		if (ProjectEConfig.server.misc.hwylaTOPDisplay.get()) {
+		if (ProjectEConfig.server.misc.lookingAtDisplay.get()) {
 			long value = EMCHelper.getEmcValue(new ItemStack(blockState.getBlock()));
 			if (value > 0) {
 				probeInfo.mcText(EMCHelper.getEmcTextComponent(value, 1));

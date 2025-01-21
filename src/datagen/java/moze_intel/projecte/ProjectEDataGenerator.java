@@ -39,6 +39,9 @@ public class ProjectEDataGenerator {
 
 	@SubscribeEvent
 	public static void gatherData(GatherDataEvent event) {
+		//Ensure that we register the configs for data component processors and the like
+		PECore.bootstrapMappers();
+
 		DataGenerator gen = event.getGenerator();
 		PackOutput output = gen.getPackOutput();
 		ExistingFileHelper existingFileHelper = event.getExistingFileHelper();

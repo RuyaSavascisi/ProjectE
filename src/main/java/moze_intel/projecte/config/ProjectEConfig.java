@@ -1,6 +1,8 @@
 package moze_intel.projecte.config;
 
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import moze_intel.projecte.PECore;
@@ -23,6 +25,10 @@ public class ProjectEConfig {
 		registerConfig(modContainer, server);
 		registerConfig(modContainer, common);
 		registerConfig(modContainer, client);
+	}
+
+	public static Collection<IPEConfig> getConfigs() {
+		return Collections.unmodifiableCollection(KNOWN_CONFIGS.values());
 	}
 
 	/**

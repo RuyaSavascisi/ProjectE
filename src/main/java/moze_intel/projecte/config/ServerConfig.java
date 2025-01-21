@@ -23,17 +23,22 @@ public final class ServerConfig extends BasePEConfig {
 
 	ServerConfig() {
 		ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-		difficulty = new Difficulty(this, builder);
-		items = new Items(this, builder);
-		effects = new Effects(this, builder);
-		misc = new Misc(this, builder);
 		cooldown = new Cooldown(this, builder);
+		difficulty = new Difficulty(this, builder);
+		effects = new Effects(this, builder);
+		items = new Items(this, builder);
+		misc = new Misc(this, builder);
 		configSpec = builder.build();
 	}
 
 	@Override
 	public String getFileName() {
 		return "server";
+	}
+
+	@Override
+	public String getTranslation() {
+		return "Server Config";
 	}
 
 	@Override
@@ -46,141 +51,16 @@ public final class ServerConfig extends BasePEConfig {
 		return ModConfig.Type.SERVER;
 	}
 
-	public static class Difficulty {
-
-		public final CachedBooleanValue offensiveAbilities;
-		public final CachedFloatValue katarDeathAura;
-		public final CachedDoubleValue covalenceLoss;
-		public final CachedBooleanValue covalenceLossRounding;
-
-		private Difficulty(IPEConfig config, ModConfigSpec.Builder builder) {
-			builder.push("difficulty");
-			offensiveAbilities = CachedBooleanValue.wrap(config, builder
-					.comment("Set to false to disable Gem Armor offensive abilities (helmet zap and chestplate explosion)")
-					.define("offensiveAbilities", false));
-			katarDeathAura = CachedFloatValue.wrap(config, builder
-					.comment("Amount of damage Katar 'C' key deals")
-					.defineInRange("katarDeathAura", 1_000F, 0, Integer.MAX_VALUE));
-			covalenceLoss = CachedDoubleValue.wrap(config, builder
-					.comment("Adjusting this ratio changes how much EMC is received when burning a item. For example setting this to 0.5 will return half of the EMC cost.")
-					.defineInRange("covalenceLoss", 1.0, 0.1, 1.0));
-			covalenceLossRounding = CachedBooleanValue.wrap(config, builder
-					.comment("How rounding occurs when Covalence Loss results in a burn value less than 1 EMC. If true the value will be rounded up to 1. If false the value will be rounded down to 0.")
-					.define("covalenceLossRounding", true));
-			builder.pop();
-		}
-	}
-
-	public static class Items {
-
-		public final CachedBooleanValue pickaxeAoeVeinMining;
-		public final CachedBooleanValue harvBandGrass;
-		public final CachedBooleanValue disableAllRadiusMining;
-		public final CachedBooleanValue enableTimeWatch;
-		public final CachedBooleanValue opEvertide;
-
-		private Items(IPEConfig config, ModConfigSpec.Builder builder) {
-			builder.push("items");
-			pickaxeAoeVeinMining = CachedBooleanValue.wrap(config, builder
-					.comment("Instead of vein mining the ore you right click with your Dark/Red Matter Pick/Star it vein mines all ores in an AOE around you like it did in ProjectE before version 1.4.4.")
-					.define("pickaxeAoeVeinMining", false));
-			harvBandGrass = CachedBooleanValue.wrap(config, builder
-					.comment("Allows the Harvest Goddess Band to passively grow tall grass, flowers, etc, on top of grass blocks.")
-					.define("harvBandGrass", false));
-			disableAllRadiusMining = CachedBooleanValue.wrap(config, builder
-					.comment("If set to true, disables all radius-based mining functionality (right click of tools)")
-					.define("disableAllRadiusMining", false));
-			enableTimeWatch = CachedBooleanValue.wrap(config, builder
-					.comment("Enable Watch of Flowing Time")
-					.define("enableTimeWatch", true));
-			opEvertide = CachedBooleanValue.wrap(config, builder
-					.comment("Allow the Evertide amulet to place water in dimensions that water evaporates. For example: The Nether.")
-					.define("opEvertide", false));
-			builder.pop();
-		}
-	}
-
-	public static class Effects {
-
-		public final CachedIntValue timePedBonus;
-		public final CachedDoubleValue timePedMobSlowness;
-		public final CachedBooleanValue interdictionMode;
-
-		private Effects(IPEConfig config, ModConfigSpec.Builder builder) {
-			builder.push("effects");
-			timePedBonus = CachedIntValue.wrap(config, builder
-					.comment("Bonus ticks given by the Watch of Flowing Time while in the pedestal. 0 = effectively no bonus.")
-					.defineInRange("timePedBonus", 18, 0, 256));
-			timePedMobSlowness = CachedDoubleValue.wrap(config, builder
-					.comment("Factor the Watch of Flowing Time slows down mobs by while in the pedestal. Set to 1.0 for no slowdown.")
-					.defineInRange("timePedMobSlowness", 0.10, 0, 1));
-			interdictionMode = CachedBooleanValue.wrap(config, builder
-					.comment("If true the Interdiction Torch only affects hostile mobs and projectiles. If false it affects all non blacklisted living entities.")
-					.define("interdictionMode", true));
-			builder.pop();
-		}
-	}
-
-	public static class Misc {
-
-		public final CachedBooleanValue unsafeKeyBinds;
-		public final CachedBooleanValue hwylaTOPDisplay;
-
-		private Misc(IPEConfig config, ModConfigSpec.Builder builder) {
-			builder.push("misc");
-			unsafeKeyBinds = CachedBooleanValue.wrap(config, builder
-					.comment("False requires your hand be empty for Gem Armor Offensive Abilities to be readied or triggered")
-					.define("unsafeKeyBinds", false));
-			hwylaTOPDisplay = CachedBooleanValue.wrap(config, builder
-					.comment("Shows the EMC value of blocks when looking at them in Hwyla or TOP")
-					.define("hwylaTOPDisplay", true));
-			builder.pop();
-		}
-	}
-
 	public static class Cooldown {
 
 		public final Pedestal pedestal;
 		public final Player player;
 
 		private Cooldown(IPEConfig config, ModConfigSpec.Builder builder) {
-			builder.push("cooldown");
-			builder.comment("Cooldown (in ticks) for various features in ProjectE. A cooldown of -1 will disable the functionality.",
-					"A cooldown of 0 will allow the actions to happen every tick. Use caution as a very low value on features that run automatically could cause TPS issues.")
-					.push("cooldown");
+			PEConfigTranslations.SERVER_COOLDOWN.applyToBuilder(builder).push("cooldown");
 			pedestal = new Pedestal(config, builder);
 			player = new Player(config, builder);
 			builder.pop();
-		}
-
-		public static class Player {
-
-			public final CachedIntValue projectile;
-			public final CachedIntValue gemChest;
-			public final CachedIntValue repair;
-			public final CachedIntValue heal;
-			public final CachedIntValue feed;
-
-			private Player(IPEConfig config, ModConfigSpec.Builder builder) {
-				builder.comment("Cooldown for various items in regards to a player.")
-						.push("player");
-				projectile = CachedIntValue.wrap(config, builder
-						.comment("A cooldown for firing projectiles")
-						.defineInRange("projectile", 0, -1, Integer.MAX_VALUE));
-				gemChest = CachedIntValue.wrap(config, builder
-						.comment("A cooldown for Gem Chestplate explosion")
-						.defineInRange("gemChest", 0, -1, Integer.MAX_VALUE));
-				repair = CachedIntValue.wrap(config, builder
-						.comment("Delay between Talisman of Repair trying to repair player items while in a player's inventory.")
-						.defineInRange("repair", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				heal = CachedIntValue.wrap(config, builder
-						.comment("Delay between heal attempts while in a player's inventory. (Soul Stone, Life Stone, Gem Helmet)")
-						.defineInRange("heal", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				feed = CachedIntValue.wrap(config, builder
-						.comment("Delay between feed attempts while in a player's inventory. (Body Stone, Life Stone, Gem Helmet)")
-						.defineInRange("feed", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				builder.pop();
-			}
 		}
 
 		public static class Pedestal {
@@ -198,43 +78,133 @@ public final class ServerConfig extends BasePEConfig {
 			public final CachedIntValue zero;
 
 			private Pedestal(IPEConfig config, ModConfigSpec.Builder builder) {
-				builder.comment("Cooldown for various items within the pedestal.")
-						.push("pedestal");
-				archangel = CachedIntValue.wrap(config, builder
-						.comment("Delay between Archangel Smite shooting arrows while in the pedestal.")
+				PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL.applyToBuilder(builder).push("pedestal");
+				archangel = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_ARCHANGEL.applyToBuilder(builder)
 						.defineInRange("archangel", 2 * SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				body = CachedIntValue.wrap(config, builder
-						.comment("Delay between Body Stone healing 0.5 shanks while in the pedestal.")
+				body = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_BODY_STONE.applyToBuilder(builder)
 						.defineInRange("body", SharedConstants.TICKS_PER_SECOND / 2, -1, Integer.MAX_VALUE));
-				evertide = CachedIntValue.wrap(config, builder
-						.comment("Delay between Evertide Amulet trying to start rain while in the pedestal.")
+				evertide = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_EVERTIDE.applyToBuilder(builder)
 						.defineInRange("evertide", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				harvest = CachedIntValue.wrap(config, builder
-						.comment("Delay between Harvest Goddess trying to grow and harvest while in the pedestal.")
+				harvest = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_HARVEST.applyToBuilder(builder)
 						.defineInRange("harvest", SharedConstants.TICKS_PER_SECOND / 2, -1, Integer.MAX_VALUE));
-				ignition = CachedIntValue.wrap(config, builder
-						.comment("Delay between Ignition Ring trying to light entities on fire while in the pedestal.")
+				ignition = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_IGNITION.applyToBuilder(builder)
 						.defineInRange("ignition", 2 * SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				life = CachedIntValue.wrap(config, builder
-						.comment("Delay between Life Stone healing both food and hunger by 0.5 shank/heart while in the pedestal.")
+				life = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_LIFE_STONE.applyToBuilder(builder)
 						.defineInRange("life", SharedConstants.TICKS_PER_SECOND / 4, -1, Integer.MAX_VALUE));
-				repair = CachedIntValue.wrap(config, builder
-						.comment("Delay between Talisman of Repair trying to repair player items while in the pedestal.")
+				repair = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_REPAIR.applyToBuilder(builder)
 						.defineInRange("repair", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				swrg = CachedIntValue.wrap(config, builder
-						.comment("Delay between SWRG trying to smite mobs while in the pedestal.")
+				swrg = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_SWRG.applyToBuilder(builder)
 						.defineInRange("swrg", (int) (3.5 * SharedConstants.TICKS_PER_SECOND), -1, Integer.MAX_VALUE));
-				soul = CachedIntValue.wrap(config, builder
-						.comment("Delay between Soul Stone healing 0.5 hearts while in the pedestal.")
+				soul = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_SOUL_STONE.applyToBuilder(builder)
 						.defineInRange("soul", SharedConstants.TICKS_PER_SECOND / 2, -1, Integer.MAX_VALUE));
-				volcanite = CachedIntValue.wrap(config, builder
-						.comment("Delay between Volcanite Amulet trying to stop rain while in the pedestal.")
+				volcanite = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_VOLCANITE.applyToBuilder(builder)
 						.defineInRange("volcanite", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
-				zero = CachedIntValue.wrap(config, builder
-						.comment("Delay between Zero Ring trying to extinguish entities and freezing ground while in the pedestal.")
+				zero = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PEDESTAL_ZERO.applyToBuilder(builder)
 						.defineInRange("zero", 2 * SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
 				builder.pop();
 			}
+		}
+
+		public static class Player {
+
+			public final CachedIntValue projectile;
+			public final CachedIntValue gemChest;
+			public final CachedIntValue repair;
+			public final CachedIntValue heal;
+			public final CachedIntValue feed;
+
+			private Player(IPEConfig config, ModConfigSpec.Builder builder) {
+				PEConfigTranslations.SERVER_COOLDOWN_PLAYER.applyToBuilder(builder).push("player");
+				projectile = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PLAYER_PROJECTILE.applyToBuilder(builder)
+						.defineInRange("projectile", 0, -1, Integer.MAX_VALUE));
+				gemChest = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PLAYER_GEM_CHESTPLATE.applyToBuilder(builder)
+						.defineInRange("gemChest", 0, -1, Integer.MAX_VALUE));
+				repair = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PLAYER_REPAIR.applyToBuilder(builder)
+						.defineInRange("repair", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
+				heal = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PLAYER_HEAL.applyToBuilder(builder)
+						.defineInRange("heal", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
+				feed = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_COOLDOWN_PLAYER_FEED.applyToBuilder(builder)
+						.defineInRange("feed", SharedConstants.TICKS_PER_SECOND, -1, Integer.MAX_VALUE));
+				builder.pop();
+			}
+		}
+	}
+
+	public static class Difficulty {
+
+		public final CachedBooleanValue offensiveAbilities;
+		public final CachedFloatValue katarDeathAura;
+		public final CachedDoubleValue covalenceLoss;
+		public final CachedBooleanValue covalenceLossRounding;
+
+		private Difficulty(IPEConfig config, ModConfigSpec.Builder builder) {
+			PEConfigTranslations.SERVER_DIFFICULTY.applyToBuilder(builder).push("difficulty");
+			offensiveAbilities = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_DIFFICULTY_OFFENSIVE_ABILITIES.applyToBuilder(builder)
+					.define("offensiveAbilities", false));
+			katarDeathAura = CachedFloatValue.wrap(config, PEConfigTranslations.SERVER_DIFFICULTY_KATAR_DEATH_AURA.applyToBuilder(builder)
+					.defineInRange("katarDeathAura", 1_000F, 0, Integer.MAX_VALUE));
+			covalenceLoss = CachedDoubleValue.wrap(config, PEConfigTranslations.SERVER_DIFFICULTY_COVALENCE_LOSS.applyToBuilder(builder)
+					.defineInRange("covalenceLoss", 1.0, 0.1, 1.0));
+			covalenceLossRounding = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_DIFFICULTY_COVALENCE_LOSS_ROUNDING.applyToBuilder(builder)
+					.define("covalenceLossRounding", true));
+			builder.pop();
+		}
+	}
+
+	public static class Effects {
+
+		public final CachedIntValue timePedBonus;
+		public final CachedDoubleValue timePedMobSlowness;
+		public final CachedBooleanValue interdictionMode;
+
+		private Effects(IPEConfig config, ModConfigSpec.Builder builder) {
+			PEConfigTranslations.SERVER_EFFECTS.applyToBuilder(builder).push("effects");
+			timePedBonus = CachedIntValue.wrap(config, PEConfigTranslations.SERVER_EFFECTS_TIME_PEDESTAL_BONUS.applyToBuilder(builder)
+					.defineInRange("timePedBonus", 18, 0, 256));
+			timePedMobSlowness = CachedDoubleValue.wrap(config, PEConfigTranslations.SERVER_EFFECTS_TIME_PEDESTAL_MOB_SLOWNESS.applyToBuilder(builder)
+					.defineInRange("timePedMobSlowness", 0.10, 0, 1));
+			interdictionMode = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_EFFECTS_INTERDICTION_MODE.applyToBuilder(builder)
+					.define("interdictionMode", true));
+			builder.pop();
+		}
+	}
+
+	public static class Items {
+
+		public final CachedBooleanValue pickaxeAoeVeinMining;
+		public final CachedBooleanValue harvBandGrass;
+		public final CachedBooleanValue disableAllRadiusMining;
+		public final CachedBooleanValue enableTimeWatch;
+		public final CachedBooleanValue opEvertide;
+
+		private Items(IPEConfig config, ModConfigSpec.Builder builder) {
+			PEConfigTranslations.SERVER_ITEMS.applyToBuilder(builder).push("items");
+			pickaxeAoeVeinMining = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_ITEMS_PICKAXE_AOE_VEIN_MINING.applyToBuilder(builder)
+					.define("pickaxeAoeVeinMining", false));
+			harvBandGrass = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_ITEMS_HARVEST_BAND_GRASS.applyToBuilder(builder)
+					.define("harvBandGrass", false));
+			disableAllRadiusMining = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_ITEMS_DISABLE_ALL_RADIUS_MINING.applyToBuilder(builder)
+					.define("disableAllRadiusMining", false));
+			enableTimeWatch = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_ITEMS_TIME_WATCH.applyToBuilder(builder)
+					.define("enableTimeWatch", true));
+			opEvertide = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_ITEMS_OP_EVERTIDE.applyToBuilder(builder)
+					.define("opEvertide", false));
+			builder.pop();
+		}
+	}
+
+	public static class Misc {
+
+		public final CachedBooleanValue unsafeKeyBinds;
+		public final CachedBooleanValue lookingAtDisplay;
+
+		private Misc(IPEConfig config, ModConfigSpec.Builder builder) {
+			PEConfigTranslations.SERVER_MISC.applyToBuilder(builder).push("misc");
+			unsafeKeyBinds = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_MISC_UNSAFE_KEY_BINDS.applyToBuilder(builder)
+					.define("unsafeKeyBinds", false));
+			lookingAtDisplay = CachedBooleanValue.wrap(config, PEConfigTranslations.SERVER_MISC_LOOKING_AT_DISPLAY.applyToBuilder(builder)
+					.define("lookingAtDisplay", true));
+			builder.pop();
 		}
 	}
 }

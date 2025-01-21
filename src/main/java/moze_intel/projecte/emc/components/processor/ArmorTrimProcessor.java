@@ -2,6 +2,7 @@ package moze_intel.projecte.emc.components.processor;
 
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
@@ -16,12 +17,17 @@ public class ArmorTrimProcessor extends PersistentComponentProcessor<ArmorTrim> 
 
 	@Override
 	public String getName() {
-		return "ArmorTrimProcessor";
+		return PEConfigTranslations.DCP_ARMOR_TRIM.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.DCP_ARMOR_TRIM.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Calculates EMC value of trimmed armor.";
+		return PEConfigTranslations.DCP_ARMOR_TRIM.tooltip();
 	}
 
 	@Override

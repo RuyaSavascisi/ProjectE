@@ -17,21 +17,23 @@ public class CommonConfig extends BasePEConfig {
 
 	CommonConfig() {
 		ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-		debugLogging = CachedBooleanValue.wrap(this, builder
-				.comment("Enable more verbose debug logging")
-				.define("debugLogging", false));
-		craftableTome = CachedBooleanValue.wrap(this, builder
-				.comment("The Tome of Knowledge can be crafted.")
-				.define("craftableTome", false));
-		fullKleinStars = CachedBooleanValue.wrap(this, builder
-				.comment("Require full omega klein stars in the tome of knowledge and gem armor recipes. This is the same behavior that EE2 had.")
-				.define("fullKleinStars", false));
+		debugLogging = CachedBooleanValue.wrap(this, PEConfigTranslations.COMMON_DEBUG_LOGGING.applyToBuilder(builder).define("debugLogging", false));
+
+		PEConfigTranslations.COMMON_CRAFTING.applyToBuilder(builder).push("crafting");
+		craftableTome = CachedBooleanValue.wrap(this, PEConfigTranslations.COMMON_CRAFTING_TOME.applyToBuilder(builder).define("craftableTome", false));
+		fullKleinStars = CachedBooleanValue.wrap(this, PEConfigTranslations.COMMON_CRAFTING_FULL_KLEIN.applyToBuilder(builder).define("fullKleinStars", false));
+		builder.pop();
 		configSpec = builder.build();
 	}
 
 	@Override
 	public String getFileName() {
 		return "common";
+	}
+
+	@Override
+	public String getTranslation() {
+		return "Common Config";
 	}
 
 	@Override

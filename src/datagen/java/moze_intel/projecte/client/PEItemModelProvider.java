@@ -1,6 +1,5 @@
 package moze_intel.projecte.client;
 
-import moze_intel.projecte.ClientRegistration;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
 import moze_intel.projecte.gameObjs.registration.INamedEntry;
@@ -49,7 +48,7 @@ public class PEItemModelProvider extends ItemModelProvider {
 		generateGear();
 		generated(PEItems.GEM_OF_ETERNAL_DENSITY, modLoc("item/dense_gem_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("gem_of_eternal_density_on", modLoc("item/dense_gem_on")))
 				.end();
 		//Note: We don't actually have a manual, but I moved this model over to data gen anyways
@@ -77,120 +76,120 @@ public class PEItemModelProvider extends ItemModelProvider {
 		getBuilder(PEItems.ARCANA_RING.getName())
 				//Zero Off
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 0)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 0)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 0)
+				.predicate(PEClient.MODE_OVERRIDE, 0)
 				.model(generated("arcana_zero_off", modLoc("item/rings/arcana_0")))
 				.end()
 				//Zero On
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 0)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.MODE_OVERRIDE, 0)
 				.model(generated("arcana_zero_on", modLoc("item/rings/arcana_0_on")))
 				.end()
 				//Ignition Off
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 0)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 0)
+				.predicate(PEClient.MODE_OVERRIDE, 1)
 				.model(generated("arcana_ignition_off", modLoc("item/rings/arcana_1")))
 				.end()
 				//Ignition On
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.MODE_OVERRIDE, 1)
 				.model(generated("arcana_ignition_on", modLoc("item/rings/arcana_1_on")))
 				.end()
 				//Harvest Off
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 0)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 2)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 0)
+				.predicate(PEClient.MODE_OVERRIDE, 2)
 				.model(generated("arcana_harv_off", modLoc("item/rings/arcana_2")))
 				.end()
 				//Harvest On
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 2)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.MODE_OVERRIDE, 2)
 				.model(generated("arcana_harv_on", modLoc("item/rings/arcana_2_on")))
 				.end()
 				//SWRG Off
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 0)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 3)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 0)
+				.predicate(PEClient.MODE_OVERRIDE, 3)
 				.model(generated("arcana_swrg_off", modLoc("item/rings/arcana_3")))
 				.end()
 				//SWRG On
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
-				.predicate(ClientRegistration.MODE_OVERRIDE, 3)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.MODE_OVERRIDE, 3)
 				.model(generated("arcana_swrg_on", modLoc("item/rings/arcana_3_on")))
 				.end();
 		generated(PEItems.ARCHANGEL_SMITE, modLoc("item/rings/archangel_smite"));
 		generated(PEItems.BLACK_HOLE_BAND, modLoc("item/rings/black_hole_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("black_hole_band_on", modLoc("item/rings/black_hole_on")))
 				.end();
 		generated(PEItems.BODY_STONE, modLoc("item/rings/body_stone_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("body_stone_on", modLoc("item/rings/body_stone_on")))
 				.end();
 		generated(PEItems.EVERTIDE_AMULET, modLoc("item/rings/evertide_amulet"));
 		generated(PEItems.HARVEST_GODDESS_BAND, modLoc("item/rings/harvest_god_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("harvest_goddess_band_on", modLoc("item/rings/harvest_god_on")))
 				.end();
 		generated(PEItems.IGNITION_RING, modLoc("item/rings/ignition_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("ignition_on", modLoc("item/rings/ignition_on")))
 				.end();
 		generated(PEItems.IRON_BAND, modLoc("item/rings/iron_band"));
 		generated(PEItems.LIFE_STONE, modLoc("item/rings/life_stone_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("life_stone_on", modLoc("item/rings/life_stone_on")))
 				.end();
 		generated(PEItems.MIND_STONE, modLoc("item/rings/mind_stone_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("mind_stone_on", modLoc("item/rings/mind_stone_on")))
 				.end();
 		generated(PEItems.SOUL_STONE, modLoc("item/rings/soul_stone_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("soul_stone_on", modLoc("item/rings/soul_stone_on")))
 				.end();
 		generated(PEItems.SWIFTWOLF_RENDING_GALE, modLoc("item/rings/swrg_off"))
 				//Fly only
 				.override()
-				.predicate(ClientRegistration.MODE_OVERRIDE, 1)
+				.predicate(PEClient.MODE_OVERRIDE, 1)
 				.model(generated("swiftwolf_rending_gale_fly", modLoc("item/rings/swrg_on1")))
 				.end()
 				//Repel only
 				.override()
-				.predicate(ClientRegistration.MODE_OVERRIDE, 2)
+				.predicate(PEClient.MODE_OVERRIDE, 2)
 				.model(generated("swiftwolf_rending_gale_repel", modLoc("item/rings/swrg_on3")))
 				.end()
 				//Fly and Repel
 				.override()
-				.predicate(ClientRegistration.MODE_OVERRIDE, 3)
+				.predicate(PEClient.MODE_OVERRIDE, 3)
 				.model(generated("swiftwolf_rending_gale_fly_repel", modLoc("item/rings/swrg_on2")))
 				.end();
 		generated(PEItems.VOID_RING, modLoc("item/rings/void_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("void_ring_on", modLoc("item/rings/void_on")))
 				.end();
 		generated(PEItems.VOLCANITE_AMULET, modLoc("item/rings/volcanite_amulet"));
 		generated(PEItems.WATCH_OF_FLOWING_TIME, modLoc("item/rings/time_watch_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("watch_of_flowing_time_on", modLoc("item/rings/time_watch_on")))
 				.end();
 		generated(PEItems.ZERO_RING, modLoc("item/rings/zero_off"))
 				.override()
-				.predicate(ClientRegistration.ACTIVE_OVERRIDE, 1)
+				.predicate(PEClient.ACTIVE_OVERRIDE, 1)
 				.model(generated("zero_ring_on", modLoc("item/rings/zero_on")))
 				.end();
 	}

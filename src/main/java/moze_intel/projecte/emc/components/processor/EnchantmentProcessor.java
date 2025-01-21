@@ -3,6 +3,7 @@ package moze_intel.projecte.emc.components.processor;
 import java.util.Map;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -22,12 +23,17 @@ public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEncha
 
 	@Override
 	public String getName() {
-		return "EnchantmentProcessor";
+		return PEConfigTranslations.DCP_ENCHANTMENT.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.DCP_ENCHANTMENT.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Increases the EMC value to take into account any enchantments on an item.";
+		return PEConfigTranslations.DCP_ENCHANTMENT.tooltip();
 	}
 
 	@Override

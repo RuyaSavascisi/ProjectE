@@ -2,6 +2,7 @@ package moze_intel.projecte.emc.components.processor;
 
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -19,12 +20,17 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 
 	@Override
 	public String getName() {
-		return "DecoratedPotProcessor";
+		return PEConfigTranslations.DCP_DECORATED_POT.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.DCP_DECORATED_POT.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Takes the different sherds into account for each decorated pot.";
+		return PEConfigTranslations.DCP_DECORATED_POT.tooltip();
 	}
 
 	@Override

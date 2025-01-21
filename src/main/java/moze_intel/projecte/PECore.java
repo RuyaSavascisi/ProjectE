@@ -182,12 +182,15 @@ public class PECore {
 		event.registerEntity(PECapabilities.KNOWLEDGE_CAPABILITY, EntityType.PLAYER, (player, context) -> new KnowledgeImpl(player));
 	}
 
-	private void commonSetup(FMLCommonSetupEvent event) {
-		new ThreadCheckUpdate().start();
-
+	public static void bootstrapMappers() {
 		EMCMappingHandler.loadMappers();
 		CraftingMapper.loadMappers();
 		DataComponentManager.loadProcessors();
+	}
+
+	private void commonSetup(FMLCommonSetupEvent event) {
+		new ThreadCheckUpdate().start();
+		bootstrapMappers();
 
 		event.enqueueWork(() -> {
 			//Dispenser Behavior

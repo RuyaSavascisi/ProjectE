@@ -1,6 +1,8 @@
 package moze_intel.projecte.client.lang;
 
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.config.PEConfigTranslations;
+import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
@@ -23,6 +25,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		addAdvancements();
 		addBlocks();
 		addCommands();
+		addConfigs();
 		addEMC();
 		addEntityTypes();
 		addItems();
@@ -194,6 +197,11 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PELang.RELOAD_NOTICE, "Restart or use \"/reload\" when all changes are complete.");
 		add(PELang.SHOWBAG_NOT_FOUND, "UUID %s not found in playerdata/");
 		add(PELang.SHOWBAG_NAMED, "%s (%s)");
+	}
+
+	private void addConfigs() {
+		addConfigs(ProjectEConfig.getConfigs());
+		addConfigs(PEConfigTranslations.values());
 	}
 
 	private void addEMC() {

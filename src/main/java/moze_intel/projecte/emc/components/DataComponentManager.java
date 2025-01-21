@@ -50,7 +50,7 @@ public class DataComponentManager {
 			return emcValue;
 		} else if (emcValue == 0) {
 			//Try getting a base emc value from the Data Component less variant if we don't have one matching our Data Components
-			emcValue = EMCMappingHandler.getStoredEmcValue(ItemInfo.fromItem(info.getItem()));
+			emcValue = EMCMappingHandler.getStoredEmcValue(info.itemOnly());
 			if (emcValue == 0) {
 				//The base item doesn't have an EMC value either so just exit
 				return 0;

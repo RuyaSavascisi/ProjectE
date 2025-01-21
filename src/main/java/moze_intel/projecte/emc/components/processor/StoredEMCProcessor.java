@@ -5,6 +5,7 @@ import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,12 +14,17 @@ public class StoredEMCProcessor implements IDataComponentProcessor {
 
 	@Override
 	public String getName() {
-		return "StoredEMCProcessor";
+		return PEConfigTranslations.DCP_STORED_EMC.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.DCP_STORED_EMC.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Increases the EMC value of the item to take into account any EMC the item has stored.";
+		return PEConfigTranslations.DCP_STORED_EMC.tooltip();
 	}
 
 	@Override

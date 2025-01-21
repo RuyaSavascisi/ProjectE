@@ -17,9 +17,16 @@ public interface IDataComponentProcessor {
 	String getName();
 
 	/**
+	 * The translation key representing the translated version of the name, that will be included in the Configuration GUI.
+	 *
+	 * @implNote You should also include translations for this key plus ".tooltip" for the description, and this key plus ".button" for the button to open the section.
+	 */
+	String getTranslationKey();
+
+	/**
 	 * A Description, that will be included as a Comment in the Configuration File
 	 *
-	 * @return A <b>short</b> description
+	 * @implNote The translation for this description should be located at {@link #getTranslationKey()} + ".tooltip"
 	 */
 	String getDescription();
 

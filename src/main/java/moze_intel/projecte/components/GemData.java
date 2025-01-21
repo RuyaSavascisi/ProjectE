@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackLinkedSet;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
-//TODO - 1.21: Should we make the whitelist size be strictly checked to ensure it doesn't exceed 9
 //TODO - 1.21: Do we want to enforce whitelist and consumed being unmodifiable views? Such as for GemData that gets initialized on the client
 public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemStack> consumed) {
 
@@ -22,7 +21,7 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 
 	public static final Codec<GemData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Codec.BOOL.fieldOf("isWhitelist").forGetter(GemData::isWhitelist),
-			ItemStack.CODEC.listOf().<Set<ItemStack>>xmap(list -> {
+			ItemStack.CODEC.sizeLimitedListOf(9).<Set<ItemStack>>xmap(list -> {
 				if (list.isEmpty()) {
 					return Collections.emptySet();
 				}

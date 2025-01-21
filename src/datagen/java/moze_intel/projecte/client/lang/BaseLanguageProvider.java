@@ -1,8 +1,13 @@
 package moze_intel.projecte.client.lang;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import moze_intel.projecte.PECore;
 import moze_intel.projecte.client.lang.FormatSplitter.Component;
+import moze_intel.projecte.config.IConfigTranslation;
+import moze_intel.projecte.config.IPEConfig;
 import moze_intel.projecte.utils.text.IHasTranslationKey;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
@@ -29,6 +34,32 @@ public abstract class BaseLanguageProvider extends LanguageProvider {
 
 	protected void add(IHasTranslationKey key, String value) {
 		add(key.getTranslationKey(), value);
+	}
+
+	private String getConfigSectionTranslationPath(IPEConfig config) {
+		String baseConfigFolder = PECore.MODNAME.toLowerCase(Locale.ROOT);
+		String fileName = config.getFileName().replaceAll("[^a-zA-Z0-9]+", ".").toLowerCase(Locale.ROOT);
+		return modid + ".configuration.section." + baseConfigFolder + "." + fileName + ".toml";
+	}
+
+	protected void addConfigs(Collection<IPEConfig> configs) {
+		add(modid + ".configuration.title", PECore.MODNAME + " Config");
+		for (IPEConfig config : configs) {
+			String key = getConfigSectionTranslationPath(config);
+			add(key, config.getTranslation());
+			add(key + ".title", PECore.MODNAME + " - " + config.getTranslation());
+		}
+	}
+
+	protected void addConfigs(IConfigTranslation... translations) {
+		for (IConfigTranslation translation : translations) {
+			add(translation, translation.title());
+			add(translation.getTranslationKey() + ".tooltip", translation.tooltip());
+			String button = translation.button();
+			if (button != null) {
+				add(translation.getTranslationKey() + ".button", button);
+			}
+		}
 	}
 
 	protected void addModInfo(String modName, String description) {

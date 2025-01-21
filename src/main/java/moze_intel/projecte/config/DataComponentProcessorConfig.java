@@ -17,9 +17,6 @@ import org.jetbrains.annotations.Nullable;
 public class DataComponentProcessorConfig extends BasePEConfig {
 
 	private static DataComponentProcessorConfig INSTANCE;
-	private static final String ENABLED = "enabled";
-	private static final String PERSISTENT = "persistent";
-	private static final String MAIN_KEY = "processors";
 
 	/**
 	 * If the config has not already been initialized setup a config the with given list of {@link IDataComponentProcessor}s and creates a dummy "server" config so that it will be
@@ -39,17 +36,9 @@ public class DataComponentProcessorConfig extends BasePEConfig {
 
 	private DataComponentProcessorConfig(@NotNull List<IDataComponentProcessor> processors) {
 		ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
-		//TODO - 1.21: Re-evaluate this initial push
-		builder.comment("This config is used to control which Data Component Processors get used, and which ones actually contribute to the persistent data that gets " +
-						"saved to knowledge/copied in a condenser.",
-				"To disable an Data Component Processor set the '" + ENABLED + "' option for it to false.",
-				"To disable an Data Component Processor from contributing to the persistent data set the '" + PERSISTENT + "' option for it to false. Note: that if there is no " +
-				PERSISTENT + "' config option, the Data Component Processor never has any persistent data.")
-				.push(MAIN_KEY);
 		for (IDataComponentProcessor processor : processors) {
 			processorConfigs.put(processor.getName(), new ProcessorConfig(this, builder, processor));
 		}
-		builder.pop();
 		configSpec = builder.build();
 	}
 
@@ -96,6 +85,11 @@ public class DataComponentProcessorConfig extends BasePEConfig {
 	}
 
 	@Override
+	public String getTranslation() {
+		return "Data Component Processor Config";
+	}
+
+	@Override
 	public ModConfigSpec getConfigSpec() {
 		return configSpec;
 	}
@@ -105,22 +99,19 @@ public class DataComponentProcessorConfig extends BasePEConfig {
 		return Type.SERVER;
 	}
 
-	@Override
-	public boolean addToContainer() {
-		return false;
-	}
-
 	private static class ProcessorConfig {
 
-		public final CachedBooleanValue enabled;
+		private final CachedBooleanValue enabled;
 		@Nullable
-		public final CachedBooleanValue persistent;
+		private final CachedBooleanValue persistent;
 
 		private ProcessorConfig(IPEConfig config, ModConfigSpec.Builder builder, IDataComponentProcessor processor) {
-			builder.comment(processor.getDescription()).push(processor.getName());
-			enabled = CachedBooleanValue.wrap(config, builder.define(ENABLED, processor.isAvailable()));
+			builder.comment(processor.getDescription())
+					.translation(processor.getTranslationKey())
+					.push(processor.getName().replace(' ', '-'));
+			enabled = CachedBooleanValue.wrap(config, PEConfigTranslations.DCP_ENABLED.applyToBuilder(builder).define("enabled", processor.isAvailable()));
 			if (processor.hasPersistentComponents()) {
-				persistent = CachedBooleanValue.wrap(config, builder.define(PERSISTENT, processor.usePersistentComponents()));
+				persistent = CachedBooleanValue.wrap(config, PEConfigTranslations.DCP_PERSISTENT.applyToBuilder(builder).define("persistent", processor.usePersistentComponents()));
 			} else {
 				persistent = null;
 			}

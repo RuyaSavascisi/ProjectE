@@ -3,6 +3,7 @@ package moze_intel.projecte.emc.components.processor;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,12 +12,17 @@ public class DamageProcessor implements IDataComponentProcessor {
 
 	@Override
 	public String getName() {
-		return "DamageProcessor";
+		return PEConfigTranslations.DCP_DAMAGE.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.DCP_DAMAGE.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Reduces the EMC value the more damaged an item is.";
+		return PEConfigTranslations.DCP_DAMAGE.tooltip();
 	}
 
 	@Override

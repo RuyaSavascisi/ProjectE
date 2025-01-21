@@ -14,7 +14,7 @@ public class JadeDataProvider implements IBlockComponentProvider {
 
 	@Override
 	public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
-		if (ProjectEConfig.server.misc.hwylaTOPDisplay.get()) {
+		if (ProjectEConfig.server.misc.lookingAtDisplay.get()) {
 			long value = EMCHelper.getEmcValue(accessor.getBlock());
 			if (value > 0) {
 				tooltip.add(EMCHelper.getEmcTextComponent(value, 1));
