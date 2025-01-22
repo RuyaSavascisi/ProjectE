@@ -149,7 +149,6 @@ public interface IPECodecHelper {
 	 */
 	@SuppressWarnings("unchecked")
 	default <K, V, M extends Map<K, V>> Codec<M> modifiableMap(Codec<Map<K, V>> codec, Function<Map<K, V>, M> mapConstructor) {
-		//TODO - 1.21: Evaluate all callers and see if we care about them retaining the order of the map
 		return Codec.of((Codec<M>) codec, codec.map(mapConstructor));
 	}
 

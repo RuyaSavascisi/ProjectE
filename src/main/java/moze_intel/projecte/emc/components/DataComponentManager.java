@@ -26,8 +26,8 @@ public class DataComponentManager {
 
 	@NotNull
 	public static ItemInfo getPersistentInfo(@NotNull ItemInfo info) {
-		if (info.getComponentsPatch().isEmpty() || info.getItem().is(PETags.Items.DATA_COMPONENT_WHITELIST) || EMCMappingHandler.hasEmcValue(info)) {
-			//If we have no Data Components, we want to allow the tag to be kept, or we have an exact match to a stored value just go with it
+		if (!info.hasModifiedComponents() || info.getItem().is(PETags.Items.DATA_COMPONENT_WHITELIST) || EMCMappingHandler.hasEmcValue(info)) {
+			//If we have no custom Data Components, we want to allow data components to be kept, or we have an exact match to a stored value just go with it
 			return info;
 		}
 		//Cleans up the tag in item to reduce it as much as possible
@@ -45,8 +45,8 @@ public class DataComponentManager {
 		//TODO: Fix this, as it does not catch the edge case that we have an exact match and then there are random added Data Components on top of it
 		// but that can be thought about more once we have the first pass complete. For example if someone put an enchantment on a potion
 		long emcValue = EMCMappingHandler.getStoredEmcValue(info);
-		if (info.getComponentsPatch().isEmpty()) {
-			//If our item has no Data Components anyway, just return based on the value we got for it
+		if (!info.hasModifiedComponents()) {
+			//If our item has no custom Data Components anyway, just return based on the value we got for it
 			return emcValue;
 		} else if (emcValue == 0) {
 			//Try getting a base emc value from the Data Component less variant if we don't have one matching our Data Components

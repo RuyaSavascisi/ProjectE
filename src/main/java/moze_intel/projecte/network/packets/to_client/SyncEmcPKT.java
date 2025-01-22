@@ -1,10 +1,11 @@
 package moze_intel.projecte.network.packets.to_client;
 
 import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.emc.EMCMappingHandler;
-import moze_intel.projecte.network.PEStreamCodecs;
 import moze_intel.projecte.network.packets.IPEPacket;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -15,16 +16,14 @@ import net.neoforged.neoforge.network.connection.ConnectionType;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import org.jetbrains.annotations.NotNull;
 
-public record SyncEmcPKT(EmcPKTInfo[] data) implements IPEPacket {
+public record SyncEmcPKT(Object2LongMap<ItemInfo> data) implements IPEPacket {
 
 	public static final CustomPacketPayload.Type<SyncEmcPKT> TYPE = new CustomPacketPayload.Type<>(PECore.rl("sync_emc"));
-	public static final StreamCodec<RegistryFriendlyByteBuf, SyncEmcPKT> STREAM_CODEC = EmcPKTInfo.STREAM_CODEC.apply(PEStreamCodecs.array(EmcPKTInfo[]::new)).map(
-			SyncEmcPKT::new, SyncEmcPKT::data
+	private static final StreamCodec<RegistryFriendlyByteBuf, Object2LongMap<ItemInfo>> MAP_STREAM_CODEC = ByteBufCodecs.map(Object2LongOpenHashMap::new,
+			ItemInfo.STREAM_CODEC,
+			ByteBufCodecs.VAR_LONG
 	);
-
-	public SyncEmcPKT(RegistryAccess registryAccess) {
-		this(serializeEmcData(registryAccess));
-	}
+	public static final StreamCodec<RegistryFriendlyByteBuf, SyncEmcPKT> STREAM_CODEC = MAP_STREAM_CODEC.map(SyncEmcPKT::new, SyncEmcPKT::data);
 
 	@NotNull
 	@Override
@@ -38,26 +37,17 @@ public record SyncEmcPKT(EmcPKTInfo[] data) implements IPEPacket {
 		EMCMappingHandler.fromPacket(data);
 	}
 
-	public static EmcPKTInfo[] serializeEmcData(RegistryAccess registryAccess) {
-		EmcPKTInfo[] data = EMCMappingHandler.createPacketData();
+	public static SyncEmcPKT serializeEmcData(RegistryAccess registryAccess) {
+		SyncEmcPKT data = EMCMappingHandler.createPacketData();
 		//Simulate encoding the EMC packet to get an accurate size
 		RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registryAccess, ConnectionType.NEOFORGE);
 		try {
 			int index = buf.writerIndex();
-			SyncEmcPKT.STREAM_CODEC.encode(buf, new SyncEmcPKT(data));
+			SyncEmcPKT.STREAM_CODEC.encode(buf, data);
 			PECore.debugLog("EMC data size: {} bytes", buf.writerIndex() - index);
 		} finally {
 			buf.release();
 		}
 		return data;
-	}
-
-	public record EmcPKTInfo(ItemInfo item, long emc) {
-
-		private static final StreamCodec<RegistryFriendlyByteBuf, EmcPKTInfo> STREAM_CODEC = StreamCodec.composite(
-				ItemInfo.STREAM_CODEC, EmcPKTInfo::item,
-				ByteBufCodecs.VAR_LONG, EmcPKTInfo::emc,
-				EmcPKTInfo::new
-		);
 	}
 }

@@ -281,7 +281,7 @@ public class PECore {
 			if (players.isEmpty()) {
 				return;
 			}
-			SyncEmcPKT pkt = new SyncEmcPKT(players.getFirst().registryAccess());
+			SyncEmcPKT pkt = SyncEmcPKT.serializeEmcData(players.getFirst().registryAccess());
 			SyncFuelMapperPKT fuelPkt = FuelMapper.getSyncPacket();
 			for (ServerPlayer player : players) {
 				if (!player.connection.getConnection().isMemoryConnection()) {
@@ -292,7 +292,7 @@ public class PECore {
 		} else {
 			ServerPlayer player = event.getPlayer();
 			if (!player.connection.getConnection().isMemoryConnection()) {
-				PacketDistributor.sendToPlayer(player, new SyncEmcPKT(player.registryAccess()));
+				PacketDistributor.sendToPlayer(player, SyncEmcPKT.serializeEmcData(player.registryAccess()));
 				PacketDistributor.sendToPlayer(player, FuelMapper.getSyncPacket());
 			}
 		}

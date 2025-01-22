@@ -45,6 +45,9 @@ public abstract class PersistentComponentProcessor<TYPE> implements IDataCompone
 	public final void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
 		if (validItem(info)) {
 			DataComponentType<TYPE> componentType = getComponentType(info);
+			//TODO - 1.21: Re-evaluate how we interact with the component patch here and in recalculateEMC,
+			// should we allow persisting and using default components?
+			// The damage processor semi gets around this by creating the fake stack to see if it is damageable
 			Optional<? extends TYPE> storedComponent = info.getComponentsPatch().get(componentType);
 			if (storedComponent != null && storedComponent.isPresent()) {
 				TYPE component = storedComponent.get();

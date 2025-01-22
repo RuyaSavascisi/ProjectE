@@ -56,7 +56,6 @@ public final class ItemInfo {
 	private final DataComponentPatch componentsPatch;
 
 	private ItemInfo(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
-		//TODO - 1.21: Do we want to throw if holder instanceof Holder.Direct as is(ResourceKey) and stuff returns bad values for that
 		this.item = item;
 		this.componentsPatch = componentsPatch;
 	}
@@ -74,10 +73,14 @@ public final class ItemInfo {
 	/**
 	 * Creates an {@link ItemInfo} object from a given {@link Holder} with an optional {@link DataComponentPatch} attached.
 	 *
+	 * @throws IllegalArgumentException if the holder is a Direct Holder
 	 * @apiNote While it is not required that the holder does not represent air, it is expected to check yourself to make sure it is not air.
 	 */
-	public static ItemInfo fromItem(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
-		return new ItemInfo(item, componentsPatch);
+	public static ItemInfo fromItem(@NotNull Holder<Item> holder, @NotNull DataComponentPatch componentsPatch) {
+		if (holder.kind() == Holder.Kind.DIRECT) {
+			throw new IllegalArgumentException("ItemInfo does not support direct holders.");
+		}
+		return new ItemInfo(holder, componentsPatch);
 	}
 
 	/**
@@ -93,10 +96,11 @@ public final class ItemInfo {
 	/**
 	 * Creates an {@link ItemInfo} object from a given {@link Holder} with no {@link DataComponentPatch} attached.
 	 *
+	 * @throws IllegalArgumentException if the holder is a Direct Holder
 	 * @apiNote While it is not required that the holder does not represent air, it is expected to check yourself to make sure it is not air.
 	 */
-	public static ItemInfo fromItem(@NotNull Holder<Item> item) {
-		return fromItem(item, DataComponentPatch.EMPTY);
+	public static ItemInfo fromItem(@NotNull Holder<Item> holder) {
+		return fromItem(holder, DataComponentPatch.EMPTY);
 	}
 
 	/**
@@ -139,9 +143,14 @@ public final class ItemInfo {
 	 */
 	@NotNull
 	public DataComponentPatch getComponentsPatch() {
-		//TODO - 1.21: Re-evaluate callers, should the component processors allow persisting and using default components?
-		// The damage processor semi gets around this by creating the fake stack to see if it is damageable
 		return componentsPatch;
+	}
+
+	/**
+	 * @return true if this {@link ItemInfo} has any components modified, added, or removed from the default components for the item.
+	 */
+	public boolean hasModifiedComponents() {
+		return !componentsPatch.isEmpty();
 	}
 
 	/**

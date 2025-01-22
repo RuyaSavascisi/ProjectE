@@ -3,7 +3,8 @@ package moze_intel.projecte.config;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongSortedMap;
+import it.unimi.dsi.fastutil.objects.Object2LongSortedMaps.UnmodifiableSortedMap;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -18,20 +19,21 @@ public final class CustomEMCParser {
 
 	private static final Path CONFIG = ProjectEConfig.CONFIG_DIR.resolve("custom_emc.json");
 
-	public record CustomEMCFile(Object2LongMap<NSSItem> entries, @Nullable String comment) {
+	public record CustomEMCFile(Object2LongSortedMap<NSSItem> entries, @Nullable String comment) {
 
 		public static final Codec<CustomEMCFile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 				ExtraCodecs.NON_EMPTY_STRING.lenientOptionalFieldOf("comment").forGetter(file -> Optional.ofNullable(file.comment)),
 				//Skip invalid keys
-				IPECodecHelper.INSTANCE.<NSSItem, Long, Object2LongMap<NSSItem>>modifiableMap(IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(
+				IPECodecHelper.INSTANCE.<NSSItem, Long, Object2LongSortedMap<NSSItem>>modifiableMap(IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(
 						NSSItem.CODEC,
 						IPECodecHelper.INSTANCE.nonNegativeLong().fieldOf("emc")
 				), Object2LongLinkedOpenHashMap::new).fieldOf("entries").forGetter(CustomEMCFile::entries)
 		).apply(instance, (comment, entries) -> new CustomEMCFile(entries, comment.orElse(null))));
 
 		public CustomEMCFile {
-			//TODO - 1.21: Make sure we don't call this against any immutable maps?
-			entries.defaultReturnValue(-1);
+			if (!(entries instanceof UnmodifiableSortedMap)) {
+				entries.defaultReturnValue(-1);
+			}
 		}
 	}
 

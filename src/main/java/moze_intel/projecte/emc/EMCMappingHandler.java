@@ -3,6 +3,7 @@ package moze_intel.projecte.emc;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -32,7 +33,7 @@ import moze_intel.projecte.emc.mappers.TagMapper;
 import moze_intel.projecte.emc.pregenerated.PregeneratedEMC;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.impl.capability.KnowledgeImpl;
-import moze_intel.projecte.network.packets.to_client.SyncEmcPKT.EmcPKTInfo;
+import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
 import moze_intel.projecte.utils.AnnotationHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.MinecraftServer;
@@ -207,7 +208,6 @@ public final class EMCMappingHandler {
 	 */
 	@Range(from = 0, to = Long.MAX_VALUE)
 	public static long getStoredEmcValue(@NotNull ItemInfo info) {
-		//TODO - 1.21: Validate that the default return value when not specified is actually zero
 		return emc.getLong(info);
 	}
 
@@ -222,16 +222,12 @@ public final class EMCMappingHandler {
 		return new HashSet<>(emc.keySet());
 	}
 
-	public static void fromPacket(EmcPKTInfo[] data) {
+	public static void fromPacket(Object2LongMap<ItemInfo> data) {
 		emc.clear();
-		for (EmcPKTInfo info : data) {
-			emc.put(info.item(), info.emc());
-		}
+		emc.putAll(data);
 	}
 
-	public static EmcPKTInfo[] createPacketData() {
-		return emc.object2LongEntrySet().stream()
-				.map(entry -> new EmcPKTInfo(entry.getKey(), entry.getLongValue()))
-				.toArray(EmcPKTInfo[]::new);
+	public static SyncEmcPKT createPacketData() {
+		return new SyncEmcPKT(Object2LongMaps.unmodifiable(emc));
 	}
 }

@@ -4,9 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntSortedMap;
+import it.unimi.dsi.fastutil.objects.Object2IntSortedMaps;
 import java.util.List;
 import java.util.stream.Collectors;
 import moze_intel.projecte.api.codec.IPECodecHelper;
@@ -23,11 +24,11 @@ import net.minecraft.util.ExtraCodecs;
  * @param ingredients   Map of the ingredients and how many of each are necessary to perform the conversion (may not be equal to zero)
  * @param propagateTags if {@code true} and the output is an {@link NSSTag}, this conversion will be propagated to all elements in the tag
  */
-public record CustomConversion(int count, NormalizedSimpleStack output, Object2IntMap<NormalizedSimpleStack> ingredients, boolean propagateTags) {
+public record CustomConversion(int count, NormalizedSimpleStack output, Object2IntSortedMap<NormalizedSimpleStack> ingredients, boolean propagateTags) {
 
-	private static final CustomConversion INVALID = new CustomConversion(0, null, Object2IntMaps.emptyMap(), false);
+	private static final CustomConversion INVALID = new CustomConversion(0, null, Object2IntSortedMaps.emptyMap(), false);
 
-	private static final Codec<Object2IntMap<NormalizedSimpleStack>> INGREDIENT_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.unboundedMap(
+	private static final Codec<Object2IntSortedMap<NormalizedSimpleStack>> INGREDIENT_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.unboundedMap(
 			IPECodecHelper.INSTANCE.nssMapCodec(),
 			Codec.INT.validate(
 					value -> value == 0 ? DataResult.error(() -> "Value must not be zero: " + value) : DataResult.success(value)
@@ -37,7 +38,7 @@ public record CustomConversion(int count, NormalizedSimpleStack output, Object2I
 				//Note: Return null as we allow duplicates
 				return null;
 			}
-	).validate(map -> map.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(map)), Object2IntOpenHashMap::new);
+	).validate(map -> map.isEmpty() ? DataResult.error(() -> "Map must have contents") : DataResult.success(map)), Object2IntLinkedOpenHashMap::new);
 
 	private static final MapCodec<CustomConversion> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
 			ExtraCodecs.POSITIVE_INT.optionalFieldOf("count", 1).forGetter(CustomConversion::count),
@@ -61,8 +62,7 @@ public record CustomConversion(int count, NormalizedSimpleStack output, Object2I
 		));
 	});
 
-	//TODO - 1.21: Do we care about the order of ingredients? Should we be using a linked map for it
-	public CustomConversion(int count, NormalizedSimpleStack output, Object2IntMap<NormalizedSimpleStack> ingredients) {
+	public CustomConversion(int count, NormalizedSimpleStack output, Object2IntSortedMap<NormalizedSimpleStack> ingredients) {
 		this(count, output, ingredients, false);
 	}
 
@@ -80,7 +80,7 @@ public record CustomConversion(int count, NormalizedSimpleStack output, Object2I
 	 */
 	public static CustomConversion getFor(int count, NormalizedSimpleStack output, Object2IntMap<NormalizedSimpleStack> ingredients) {
 		//TODO: Figure out if copying the map is even necessary
-		return new CustomConversion(count, output, new Object2IntOpenHashMap<>(ingredients));
+		return new CustomConversion(count, output, new Object2IntLinkedOpenHashMap<>(ingredients));
 	}
 
 	@Override

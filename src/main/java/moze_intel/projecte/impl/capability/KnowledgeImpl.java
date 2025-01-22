@@ -101,14 +101,14 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 
 	@Nullable
 	private ItemInfo getIfPersistent(@NotNull ItemInfo info) {
-		if (info.getComponentsPatch().isEmpty() || EMCMappingHandler.hasEmcValue(info)) {
-			//If we have no components or the base mapping has an emc value for our item with the given components
+		if (!info.hasModifiedComponents() || EMCMappingHandler.hasEmcValue(info)) {
+			//If we have no custom components or the base mapping has an emc value for our item with the given components
 			// then we don't have an extended state
 			return null;
 		}
 		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
-		if (!cleanedInfo.getComponentsPatch().isEmpty() && !EMCMappingHandler.hasEmcValue(cleanedInfo)) {
-			//If we still have components after unimportant parts being stripped, and it doesn't
+		if (cleanedInfo.hasModifiedComponents() && !EMCMappingHandler.hasEmcValue(cleanedInfo)) {
+			//If we still have custom components after unimportant parts being stripped, and it doesn't
 			// directly have an EMC value, then we know it has some persistent information
 			return cleanedInfo;
 		}

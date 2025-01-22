@@ -2,8 +2,8 @@ package moze_intel.projecte.api.conversion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2LongSortedMap;
 import java.util.ArrayList;
 import java.util.List;
 import moze_intel.projecte.api.ProjectEAPI;
@@ -16,18 +16,16 @@ import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
  * @param setValueAfter  Map of {@link NormalizedSimpleStack} to the value to set after applying conversions.
  * @param conversions    List of conversions
  */
-public record FixedValues(Object2LongMap<NormalizedSimpleStack> setValueBefore, Object2LongMap<NormalizedSimpleStack> setValueAfter, List<CustomConversion> conversions)
-		implements IHasConversions {
+public record FixedValues(Object2LongSortedMap<NormalizedSimpleStack> setValueBefore, Object2LongSortedMap<NormalizedSimpleStack> setValueAfter,
+						  List<CustomConversion> conversions) implements IHasConversions {
 
-	private static <T> Object2LongMap<T> createEmptyValueMap() {
-		//TODO - 1.21: Re-evaluate this and the default return value (as well as when we make the value codec mutable)
-		// Also do we care about the sort order??
-		Object2LongMap<T> map = new Object2LongOpenHashMap<>();
+	private static <T> Object2LongSortedMap<T> createEmptyValueMap() {
+		Object2LongSortedMap<T> map = new Object2LongLinkedOpenHashMap<>();
 		map.defaultReturnValue(-1);
 		return map;
 	}
 
-	private static final Codec<Object2LongMap<NormalizedSimpleStack>> VALUE_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(
+	private static final Codec<Object2LongSortedMap<NormalizedSimpleStack>> VALUE_CODEC = IPECodecHelper.INSTANCE.modifiableMap(IPECodecHelper.INSTANCE.lenientKeyUnboundedMap(
 			IPECodecHelper.INSTANCE.nssMapCodec(),
 			NeoForgeExtraCodecs.withAlternative(
 					IPECodecHelper.INSTANCE.positiveLong(),
@@ -37,7 +35,7 @@ public record FixedValues(Object2LongMap<NormalizedSimpleStack> setValueBefore, 
 					)
 			).fieldOf("value")
 	), immutableMap -> {
-		Object2LongMap<NormalizedSimpleStack> map = new Object2LongOpenHashMap<>(immutableMap);
+		Object2LongSortedMap<NormalizedSimpleStack> map = new Object2LongLinkedOpenHashMap<>(immutableMap);
 		map.defaultReturnValue(-1);
 		return map;
 	});

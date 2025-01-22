@@ -2,9 +2,10 @@ package moze_intel.projecte.api.conversion;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SequencedMap;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import net.minecraft.util.ExtraCodecs;
 import org.jetbrains.annotations.Nullable;
@@ -17,10 +18,10 @@ import org.jetbrains.annotations.Nullable;
  * @param groups  Map of conversion groups.
  * @param values  Values that are fixed either by setting or by conversion.
  */
-public record CustomConversionFile(boolean replace, @Nullable String comment, Map<String, ConversionGroup> groups, FixedValues values) {
+public record CustomConversionFile(boolean replace, @Nullable String comment, SequencedMap<String, ConversionGroup> groups, FixedValues values) {
 
-	private static final Codec<Map<String, ConversionGroup>> GROUP_CODEC = IPECodecHelper.INSTANCE.modifiableMap(
-			Codec.unboundedMap(ExtraCodecs.NON_EMPTY_STRING, ConversionGroup.CODEC)
+	private static final Codec<SequencedMap<String, ConversionGroup>> GROUP_CODEC = IPECodecHelper.INSTANCE.modifiableMap(
+			Codec.unboundedMap(ExtraCodecs.NON_EMPTY_STRING, ConversionGroup.CODEC), LinkedHashMap::new
 	);
 
 	public static final Codec<CustomConversionFile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -28,10 +29,11 @@ public record CustomConversionFile(boolean replace, @Nullable String comment, Ma
 			ExtraCodecs.NON_EMPTY_STRING.optionalFieldOf("comment").forGetter(file -> Optional.ofNullable(file.comment())),
 			GROUP_CODEC.optionalFieldOf("groups").forGetter(file -> IPECodecHelper.INSTANCE.ifNotEmpty(file.groups())),
 			FixedValues.CODEC.optionalFieldOf("values").forGetter(file -> IPECodecHelper.INSTANCE.ifNotEmpty(file.values(), FixedValues::isEmpty))
-	).apply(instance, (replace, comment, groups, values) -> new CustomConversionFile(replace, comment.orElse(null), groups.orElseGet(HashMap::new), values.orElseGet(FixedValues::new))));
+	).apply(instance, (replace, comment, groups, values) ->
+			new CustomConversionFile(replace, comment.orElse(null), groups.orElseGet(LinkedHashMap::new), values.orElseGet(FixedValues::new))));
 
 	public CustomConversionFile() {
-		this(false, null, new HashMap<>(), new FixedValues());
+		this(false, null, new LinkedHashMap<>(), new FixedValues());
 	}
 
 	/**

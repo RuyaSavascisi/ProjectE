@@ -2,6 +2,7 @@ package moze_intel.projecte.api.data;
 
 import it.unimi.dsi.fastutil.objects.Object2LongLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongSortedMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,8 +22,8 @@ import org.jetbrains.annotations.Nullable;
 public class CustomConversionBuilder implements CustomConversionBuilderNSSHelper {
 
 	private final Map<String, ConversionGroupBuilder> groups = new LinkedHashMap<>();
-	private final Object2LongMap<NormalizedSimpleStack> fixedValueBefore = new Object2LongLinkedOpenHashMap<>();
-	private final Object2LongMap<NormalizedSimpleStack> fixedValueAfter = new Object2LongLinkedOpenHashMap<>();
+	private final Object2LongSortedMap<NormalizedSimpleStack> fixedValueBefore = new Object2LongLinkedOpenHashMap<>();
+	private final Object2LongSortedMap<NormalizedSimpleStack> fixedValueAfter = new Object2LongLinkedOpenHashMap<>();
 	private final List<ConversionBuilder<?>> fixedValueConversions = new ArrayList<>();
 	private boolean replace;
 	@Nullable

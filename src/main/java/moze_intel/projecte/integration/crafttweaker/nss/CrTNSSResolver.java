@@ -1,22 +1,16 @@
 package moze_intel.projecte.integration.crafttweaker.nss;
 
-import com.blamejared.crafttweaker.api.CraftTweakerAPI;
 import com.blamejared.crafttweaker.api.annotation.ZenRegister;
-import com.blamejared.crafttweaker.api.data.IData;
+import com.blamejared.crafttweaker.api.data.MapData;
 import com.blamejared.crafttweaker.api.data.op.IDataOps;
 import com.blamejared.crafttweaker.api.fluid.IFluidStack;
 import com.blamejared.crafttweaker.api.item.IItemStack;
 import com.blamejared.crafttweaker.api.tag.type.KnownTag;
 import com.blamejared.crafttweaker_annotations.annotations.Document;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
@@ -40,25 +34,8 @@ public class CrTNSSResolver {
 	 * @return A {@link NormalizedSimpleStack} based on its string representation.
 	 */
 	@ZenCodeType.Method
-	public static NormalizedSimpleStack deserialize(String representation) {
-		RegistryOps<JsonElement> serializationContext = CraftTweakerAPI.getAccessibleElementsProvider().registryAccess().createSerializationContext(JsonOps.INSTANCE);
-		return deserialize(serializationContext, new JsonPrimitive(representation));
-	}
-
-	/**
-	 * Creates a {@link NormalizedSimpleStack} based on its string representation.
-	 *
-	 * @param representation String representation as would be found in custom_emc.json
-	 *
-	 * @return A {@link NormalizedSimpleStack} based on its string representation.
-	 */
-	@ZenCodeType.Method
-	public static NormalizedSimpleStack deserialize(IData representation) {
-		return deserialize(IDataOps.INSTANCE.withRegistryAccess(), representation);
-	}
-
-	private static <T> NormalizedSimpleStack deserialize(DynamicOps<T> ops, T input) {
-		return IPECodecHelper.INSTANCE.nssCodec().parse(ops, input)
+	public static NormalizedSimpleStack deserialize(MapData representation) {
+		return IPECodecHelper.INSTANCE.nssCodec().parse(IDataOps.INSTANCE.withRegistryAccess(), representation)
 				.getOrThrow(error -> new IllegalArgumentException("Error deserializing NSS representation: " + error));
 	}
 
