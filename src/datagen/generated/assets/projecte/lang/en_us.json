@@ -108,7 +108,7 @@
   "configuration.projecte.client.tooltips.tooltip": "Settings for configuring Tooltips provided by ProjectE.",
   "configuration.projecte.common.crafting": "Crafting Settings",
   "configuration.projecte.common.crafting.button": "Edit Crafting Settings",
-  "configuration.projecte.common.crafting.full_klein": "Craftable Tome",
+  "configuration.projecte.common.crafting.full_klein": "Require Full Klein Stars",
   "configuration.projecte.common.crafting.full_klein.tooltip": "Require full omega klein stars in the tome of knowledge and gem armor recipes. This is the same behavior that EE2 had.",
   "configuration.projecte.common.crafting.tome": "Craftable Tome",
   "configuration.projecte.common.crafting.tome.tooltip": "Enable crafting the Tome of Knowledge.",

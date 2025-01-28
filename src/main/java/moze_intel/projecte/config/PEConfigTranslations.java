@@ -27,7 +27,7 @@ public enum PEConfigTranslations implements IConfigTranslation {
 
 	COMMON_CRAFTING("common.crafting", "Crafting Settings", "Settings for configuring crafting requirements of specific ProjectE recipes.", true),
 	COMMON_CRAFTING_TOME("common.crafting.tome", "Craftable Tome", "Enable crafting the Tome of Knowledge."),
-	COMMON_CRAFTING_FULL_KLEIN("common.crafting.full_klein", "Craftable Tome",
+	COMMON_CRAFTING_FULL_KLEIN("common.crafting.full_klein", "Require Full Klein Stars",
 			"Require full omega klein stars in the tome of knowledge and gem armor recipes. This is the same behavior that EE2 had."),
 
 	//Server Config

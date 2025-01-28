@@ -80,6 +80,8 @@ public final class EMCMappingHandler {
 		IValueGenerator<NormalizedSimpleStack, Long> valueGenerator = new BigFractionToLongGenerator<>(mapper);
 		IExtendedMappingCollector<NormalizedSimpleStack, Long, IValueArithmetic<BigFraction>> mappingCollector = new LongToBigFractionCollector<>(mapper);
 
+		//TODO - 1.21: Make this a slightly more normal config?? Similar to Data component processors
+		// That way we can also make it so it displays in the config gui
 		Path path = ProjectEConfig.CONFIG_DIR.resolve("mapping.toml");
 		try {
 			if (path.toFile().createNewFile()) {

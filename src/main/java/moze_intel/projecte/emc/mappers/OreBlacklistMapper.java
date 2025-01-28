@@ -14,7 +14,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.common.Tags.Items;
+import net.neoforged.neoforge.common.Tags;
 
 @EMCMapper
 public class OreBlacklistMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
@@ -25,7 +25,7 @@ public class OreBlacklistMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		Optional<Named<Item>> tag = BuiltInRegistries.ITEM.getTag(Items.ORES);
+		Optional<Named<Item>> tag = BuiltInRegistries.ITEM.getTag(Tags.Items.ORES);
 		if (tag.isPresent()) {
 			for (Holder<Item> holder : tag.get()) {
 				NSSItem ore = NSSItem.createItem(holder);

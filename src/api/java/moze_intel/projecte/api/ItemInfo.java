@@ -187,6 +187,9 @@ public final class ItemInfo {
 
 	@Override
 	public String toString() {
+		if (componentsPatch.isEmpty()) {
+			return item.getRegisteredName();
+		}
 		//Note: We display the component patch using the more readable string representation rather than the command representation
 		// as this is mostly for debug purposes
 		return item.getRegisteredName() + " " + componentsPatch;
