@@ -1,6 +1,6 @@
 {
   "values": [
-    "#c:tools/hammers/dark_matter",
-    "#c:tools/hammers/red_matter"
+    "projecte:dm_hammer",
+    "projecte:rm_hammer"
   ]
 }

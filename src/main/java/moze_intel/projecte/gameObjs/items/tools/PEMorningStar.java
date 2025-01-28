@@ -87,7 +87,7 @@ public class PEMorningStar extends PETool implements IItemMode<PickaxeMode>, IHa
 					}
 					return InteractionResult.PASS;
 				}, (ctx, state) -> {
-					if (ItemHelper.isOre(state) && !ProjectEConfig.server.items.pickaxeAoeVeinMining.get()) {
+					if (state.is(Tags.Blocks.ORES) && !ProjectEConfig.server.items.pickaxeAoeVeinMining.get()) {
 						return ToolHelper.tryVeinMine(ctx.getPlayer(), ctx.getItemInHand(), ctx.getClickedPos(), ctx.getClickedFace());
 					}
 					return InteractionResult.PASS;

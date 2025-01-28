@@ -7,6 +7,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.StandingAndWallBlockItem;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,11 @@ public class BlockRegistryObject<BLOCK extends Block, ITEM extends Item> extends
 	@NotNull
 	public BLOCK getBlock() {
 		return getPrimary();
+	}
+
+	@NotNull
+	public BlockState defaultState() {
+		return getBlock().defaultBlockState();
 	}
 
 	@NotNull

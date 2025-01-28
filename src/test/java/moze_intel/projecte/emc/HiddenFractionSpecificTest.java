@@ -1,7 +1,5 @@
 package moze_intel.projecte.emc;
 
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +10,7 @@ import moze_intel.projecte.emc.arithmetic.FullBigFractionArithmetic;
 import moze_intel.projecte.emc.arithmetic.HiddenBigFractionArithmetic;
 import moze_intel.projecte.emc.collector.LongToBigFractionCollector;
 import moze_intel.projecte.emc.generator.BigFractionToLongGenerator;
+import moze_intel.projecte.utils.EMCHelper;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,13 +22,6 @@ class HiddenFractionSpecificTest {
 
 	private IValueGenerator<String, Long> valueGenerator;
 	private IExtendedMappingCollector<String, Long, IValueArithmetic<BigFraction>> mappingCollector;
-
-	private static <K> Object2IntMap<K> intMapOf(final K key, int value, final K key2, int value2) {
-		Object2IntMap<K> intMap = new Object2IntArrayMap<>(2);
-		intMap.put(key, value);
-		intMap.put(key2, value2);
-		return Object2IntMaps.unmodifiable(intMap);
-	}
 
 	@BeforeEach
 	void setup() {
@@ -83,7 +75,7 @@ class HiddenFractionSpecificTest {
 
 		//Conversion using mili-milibuckets to make the 'emc per milibucket' smaller than 1
 		mappingCollector.addConversion(250 * 1000, "moltenEnder", List.of("enderpearl"));
-		mappingCollector.addConversion(1, "moltenEnderBucket", intMapOf("moltenEnder", 1000 * 1000, "bucket", 1));
+		mappingCollector.addConversion(1, "moltenEnderBucket", EMCHelper.intMapOf("moltenEnder", 1000 * 1000, "bucket", 1));
 
 		Map<String, Long> values = valueGenerator.generateValues();
 		Assertions.assertEquals(1024, getValue(values, "enderpearl"));
@@ -101,11 +93,11 @@ class HiddenFractionSpecificTest {
 
 		//Conversion using milibuckets with a "don't round anything down"-arithmetic
 		mappingCollector.addConversion(250, "moltenEnder", List.of("enderpearl"), fullFractionArithmetic);
-		mappingCollector.addConversion(1, "moltenEnderBucket", intMapOf("moltenEnder", 1000, "bucket", 1));
+		mappingCollector.addConversion(1, "moltenEnderBucket", EMCHelper.intMapOf("moltenEnder", 1000, "bucket", 1));
 
 		//Without using the full fraction arithmetic
 		mappingCollector.addConversion(250, "moltenEnder2", List.of("enderpearl"));
-		mappingCollector.addConversion(1, "moltenEnderBucket2", intMapOf("moltenEnder2", 1000, "bucket", 1));
+		mappingCollector.addConversion(1, "moltenEnderBucket2", EMCHelper.intMapOf("moltenEnder2", 1000, "bucket", 1));
 
 		Map<String, Long> values = valueGenerator.generateValues();
 		Assertions.assertEquals(1024, getValue(values, "enderpearl"));

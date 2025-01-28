@@ -68,6 +68,7 @@ import net.minecraft.world.phys.HitResult.Type;
 import net.neoforged.neoforge.common.IShearable;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import org.jetbrains.annotations.Nullable;
@@ -534,7 +535,7 @@ public class ToolHelper {
 		}
 		Level level = player.level();
 		ItemStack stack = player.getItemInHand(hand);
-		BiPredicate<BlockState, ItemStack> stateChecker = (state, itemStack) -> ItemHelper.isOre(state) && itemStack.isCorrectToolForDrops(state);
+		BiPredicate<BlockState, ItemStack> stateChecker = (state, itemStack) -> state.is(Tags.Blocks.ORES) && itemStack.isCorrectToolForDrops(state);
 		AABB area = player.getBoundingBox().inflate(getCharge(stack) + 3);
 		return harvestVein(level, player, player.blockPosition(), stack, area, stack, stateChecker, WorldHelper::createLootDrop);
 	}

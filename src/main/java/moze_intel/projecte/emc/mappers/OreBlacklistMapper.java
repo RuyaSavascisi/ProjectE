@@ -19,6 +19,9 @@ import net.neoforged.neoforge.common.Tags.Items;
 @EMCMapper
 public class OreBlacklistMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
+	@EMCMapper.Instance
+	public static final OreBlacklistMapper INSTANCE = new OreBlacklistMapper();
+
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {

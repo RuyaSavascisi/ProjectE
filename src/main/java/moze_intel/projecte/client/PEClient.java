@@ -28,12 +28,12 @@ import moze_intel.projecte.network.commands.client.DumpMissingEmc;
 import moze_intel.projecte.rendering.ChestRenderer;
 import moze_intel.projecte.rendering.EntitySpriteRenderer;
 import moze_intel.projecte.rendering.LayerYue;
-import moze_intel.projecte.rendering.NovaRenderer;
 import moze_intel.projecte.rendering.PedestalRenderer;
 import moze_intel.projecte.rendering.TransmutationRenderingOverlay;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.TippableArrowRenderer;
+import net.minecraft.client.renderer.entity.TntRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
@@ -164,8 +164,8 @@ public class PEClient {
 		event.registerEntityRenderer(PEEntityTypes.LENS_PROJECTILE.get(), context -> new EntitySpriteRenderer<>(context, PECore.rl("textures/entity/lens_explosive.png")));
 		event.registerEntityRenderer(PEEntityTypes.FIRE_PROJECTILE.get(), context -> new EntitySpriteRenderer<>(context, PECore.rl("textures/entity/fireball.png")));
 		event.registerEntityRenderer(PEEntityTypes.SWRG_PROJECTILE.get(), context -> new EntitySpriteRenderer<>(context, PECore.rl("textures/entity/lightning.png")));
-		event.registerEntityRenderer(PEEntityTypes.NOVA_CATALYST_PRIMED.get(), context -> new NovaRenderer<>(context, PEBlocks.NOVA_CATALYST.getBlock()::defaultBlockState));
-		event.registerEntityRenderer(PEEntityTypes.NOVA_CATACLYSM_PRIMED.get(), context -> new NovaRenderer<>(context, PEBlocks.NOVA_CATACLYSM.getBlock()::defaultBlockState));
+		event.registerEntityRenderer(PEEntityTypes.NOVA_CATALYST_PRIMED.get(), TntRenderer::new);
+		event.registerEntityRenderer(PEEntityTypes.NOVA_CATACLYSM_PRIMED.get(), TntRenderer::new);
 		event.registerEntityRenderer(PEEntityTypes.HOMING_ARROW.get(), TippableArrowRenderer::new);
 	}
 

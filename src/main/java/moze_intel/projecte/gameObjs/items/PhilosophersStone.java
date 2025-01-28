@@ -2,9 +2,10 @@ package moze_intel.projecte.gameObjs.items;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import java.util.Collections;
-import java.util.HashMap;
+import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
+import it.unimi.dsi.fastutil.objects.Object2ReferenceMaps;
+import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -96,7 +97,7 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 			pos = rtr.getBlockPos();
 			sideHit = rtr.getDirection();
 		}
-		Map<BlockPos, BlockState> toChange = getChanges(level, pos, player, sideHit, getMode(stack), getCharge(stack));
+		Object2ReferenceMap<BlockPos, BlockState> toChange = getChanges(level, pos, player, sideHit, getMode(stack), getCharge(stack));
 		if (!toChange.isEmpty()) {
 			for (Map.Entry<BlockPos, BlockState> entry : toChange.entrySet()) {
 				BlockPos currentPos = entry.getKey();
@@ -134,13 +135,13 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		tooltip.add(PELang.TOOLTIP_PHILOSTONE.translate(ClientKeyHelper.getKeyName(PEKeybind.EXTRA_FUNCTION)));
 	}
 
-	public static Map<BlockPos, BlockState> getChanges(Level level, BlockPos pos, Player player, Direction sideHit, PhilosophersStoneMode mode, int charge) {
+	public static Object2ReferenceMap<BlockPos, BlockState> getChanges(Level level, BlockPos pos, Player player, Direction sideHit, PhilosophersStoneMode mode, int charge) {
 		BlockState targeted = level.getBlockState(pos);
 		boolean isSneaking = player.isSecondaryUseActive();
 		BlockState result = WorldTransmutations.getWorldTransmutation(targeted, isSneaking);
 		if (result == null) {
 			//Targeted block has no transmutations, no positions
-			return Collections.emptyMap();
+			return Object2ReferenceMaps.emptyMap();
 		}
 		Iterable<BlockPos> targets = switch (mode) {
 			case CUBE -> WorldHelper.positionsAround(pos, charge);
@@ -156,11 +157,11 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 			};
 		};
 		if (targets == null) {
-			return Collections.emptyMap();
+			return Object2ReferenceMaps.emptyMap();
 		}
-		Map<BlockState, BlockState> conversions = new Object2ObjectArrayMap<>();
+		Map<BlockState, BlockState> conversions = new Reference2ReferenceArrayMap<>();
 		conversions.put(targeted, result);
-		Map<BlockPos, BlockState> changes = new HashMap<>();
+		Object2ReferenceMap<BlockPos, BlockState> changes = new Object2ReferenceOpenHashMap<>();
 		Block targetBlock = targeted.getBlock();
 		for (BlockPos currentPos : targets) {
 			BlockState state = level.getBlockState(currentPos);

@@ -74,8 +74,8 @@ public class CollectorMK1Container extends PEContainer {
 	protected void broadcastPE(boolean all) {
 		emc.set(collector.getStoredEmc());
 		sunLevel.set(collector.getSunLevel());
-		kleinChargeProgress.set((int) (collector.getItemChargeProportion() * 8000));
-		fuelProgress.set((int) (collector.getFuelProgress() * 8000));
+		kleinChargeProgress.set((int) (collector.getItemChargeProportion() * 8_000));
+		fuelProgress.set((int) (collector.getFuelProgress() * 8_000));
 		kleinEmc.set(collector.getItemCharge());
 		super.broadcastPE(all);
 	}
@@ -86,10 +86,10 @@ public class CollectorMK1Container extends PEContainer {
 	}
 
 	public double getKleinChargeProgress() {
-		return kleinChargeProgress.get() / 8000.0;
+		return kleinChargeProgress.get() / 8_000.0;
 	}
 
 	public double getFuelProgress() {
-		return fuelProgress.get() / 8000.0;
+		return fuelProgress.get() / 8_000.0;
 	}
 }

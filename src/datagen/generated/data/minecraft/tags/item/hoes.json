@@ -1,6 +1,6 @@
 {
   "values": [
-    "#c:tools/hoes/dark_matter",
-    "#c:tools/hoes/red_matter"
+    "projecte:dm_hoe",
+    "projecte:rm_hoe"
   ]
 }

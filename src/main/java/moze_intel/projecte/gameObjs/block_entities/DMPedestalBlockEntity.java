@@ -5,6 +5,7 @@ import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
+import moze_intel.projecte.utils.Constants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -59,7 +60,7 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 					pedestalItem.updateInPedestal(stack, level, pos, pedestal);
 					if (pedestal.particleCooldown <= 0) {
 						pedestal.spawnParticleTypes();
-						pedestal.particleCooldown = 10;
+						pedestal.particleCooldown = Constants.TICKS_PER_HALF_SECOND;
 					} else {
 						pedestal.particleCooldown--;
 					}

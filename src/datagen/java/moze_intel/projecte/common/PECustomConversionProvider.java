@@ -315,8 +315,8 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.SADDLE, 192)
 				.before(Items.ECHO_SHARD, 192)
 				.before(Items.NAME_TAG, 192)
-				//TODO - 1.21: Re-evaluate
-				//.before(ItemTags.MUSIC_DISCS, 2_048)
+				//TODO - 1.21: Re-evaluate, should this be ItemTags.CREEPER_DROP_MUSIC_DISCS
+				.before(Tags.Items.MUSIC_DISCS, 2_048)
 				.before(Items.FLINT, 4)
 				.before(Items.COAL, 128)
 				.before(Tags.Items.GEMS_QUARTZ, 256)
@@ -339,6 +339,7 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(ItemTags.LEAVES, 1)
 				.before(Items.MANGROVE_ROOTS, 4)
 				.before(ItemTags.WOOL, 48)
+				.before(Items.ARMADILLO_SCUTE, 48)
 				.before(Items.NETHERITE_SCRAP, 12_288)
 				.before(Tags.Items.GEMS_DIAMOND, 8_192)
 				.before(Tags.Items.DUSTS_REDSTONE, 64)

@@ -22,7 +22,6 @@ import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.impl.capability.AlchBagImpl.AlchemicalBagAttachment;
 import moze_intel.projecte.utils.text.PELang;
-import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -96,7 +95,7 @@ public class ShowBagCMD {
 			//If we have a cache of the player, include their last known name in the name of the bag
 			name = PELang.SHOWBAG_NAMED.translate(PEItems.getBag(color), profileByUUID.get().getName());
 		} else {
-			name = TextComponentUtil.build(PEItems.getBag(color));
+			name = PEItems.getBag(color).getDescription();
 		}
 		return getContainer(sender, name, inv, true, () -> true);
 	}

@@ -9,7 +9,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
@@ -40,7 +39,7 @@ public final class ItemHelper {
 	 */
 	public static boolean compactInventory(IItemHandlerModifiable inventory) {
 		List<ItemStack> temp = new ArrayList<>();
-		for (int i = 0; i < inventory.getSlots(); i++) {
+		for (int i = 0, slots = inventory.getSlots(); i < slots; i++) {
 			ItemStack stackInSlot = inventory.getStackInSlot(i);
 			if (!stackInSlot.isEmpty()) {
 				temp.add(stackInSlot);
@@ -55,7 +54,7 @@ public final class ItemHelper {
 
 	public static IItemHandlerModifiable immutableCopy(IItemHandler toCopy) {
 		final List<ItemStack> list = new ArrayList<>(toCopy.getSlots());
-		for (int i = 0; i < toCopy.getSlots(); i++) {
+		for (int i = 0, slots = toCopy.getSlots(); i < slots; i++) {
 			list.add(toCopy.getStackInSlot(i));
 		}
 		return new IItemHandlerModifiable() {
@@ -96,10 +95,6 @@ public final class ItemHelper {
 				return true;
 			}
 		};
-	}
-
-	public static boolean isOre(BlockState state) {
-		return state.is(Tags.Blocks.ORES);
 	}
 
 	public static boolean isRepairableDamagedItem(ItemStack stack) {

@@ -5,15 +5,18 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone.PhilosophersStoneMode;
+import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.WorldTransmutations;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.LayeredDraw;
+import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -29,7 +32,6 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.neoforge.common.NeoForge;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 
@@ -107,9 +109,11 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 							matrix.pushPose();
 							//Shift by view position here so that we don't have floating point issues at large values
 							matrix.translate(pos.getX() - viewPosition.x, pos.getY() - viewPosition.y, pos.getZ() - viewPosition.z);
-							Matrix4f matrix4f = matrix.last().pose();
-							shape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> addBox(builder, matrix4f, alpha,
-									(float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ));
+							shape.forAllBoxes((minX, minY, minZ, maxX, maxY, maxZ) -> {
+								for (Direction value : Constants.DIRECTIONS) {
+									LevelRenderer.renderFace(matrix, builder, value, (float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, 1, 1, 1, alpha);
+								}
+							});
 							matrix.popPose();
 						}
 					}
@@ -118,44 +122,6 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 		} else {
 			transmutationResult = null;
 		}
-	}
-
-	private void addBox(VertexConsumer builder, Matrix4f matrix4f, float alpha, float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-		//Top
-		builder.addVertex(matrix4f, minX, maxY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, maxY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, maxY, maxZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, maxY, maxZ).setColor(1, 1, 1, alpha);
-
-		//Bottom
-		builder.addVertex(matrix4f, minX, minY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, minY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, minY, maxZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, minY, maxZ).setColor(1, 1, 1, alpha);
-
-		//Front
-		builder.addVertex(matrix4f, maxX, maxY, maxZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, maxY, maxZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, minY, maxZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, minY, maxZ).setColor(1, 1, 1, alpha);
-
-		//Back
-		builder.addVertex(matrix4f, maxX, minY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, minY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, maxY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, maxY, minZ).setColor(1, 1, 1, alpha);
-
-		//Left
-		builder.addVertex(matrix4f, minX, maxY, maxZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, maxY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, minY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, minX, minY, maxZ).setColor(1, 1, 1, alpha);
-
-		//Right
-		builder.addVertex(matrix4f, maxX, maxY, maxZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, maxY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, minY, minZ).setColor(1, 1, 1, alpha);
-		builder.addVertex(matrix4f, maxX, minY, maxZ).setColor(1, 1, 1, alpha);
 	}
 
 	private float getPulseProportion() {

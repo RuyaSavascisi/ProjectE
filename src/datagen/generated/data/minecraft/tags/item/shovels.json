@@ -1,6 +1,6 @@
 {
   "values": [
-    "#c:tools/shovels/dark_matter",
-    "#c:tools/shovels/red_matter"
+    "projecte:dm_shovel",
+    "projecte:rm_shovel"
   ]
 }

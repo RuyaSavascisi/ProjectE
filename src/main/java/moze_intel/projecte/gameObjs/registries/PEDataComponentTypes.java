@@ -13,6 +13,7 @@ import moze_intel.projecte.gameObjs.items.tools.PEKatar.KatarMode;
 import moze_intel.projecte.gameObjs.items.tools.PEPickaxe.PickaxeMode;
 import moze_intel.projecte.gameObjs.registration.PEDeferredHolder;
 import moze_intel.projecte.gameObjs.registration.impl.DataComponentTypeDeferredRegister;
+import net.minecraft.SharedConstants;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.component.ItemContainerContents;
 
@@ -30,7 +31,7 @@ public class PEDataComponentTypes {
 					.cacheEncoding()
 	);
 
-	public static final PEDeferredHolder<DataComponentType<?>, DataComponentType<Byte>> COOLDOWN = DATA_COMPONENT_TYPES.registerByte("cooldown", (byte) 0, (byte) 20);
+	public static final PEDeferredHolder<DataComponentType<?>, DataComponentType<Byte>> COOLDOWN = DATA_COMPONENT_TYPES.registerByte("cooldown", (byte) 0, (byte) SharedConstants.TICKS_PER_SECOND);
 
 	/**
 	 * @see moze_intel.projecte.api.PEDataComponents#CHARGE

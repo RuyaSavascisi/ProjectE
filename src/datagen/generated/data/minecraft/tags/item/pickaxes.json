@@ -1,6 +1,6 @@
 {
   "values": [
-    "#c:tools/pickaxes/dark_matter",
-    "#c:tools/pickaxes/red_matter"
+    "projecte:dm_pick",
+    "projecte:rm_pick"
   ]
 }

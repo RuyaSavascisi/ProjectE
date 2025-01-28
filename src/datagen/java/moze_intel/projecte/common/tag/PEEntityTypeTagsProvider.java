@@ -57,7 +57,8 @@ public class PEEntityTypeTagsProvider extends EntityTypeTagsProvider {
 				EntityType.BEE,
 				EntityType.FROG,
 				EntityType.TADPOLE,
-				EntityType.CAMEL
+				EntityType.CAMEL,
+				EntityType.ARMADILLO
 		);
 		tag(PETags.Entities.RANDOMIZER_HOSTILE).add(
 				EntityType.ZOMBIE,

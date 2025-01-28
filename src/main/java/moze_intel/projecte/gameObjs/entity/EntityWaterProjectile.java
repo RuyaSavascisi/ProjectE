@@ -100,7 +100,7 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 			if (ent.isOnFire()) {
 				ent.clearFire();
 			}
-			ent.push(this.getDeltaMovement().x() * 2, this.getDeltaMovement().y() * 2, this.getDeltaMovement().z() * 2);
+			ent.push(getDeltaMovement().scale(2));
 		}
 	}
 

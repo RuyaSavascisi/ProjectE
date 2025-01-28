@@ -80,7 +80,7 @@ public class SWRG extends ItemPE implements IPedestalItem, IProjectileShooter, I
 		}
 
 		removeEmc(stack, toRemove);
-		//TODO - 1.21: Re-evaluate the calls to resetFallDistance
+		//TODO - 1.21: Re-evaluate the calls to resetFallDistance and should any of them use Attributes.FALL_DAMAGE_MULTIPLIER instead to negate fall damage
 		player.resetFallDistance();
 	}
 

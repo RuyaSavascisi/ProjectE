@@ -1,8 +1,6 @@
 package moze_intel.projecte.emc.mappers;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +12,7 @@ import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
@@ -48,10 +47,10 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 		Set<ItemInfo> allInputs = mapAllInputs(potionBrewing);
 
 		//Add conversion for empty bottle + water to water bottle
-		Object2IntMap<NormalizedSimpleStack> waterIngredients = new Object2IntOpenHashMap<>();
-		waterIngredients.put(NSSItem.createItem(Items.GLASS_BOTTLE), 1);
-		waterIngredients.put(NSSFluid.createTag(FluidTags.WATER), FluidType.BUCKET_VOLUME / 3);
-		mapper.addConversion(1, NSSItem.createItem(PotionContents.createItemStack(Items.POTION, Potions.WATER)), waterIngredients);
+		mapper.addConversion(1, NSSItem.createItem(PotionContents.createItemStack(Items.POTION, Potions.WATER)), EMCHelper.intMapOf(
+				NSSItem.createItem(Items.GLASS_BOTTLE), 1,
+				NSSFluid.createTag(FluidTags.WATER), FluidType.BUCKET_VOLUME / 3
+		));
 
 		int recipeCount = 0;
 
@@ -64,13 +63,13 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 			NormalizedSimpleStack nssInput = NSSItem.createItem(validInput);
 			for (ItemInfo reagentInfo : allReagents) {
 				ItemStack validReagent = reagentInfo.createStack();
-				ItemStack output = potionBrewing.mix(validInput, validReagent);
+				ItemStack output = potionBrewing.mix(validReagent, validInput);
 				if (!output.isEmpty()) {
-					Object2IntMap<NormalizedSimpleStack> ingredientsWithAmount = new Object2IntOpenHashMap<>();
-					ingredientsWithAmount.put(nssInput, 3);
-					ingredientsWithAmount.put(NSSItem.createItem(validReagent), 1);
 					//Add the conversion, 3 input + reagent = 3 y output as the output technically could be stacked
-					mapper.addConversion(3 * output.getCount(), NSSItem.createItem(output), ingredientsWithAmount);
+					mapper.addConversion(3 * output.getCount(), NSSItem.createItem(output), EMCHelper.intMapOf(
+							nssInput, 3,
+							NSSItem.createItem(validReagent), 1
+					));
 					recipeCount++;
 				}
 			}
@@ -91,12 +90,12 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				for (ItemStack validInput : validInputs) {
 					NormalizedSimpleStack nssInput = NSSItem.createItem(validInput);
 					for (ItemStack validReagent : validReagents) {
-						Object2IntMap<NormalizedSimpleStack> ingredientsWithAmount = new Object2IntOpenHashMap<>();
-						ingredientsWithAmount.put(nssInput, 3);
-						ingredientsWithAmount.put(NSSItem.createItem(validReagent), validReagent.getCount());
 						//Add the conversion, 3 input + x reagent = 3 y output as strictly speaking the only one of the three parts
 						// in the recipe that are required to be one in stack size is the input
-						mapper.addConversion(3 * output.getCount(), nssOut, ingredientsWithAmount);
+						mapper.addConversion(3 * output.getCount(), nssOut, EMCHelper.intMapOf(
+								nssInput, 3,
+								NSSItem.createItem(validReagent), validReagent.getCount()
+						));
 						recipeCount++;
 					}
 				}

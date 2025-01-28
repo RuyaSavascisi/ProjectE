@@ -8,6 +8,7 @@ import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageType;
 import net.neoforged.neoforge.common.Tags;
@@ -23,12 +24,12 @@ public class PEDamageTypeTagsProvider extends TagsProvider<DamageType> {
 
 	@Override
 	protected void addTags(@NotNull HolderLookup.Provider provider) {
-		tag(DamageTypeTags.BYPASSES_ARMOR).add(
-				PEDamageTypes.BYPASS_ARMOR_PLAYER_ATTACK.key()
-		);
-		tag(Tags.DamageTypes.IS_PHYSICAL).add(
-				PEDamageTypes.BYPASS_ARMOR_PLAYER_ATTACK.key()
-		);
+		ResourceKey<DamageType> playerAttack = PEDamageTypes.BYPASS_ARMOR_PLAYER_ATTACK.key();
+		tag(DamageTypeTags.BYPASSES_ARMOR).add(playerAttack);
+		tag(DamageTypeTags.CAN_BREAK_ARMOR_STAND).add(playerAttack);
+		tag(DamageTypeTags.IS_PLAYER_ATTACK).add(playerAttack);
+		tag(DamageTypeTags.PANIC_CAUSES).add(playerAttack);
+		tag(Tags.DamageTypes.IS_PHYSICAL).add(playerAttack);
 	}
 
 	@NotNull

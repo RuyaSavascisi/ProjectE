@@ -1,7 +1,6 @@
 package moze_intel.projecte.emc;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,7 @@ import moze_intel.projecte.api.mapper.generator.IValueGenerator;
 import moze_intel.projecte.emc.arithmetic.HiddenBigFractionArithmetic;
 import moze_intel.projecte.emc.collector.LongToBigFractionCollector;
 import moze_intel.projecte.emc.generator.BigFractionToLongGenerator;
+import moze_intel.projecte.utils.EMCHelper;
 import org.apache.commons.math3.fraction.BigFraction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -400,11 +400,11 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "filledContainer", List.of("container", "fluid"));
 
 		//Recipe that only consumes fluid:
-		Object2IntMap<String> map = new Object2IntOpenHashMap<>();
-		map.put("container", -1);
-		map.put("filledContainer", 1);
-		map.put("somethingElse", 2);
-		mappingCollector.addConversion(1, "fluidCraft", map);
+		mappingCollector.addConversion(1, "fluidCraft", EMCHelper.intMapOf(
+				"container", -1,
+				"filledContainer", 1,
+				"somethingElse", 2
+		));
 
 		Map<String, Long> values = valueGenerator.generateValues();
 		Assertions.assertEquals(9, getValue(values, "somethingElse"));
@@ -424,11 +424,11 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "filledContainer", List.of("container", "fluid"));
 
 		//Recipe that only consumes fluid:
-		Object2IntMap<String> map = new Object2IntOpenHashMap<>();
-		map.put("container", -1);
-		map.put("filledContainer", 1);
-		map.put("somethingElse", 2);
-		mappingCollector.addConversion(1, "fluidCraft", map);
+		mappingCollector.addConversion(1, "fluidCraft", EMCHelper.intMapOf(
+				"container", -1,
+				"filledContainer", 1,
+				"somethingElse", 2
+		));
 
 		Map<String, Long> values = valueGenerator.generateValues();
 		Assertions.assertEquals(9, getValue(values, "somethingElse"));
@@ -518,27 +518,25 @@ class GraphMapperTest {
 			mappingCollector.addConversion(3, "firecharge", List.of(coalType, "gunpowder", "blazepowder"));
 		}
 		mappingCollector.addConversion(1, "firecharge*", List.of("firecharge"));
-		Object2IntMap<String> m = new Object2IntOpenHashMap<>();
-		m.put("coal0", 9);
-		mappingCollector.addConversion(1, "coalblock", m);
+		mappingCollector.addConversion(1, "coalblock", Object2IntMaps.singleton("coal0", 9));
 
-		m.clear();
 		//Philosophers stone smelting 7xCoalOre -> 7xCoal
-		m.put("coalore", 7);
-		m.put("coal*", 1);
-		mappingCollector.addConversion(7, "coal0", m);
+		mappingCollector.addConversion(7, "coal0", EMCHelper.intMapOf(
+				"coalore", 7,
+				"coal*", 1
+		));
 
-		m.clear();
 		//Philosophers stone smelting logs
-		m.put("log*", 7);
-		m.put("coal*", 1);
-		mappingCollector.addConversion(7, "coal1", m);
+		mappingCollector.addConversion(7, "coal1", EMCHelper.intMapOf(
+				"log*", 7,
+				"coal*", 1
+		));
 
-		m.clear();
 		//Philosophers stone smelting log2s
-		m.put("log2*", 7);
-		m.put("coal*", 1);
-		mappingCollector.addConversion(7, "coal1", m);
+		mappingCollector.addConversion(7, "coal1", EMCHelper.intMapOf(
+				"log2*", 7,
+				"coal*", 1
+		));
 
 		//Smelting single coal ore
 		mappingCollector.addConversion(1, "coal0", List.of("coalore"));
@@ -597,14 +595,16 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("a", 2L);
 		mappingCollector.setValueBefore("b", 3L);
 		mappingCollector.setValueBefore("notConsume1", 1L);
-		Object2IntMap<String> ingredients = new Object2IntOpenHashMap<>();
-		ingredients.put("a", 1);
-		ingredients.put("b", 1);
-		ingredients.put("notConsume1", 0);
-		mappingCollector.addConversion(1, "c1", ingredients);
-		ingredients.removeInt("notConsume1");
-		ingredients.put("notConsume2", 0);
-		mappingCollector.addConversion(1, "c2", ingredients);
+		mappingCollector.addConversion(1, "c1", EMCHelper.intMapOf(
+				"a", 1,
+				"b", 1,
+				"notConsume1", 0
+		));
+		mappingCollector.addConversion(1, "c2", EMCHelper.intMapOf(
+				"a", 1,
+				"b", 1,
+				"notConsume2", 0
+		));
 
 		Map<String, Long> values = valueGenerator.generateValues();
 		Assertions.assertEquals(2, getValue(values, "a"));
@@ -642,10 +642,10 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("bucket", 768L);
 		mappingCollector.setValueBefore("waterBucket", 768L);
 		mappingCollector.setValueBefore("waterBottle", 0L);
-		Object2IntMap<String> m = new Object2IntOpenHashMap<>();
-		m.put("waterBucket", 1);
-		m.put("bucket", -1);
-		mappingCollector.addConversion(1, "waterGroup", m);
+		mappingCollector.addConversion(1, "waterGroup", EMCHelper.intMapOf(
+				"waterBucket", 1,
+				"bucket", -1
+		));
 		mappingCollector.addConversion(1, "waterGroup", List.of("waterBottle"));
 		mappingCollector.setValueBefore("a", 3L);
 		mappingCollector.addConversion(1, "result", List.of("a", "waterGroup"));

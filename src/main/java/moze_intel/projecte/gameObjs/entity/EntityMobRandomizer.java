@@ -65,7 +65,7 @@ public class EntityMobRandomizer extends NoGravityThrowableProjectile {
 			//TODO: Ideally we wouldn't consume fuel until after we make sure it was able to be added to the world and we remove it
 			// but odds are we will be able to so for now I am not going to worry about it
 			if (randomized != null && EMCHelper.consumePlayerFuel(player, 384) != -1) {
-				randomized.moveTo(ent.getX(), ent.getY(), ent.getZ(), ent.getYRot(), ent.getXRot());
+				randomized.moveTo(ent.position(), ent.getYRot(), ent.getXRot());
 				SpawnGroupData data;
 				if (randomized instanceof Rabbit rabbit && rabbit.getVariant() == Variant.EVIL) {
 					//If we are creating a rabbit, and it is supposed to be the killer bunny, we need to pass that data

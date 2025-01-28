@@ -1,6 +1,6 @@
 {
   "values": [
-    "#c:tools/axes/dark_matter",
-    "#c:tools/axes/red_matter"
+    "projecte:dm_axe",
+    "projecte:rm_axe"
   ]
 }

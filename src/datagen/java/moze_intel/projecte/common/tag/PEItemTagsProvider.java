@@ -3,6 +3,7 @@ package moze_intel.projecte.common.tag;
 import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.PETags;
+import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEItems;
@@ -32,11 +33,8 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 
 	@Override
 	protected void addTags(@NotNull HolderLookup.Provider provider) {
+		addBags();
 		addGear();
-		IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item> alchemicalBags = tag(PETags.Items.ALCHEMICAL_BAGS);
-		for (DyeColor color : DyeColor.values()) {
-			alchemicalBags.add(PEItems.getBag(color));
-		}
 		tag(ItemTags.BOOKSHELF_BOOKS).add(PEItems.TOME_OF_KNOWLEDGE.get());
 		tag(ItemTags.FREEZE_IMMUNE_WEARABLES).add(PEItems.GEM_CHESTPLATE.get());
 		tag(PETags.Items.COLLECTOR_FUEL).add(
@@ -95,10 +93,23 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 		tag(Tags.Items.CHESTS).add(
 				PEBlocks.ALCHEMICAL_CHEST.asItem()
 		);
+		tag(Tags.Items.PLAYER_WORKSTATIONS_FURNACES).add(
+				PEBlocks.DARK_MATTER_FURNACE.asItem(),
+				PEBlocks.RED_MATTER_FURNACE.asItem()
+		);
 		tag(ItemTags.BEACON_PAYMENT_ITEMS).add(
 				PEItems.DARK_MATTER.get(),
 				PEItems.RED_MATTER.get()
 		);
+	}
+
+	private void addBags() {
+		IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item> alchemicalBags = tag(PETags.Items.ALCHEMICAL_BAGS);
+		for (DyeColor color : DyeColor.values()) {
+			AlchemicalBag bag = PEItems.getBag(color);
+			alchemicalBags.add(bag);
+			tag(color.getDyedTag()).add(bag);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -109,82 +120,104 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				PETags.Items.TOOLS_KATARS,
 				PETags.Items.TOOLS_MORNING_STARS
 		);
-		tag(ItemTags.SWORDS).addTags(
-				makeTag(PETags.Items.TOOLS_SWORDS_DARK_MATTER, PEItems.DARK_MATTER_SWORD),
-				makeTag(PETags.Items.TOOLS_SWORDS_RED_MATTER, PEItems.RED_MATTER_SWORD)
+		addTool(ItemTags.SWORDS, new ItemLike[]{
+				PEItems.DARK_MATTER_SWORD,
+				PEItems.RED_MATTER_SWORD
+		}, ItemTags.SWORD_ENCHANTABLE, ItemTags.SHARP_WEAPON_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+		addTool(ItemTags.AXES, new ItemLike[]{
+				PEItems.DARK_MATTER_AXE,
+				PEItems.RED_MATTER_AXE
+		}, ItemTags.SHARP_WEAPON_ENCHANTABLE, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+		addTool(ItemTags.PICKAXES, new ItemLike[]{
+				PEItems.DARK_MATTER_PICKAXE,
+				PEItems.RED_MATTER_PICKAXE
+		}, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+		addTool(ItemTags.SHOVELS, new ItemLike[]{
+				PEItems.DARK_MATTER_SHOVEL,
+				PEItems.RED_MATTER_SHOVEL
+		}, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+		addTool(ItemTags.HOES, new ItemLike[]{
+				PEItems.DARK_MATTER_HOE,
+				PEItems.RED_MATTER_HOE
+		}, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+
+		//Note: For our tool types these aren't added to any of the enchantable tags, but we remove them just in case someone else adds the base tags to an enchantable one
+		addTool(PETags.Items.TOOLS_HAMMERS, new ItemLike[]{
+				PEItems.DARK_MATTER_HAMMER,
+				PEItems.RED_MATTER_HAMMER
+		}, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+		addTool(PETags.Items.TOOLS_KATARS, new ItemLike[]{
+				PEItems.RED_MATTER_KATAR
+		}, ItemTags.SWORD_ENCHANTABLE, ItemTags.SHARP_WEAPON_ENCHANTABLE, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+		addTool(PETags.Items.TOOLS_MORNING_STARS, new ItemLike[]{
+				PEItems.RED_MATTER_MORNING_STAR
+		}, ItemTags.MINING_ENCHANTABLE, ItemTags.MINING_LOOT_ENCHANTABLE, ItemTags.DURABILITY_ENCHANTABLE);
+
+		tag(Tags.Items.MELEE_WEAPON_TOOLS).addTag(PETags.Items.TOOLS_KATARS);
+		tag(Tags.Items.MINING_TOOL_TOOLS).addTags(
+				PETags.Items.TOOLS_HAMMERS,
+				PETags.Items.TOOLS_MORNING_STARS
 		);
-		tag(ItemTags.AXES).addTags(
-				makeTag(PETags.Items.TOOLS_AXES_DARK_MATTER, PEItems.DARK_MATTER_AXE),
-				makeTag(PETags.Items.TOOLS_AXES_RED_MATTER, PEItems.RED_MATTER_AXE)
-		);
-		tag(ItemTags.PICKAXES).addTags(
-				makeTag(PETags.Items.TOOLS_PICKAXES_DARK_MATTER, PEItems.DARK_MATTER_PICKAXE),
-				makeTag(PETags.Items.TOOLS_PICKAXES_RED_MATTER, PEItems.RED_MATTER_PICKAXE)
-		);
-		tag(ItemTags.SHOVELS).addTags(
-				makeTag(PETags.Items.TOOLS_SHOVELS_DARK_MATTER, PEItems.DARK_MATTER_SHOVEL),
-				makeTag(PETags.Items.TOOLS_SHOVELS_RED_MATTER, PEItems.RED_MATTER_SHOVEL)
-		);
-		tag(ItemTags.HOES).addTags(
-				makeTag(PETags.Items.TOOLS_HOES_DARK_MATTER, PEItems.DARK_MATTER_HOE),
-				makeTag(PETags.Items.TOOLS_HOES_RED_MATTER, PEItems.RED_MATTER_HOE)
-		);
-		tag(PETags.Items.TOOLS_HAMMERS).addTags(
-				makeTag(PETags.Items.TOOLS_HAMMERS_DARK_MATTER, PEItems.DARK_MATTER_HAMMER),
-				makeTag(PETags.Items.TOOLS_HAMMERS_RED_MATTER, PEItems.RED_MATTER_HAMMER)
-		);
-		tag(PETags.Items.TOOLS_KATARS).addTag(
-				makeTag(PETags.Items.TOOLS_KATARS_RED_MATTER, PEItems.RED_MATTER_KATAR)
-		);
-		tag(PETags.Items.TOOLS_MORNING_STARS).addTag(
-				makeTag(PETags.Items.TOOLS_MORNING_STARS_RED_MATTER, PEItems.RED_MATTER_MORNING_STAR)
+		tag(ItemTags.BREAKS_DECORATED_POTS).addTags(
+				PETags.Items.TOOLS_HAMMERS,
+				PETags.Items.TOOLS_KATARS,
+				PETags.Items.TOOLS_MORNING_STARS
 		);
 	}
 
 	private void addArmor() {
-		tag(ItemTags.TRIMMABLE_ARMOR).add(
-				PEItems.GEM_HELMET.get(),
-				PEItems.GEM_CHESTPLATE.get(),
-				PEItems.GEM_LEGGINGS.get(),
-				PEItems.GEM_BOOTS.get(),
-
+		addArmor(ItemTags.HEAD_ARMOR, ItemTags.HEAD_ARMOR_ENCHANTABLE,
 				PEItems.DARK_MATTER_HELMET.get(),
-				PEItems.DARK_MATTER_CHESTPLATE.get(),
-				PEItems.DARK_MATTER_LEGGINGS.get(),
-				PEItems.DARK_MATTER_BOOTS.get(),
-
 				PEItems.RED_MATTER_HELMET.get(),
-				PEItems.RED_MATTER_CHESTPLATE.get(),
-				PEItems.RED_MATTER_LEGGINGS.get(),
-				PEItems.RED_MATTER_BOOTS.get()
-		);
-		//TODO - 1.21: Re-evaluate
-		/*tag(Tags.Items.ARMORS_HELMETS).add(
 				PEItems.GEM_HELMET.get()
-		).addTags(
-				makeTag(PETags.Items.ARMORS_HELMETS_DARK_MATTER, PEItems.DARK_MATTER_HELMET),
-				makeTag(PETags.Items.ARMORS_HELMETS_RED_MATTER, PEItems.RED_MATTER_HELMET)
 		);
-		tag(Tags.Items.ARMORS_CHESTPLATES).add(
+		addArmor(ItemTags.CHEST_ARMOR, ItemTags.CHEST_ARMOR_ENCHANTABLE,
+				PEItems.DARK_MATTER_CHESTPLATE.get(),
+				PEItems.RED_MATTER_CHESTPLATE.get(),
 				PEItems.GEM_CHESTPLATE.get()
-		).addTags(
-				makeTag(PETags.Items.ARMORS_CHESTPLATES_DARK_MATTER, PEItems.DARK_MATTER_CHESTPLATE),
-						makeTag(PETags.Items.ARMORS_CHESTPLATES_RED_MATTER, PEItems.RED_MATTER_CHESTPLATE)
 		);
-		tag(Tags.Items.ARMORS_LEGGINGS).add(
+		addArmor(ItemTags.LEG_ARMOR, ItemTags.LEG_ARMOR_ENCHANTABLE,
+				PEItems.DARK_MATTER_LEGGINGS.get(),
+				PEItems.RED_MATTER_LEGGINGS.get(),
 				PEItems.GEM_LEGGINGS.get()
-		).addTags(
-				makeTag(PETags.Items.ARMORS_LEGGINGS_DARK_MATTER, PEItems.DARK_MATTER_LEGGINGS),
-				makeTag(PETags.Items.ARMORS_LEGGINGS_RED_MATTER, PEItems.RED_MATTER_LEGGINGS)
 		);
-		tag(Tags.Items.ARMORS_BOOTS).add(
+		addArmor(ItemTags.FOOT_ARMOR, ItemTags.FOOT_ARMOR_ENCHANTABLE,
+				PEItems.DARK_MATTER_BOOTS.get(),
+				PEItems.RED_MATTER_BOOTS.get(),
 				PEItems.GEM_BOOTS.get()
-		).addTags(
-				makeTag(PETags.Items.ARMORS_BOOTS_DARK_MATTER, PEItems.DARK_MATTER_BOOTS),
-				makeTag(PETags.Items.ARMORS_BOOTS_RED_MATTER, PEItems.RED_MATTER_BOOTS)
-		);*/
+		);
 	}
-	
+
+	@SafeVarargs
+	private void addTool(TagKey<Item> toolTag, ItemLike[] items, TagKey<Item>... enchantableTags) {
+		IntrinsicTagAppender<Item> toolBuilder = tag(toolTag);
+		//IntrinsicTagAppender<Item> durabilityEnchantable = tag(ItemTags.DURABILITY_ENCHANTABLE);
+		//IntrinsicTagAppender<Item> equippableEnchantable = tag(ItemTags.EQUIPPABLE_ENCHANTABLE);
+		for (ItemLike itemLike : items) {
+			Item item = itemLike.asItem();
+			toolBuilder.add(item);
+			//Remove them from enchantment based tags
+			for (TagKey<Item> enchantableTag : enchantableTags) {
+				tag(enchantableTag).remove(item);
+			}
+		}
+	}
+
+	private void addArmor(TagKey<Item> armorTag, TagKey<Item> armorTagEnchantable, ItemLike... items) {
+		IntrinsicTagAppender<Item> armorBuilder = tag(armorTag);
+		IntrinsicTagAppender<Item> enchantableBuilder = tag(armorTagEnchantable);
+		IntrinsicTagAppender<Item> durabilityEnchantable = tag(ItemTags.DURABILITY_ENCHANTABLE);
+		IntrinsicTagAppender<Item> equippableEnchantable = tag(ItemTags.EQUIPPABLE_ENCHANTABLE);
+		for (ItemLike itemLike : items) {
+			Item item = itemLike.asItem();
+			armorBuilder.add(item);
+			//Remove them from enchantment based tags
+			enchantableBuilder.remove(item);
+			durabilityEnchantable.remove(item);
+			equippableEnchantable.remove(item);
+		}
+	}
+
 	private TagKey<Item> makeTag(TagKey<Item> tag, ItemLike item) {
 		tag(tag).add(item.asItem());
 		return tag;

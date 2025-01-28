@@ -43,11 +43,7 @@ public record NovaExplosionSyncPKT(Vec3 explosionCenter, float explosionRadius, 
 		level.playLocalSound(explosionCenter.x, explosionCenter.y, explosionCenter.z, explosionSound.value(), SoundSource.BLOCKS, 4.0F,
 				(1.0F + (level.random.nextFloat() - level.random.nextFloat()) * 0.2F) * 0.7F, false);
 		for (BlockPos pos : positions) {
-			Vec3 adjusted = new Vec3(
-					pos.getX() + level.random.nextFloat(),
-					pos.getY() + level.random.nextFloat(),
-					pos.getZ() + level.random.nextFloat()
-			);
+			Vec3 adjusted = Vec3.atLowerCornerWithOffset(pos, level.random.nextFloat(), level.random.nextFloat(), level.random.nextFloat());
 			Vec3 difference = adjusted.subtract(explosionCenter);
 			double d7 = 0.5D / (difference.length() / explosionRadius + 0.1D);
 			d7 *= level.random.nextFloat() * level.random.nextFloat() + 0.3F;

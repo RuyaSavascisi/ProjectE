@@ -11,6 +11,7 @@ import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.gameObjs.items.ICapabilityAware;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.integration.IntegrationHelper;
+import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.PELang;
@@ -100,7 +101,7 @@ public class BlackHoleBand extends PEToggleItem implements IAlchBagItem, IAlchCh
 		for (ItemEntity item : level.getEntitiesOfClass(ItemEntity.class, pedestal.getEffectBounds(), ent -> !ent.isSpectator() && ent.isAlive())) {
 			WorldHelper.gravitateEntityTowards(item, target);
 			if (!level.isClientSide && item.distanceToSqr(target) < 1.21) {
-				for (Direction dir : Direction.values()) {
+				for (Direction dir : Constants.DIRECTIONS) {
 					//Cache the item handlers in various spots so that we only query each neighboring position once
 					IItemHandler inv = nearbyHandlers.get(dir);
 					if (inv == null) {

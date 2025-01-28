@@ -38,7 +38,7 @@ public class EntityHomingArrow extends Arrow {
 		super(PEEntityTypes.HOMING_ARROW.get(), level);
 		setPos(shooter.getX(), shooter.getEyeY() - 0.1, shooter.getZ());
 		setOwner(shooter);
-		this.setBaseDamage(damage);
+		setBaseDamage(damage);
 	}
 
 	@Override

@@ -46,32 +46,6 @@ public class PETags {
 		public static final TagKey<Item> TOOLS_KATARS = commonTag("tools/katars");
 		public static final TagKey<Item> TOOLS_MORNING_STARS = commonTag("tools/morning_stars");
 
-		public static final TagKey<Item> ARMORS_HELMETS_DARK_MATTER = commonTag("armors/armors/dark_matter");
-		public static final TagKey<Item> ARMORS_CHESTPLATES_DARK_MATTER = commonTag("armors/chestplates/dark_matter");
-		public static final TagKey<Item> ARMORS_LEGGINGS_DARK_MATTER = commonTag("armors/leggings/dark_matter");
-		public static final TagKey<Item> ARMORS_BOOTS_DARK_MATTER = commonTag("armors/boots/dark_matter");
-
-		public static final TagKey<Item> TOOLS_SWORDS_DARK_MATTER = commonTag("tools/swords/dark_matter");
-		public static final TagKey<Item> TOOLS_AXES_DARK_MATTER = commonTag("tools/axes/dark_matter");
-		public static final TagKey<Item> TOOLS_PICKAXES_DARK_MATTER = commonTag("tools/pickaxes/dark_matter");
-		public static final TagKey<Item> TOOLS_SHOVELS_DARK_MATTER = commonTag("tools/shovels/dark_matter");
-		public static final TagKey<Item> TOOLS_HOES_DARK_MATTER = commonTag("tools/hoes/dark_matter");
-		public static final TagKey<Item> TOOLS_HAMMERS_DARK_MATTER = commonTag("tools/hammers/dark_matter");
-
-		public static final TagKey<Item> ARMORS_HELMETS_RED_MATTER = commonTag("armors/armors/red_matter");
-		public static final TagKey<Item> ARMORS_CHESTPLATES_RED_MATTER = commonTag("armors/chestplates/red_matter");
-		public static final TagKey<Item> ARMORS_LEGGINGS_RED_MATTER = commonTag("armors/leggings/red_matter");
-		public static final TagKey<Item> ARMORS_BOOTS_RED_MATTER = commonTag("armors/boots/red_matter");
-
-		public static final TagKey<Item> TOOLS_SWORDS_RED_MATTER = commonTag("tools/swords/red_matter");
-		public static final TagKey<Item> TOOLS_AXES_RED_MATTER = commonTag("tools/axes/red_matter");
-		public static final TagKey<Item> TOOLS_PICKAXES_RED_MATTER = commonTag("tools/pickaxes/red_matter");
-		public static final TagKey<Item> TOOLS_SHOVELS_RED_MATTER = commonTag("tools/shovels/red_matter");
-		public static final TagKey<Item> TOOLS_HOES_RED_MATTER = commonTag("tools/hoes/red_matter");
-		public static final TagKey<Item> TOOLS_HAMMERS_RED_MATTER = commonTag("tools/hammers/red_matter");
-		public static final TagKey<Item> TOOLS_KATARS_RED_MATTER = commonTag("tools/katars/red_matter");
-		public static final TagKey<Item> TOOLS_MORNING_STARS_RED_MATTER = commonTag("tools/morning_stars/red_matter");
-
 		private static TagKey<Item> tag(String name) {
 			return ItemTags.create(PECore.rl(name));
 		}

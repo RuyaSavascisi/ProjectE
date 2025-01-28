@@ -35,6 +35,7 @@ public class LayerYue extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
 		if (player.isInvisible()) {
 			return;
 		}
+		//TODO - 1.21: Test that this behaves properly with Attributes.SCALE
 		if (!FMLEnvironment.production || SIN_UUID.equals(player.getUUID()) || CLAR_UUID.equals(player.getUUID())) {
 			matrix.pushPose();
 			render.getModel().jacket.translateAndRotate(matrix);

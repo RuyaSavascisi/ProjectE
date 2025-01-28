@@ -2081,6 +2081,11 @@
       },
       {
         "type": "projecte:item",
+        "tag": "c:music_discs",
+        "value": 2048
+      },
+      {
+        "type": "projecte:item",
         "id": "minecraft:flint",
         "value": 4
       },
@@ -2187,6 +2192,11 @@
       {
         "type": "projecte:item",
         "tag": "minecraft:wool",
+        "value": 48
+      },
+      {
+        "type": "projecte:item",
+        "id": "minecraft:armadillo_scute",
         "value": 48
       },
       {

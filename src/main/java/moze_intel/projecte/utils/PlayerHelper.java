@@ -106,6 +106,7 @@ public final class PlayerHelper {
 	 * Returns a vec representing where the player is looking, capped at maxDistance away.
 	 */
 	public static Vec3 getLookTarget(Player player, double maxDistance) {
+		//TODO - 1.21: For both this and getBlockLookingAt, make sure we properly make use of the player interaction range attributes
 		Vec3 lookAngle = player.getLookAngle();
 		return player.getEyePosition().add(lookAngle.x * maxDistance, lookAngle.y * maxDistance, lookAngle.z * maxDistance);
 	}
@@ -125,7 +126,7 @@ public final class PlayerHelper {
 		if (!player.mayInteract(player.level(), pos)) {
 			return false;
 		}
-		for (Direction e : Direction.values()) {
+		for (Direction e : Constants.DIRECTIONS) {
 			if (!player.mayUseItemAt(pos, e, ItemStack.EMPTY)) {
 				return false;
 			}

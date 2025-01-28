@@ -88,6 +88,7 @@ public class GemFeet extends GemArmorBase {
 			if (!level.isClientSide) {
 				player.resetFallDistance();
 			} else {
+				//TODO - 1.21: Do we want to try and make use of just applying Attributes.GRAVITY to the player instead?
 				boolean flying = player.getAbilities().flying;
 				if (!flying && isJumpPressed()) {
 					player.addDeltaMovement(VERTICAL_MOVEMENT);

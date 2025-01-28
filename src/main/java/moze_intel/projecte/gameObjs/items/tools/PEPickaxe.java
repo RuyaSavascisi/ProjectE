@@ -39,6 +39,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
 
 public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<PickaxeMode>, IBarHelper {
@@ -135,7 +136,7 @@ public class PEPickaxe extends PickaxeItem implements IItemCharge, IItemMode<Pic
 			return InteractionResult.PASS;
 		}
 		BlockPos pos = context.getClickedPos();
-		if (ItemHelper.isOre(context.getLevel().getBlockState(pos))) {
+		if (context.getLevel().getBlockState(pos).is(Tags.Blocks.ORES)) {
 			return ToolHelper.tryVeinMine(player, context.getItemInHand(), pos, context.getClickedFace());
 		}
 		return InteractionResult.PASS;

@@ -181,7 +181,7 @@ public final class WorldHelper {
 				NovaExplosionSyncPKT packet = new NovaExplosionSyncPKT(explosion.center(), explosion.radius(), explosion.getExplosionSound(), particlePositions);
 				for (ServerPlayer player : serverLevel.players()) {
 					//Based on ServerLevel#explode's range check
-					if (player.distanceToSqr(x, y, z) < 4096.0) {
+					if (player.distanceToSqr(x, y, z) < 4_096.0) {
 						PacketDistributor.sendToPlayer(player, packet);
 					}
 				}
@@ -541,7 +541,7 @@ public final class WorldHelper {
 					if (stateToReplace.is(Blocks.WATER) && stateToReplace.getFluidState().getAmount() == 8) {
 						level.setBlockAndUpdate(blockpos, newState);
 						success = true;
-					} else if (stateToReplace.is(Blocks.SEAGRASS) && random.nextInt(10) == 0) {
+					} else if (stateToReplace.is(Blocks.SEAGRASS) && random.nextInt(Constants.TICKS_PER_HALF_SECOND) == 0) {
 						((BonemealableBlock) Blocks.SEAGRASS).performBonemeal(level, random, blockpos, stateToReplace);
 						success = true;
 					}
@@ -678,10 +678,9 @@ public final class WorldHelper {
 
 	private static void repelEntity(Vec3 vec, Entity entity) {
 		double distance = vec.distanceTo(entity.position()) + 0.1;
-		Vec3 r = entity.position()
+		entity.push(entity.position()
 				.subtract(vec)
-				.scale(1 / (1.5 * distance));
-		entity.push(r.x(), r.y(), r.z());
+				.scale(1 / (1.5 * distance)));
 	}
 
 	public static boolean canLight(BlockState state) {

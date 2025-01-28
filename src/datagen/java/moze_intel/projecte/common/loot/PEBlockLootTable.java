@@ -1,6 +1,6 @@
 package moze_intel.projecte.common.loot;
 
-import java.util.HashSet;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.Set;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class PEBlockLootTable extends BlockLootSubProvider {
 
-	private final Set<Block> knownBlocks = new HashSet<>();
+	private final Set<Block> knownBlocks = new ReferenceOpenHashSet<>();
 
 	public PEBlockLootTable(HolderLookup.Provider registries) {
 		super(Set.of(

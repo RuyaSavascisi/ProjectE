@@ -1,6 +1,6 @@
 {
   "values": [
-    "#c:tools/swords/dark_matter",
-    "#c:tools/swords/red_matter"
+    "projecte:dm_sword",
+    "projecte:rm_sword"
   ]
 }

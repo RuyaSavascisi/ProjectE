@@ -52,8 +52,8 @@ public class RelayMK1Container extends PEContainer {
 	@Override
 	protected void broadcastPE(boolean all) {
 		emc.set(relay.getStoredEmc());
-		kleinChargeProgress.set((int) (relay.getItemChargeProportion() * 8000));
-		inputBurnProgress.set((int) (relay.getInputBurnProportion() * 8000));
+		kleinChargeProgress.set((int) (relay.getItemChargeProportion() * 8_000));
+		inputBurnProgress.set((int) (relay.getInputBurnProportion() * 8_000));
 		super.broadcastPE(all);
 	}
 
@@ -63,10 +63,10 @@ public class RelayMK1Container extends PEContainer {
 	}
 
 	public double getKleinChargeProgress() {
-		return kleinChargeProgress.get() / 8000.0;
+		return kleinChargeProgress.get() / 8_000.0;
 	}
 
 	public double getInputBurnProgress() {
-		return inputBurnProgress.get() / 8000.0;
+		return inputBurnProgress.get() / 8_000.0;
 	}
 }

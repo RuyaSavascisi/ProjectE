@@ -41,6 +41,10 @@ public class PEBlockTagsProvider extends BlockTagsProvider {
 		tag(Tags.Blocks.CHESTS).add(
 				PEBlocks.ALCHEMICAL_CHEST.getBlock()
 		);
+		tag(Tags.Blocks.PLAYER_WORKSTATIONS_FURNACES).add(
+				PEBlocks.DARK_MATTER_FURNACE.getBlock(),
+				PEBlocks.RED_MATTER_FURNACE.getBlock()
+		);
 		tag(BlockTags.BEACON_BASE_BLOCKS).add(
 				PEBlocks.DARK_MATTER.getBlock(),
 				PEBlocks.RED_MATTER.getBlock()
@@ -62,7 +66,6 @@ public class PEBlockTagsProvider extends BlockTagsProvider {
 		tag(PETags.Blocks.MINEABLE_WITH_KATAR);
 		tag(PETags.Blocks.MINEABLE_WITH_MORNING_STAR);
 
-		//TODO - 1.21: Re-evaluate
 		tag(PETags.Blocks.NEEDS_DARK_MATTER_TOOL).add(
 				PEBlocks.DARK_MATTER.getBlock(),
 				PEBlocks.DARK_MATTER_FURNACE.getBlock(),
@@ -72,9 +75,14 @@ public class PEBlockTagsProvider extends BlockTagsProvider {
 				PEBlocks.RED_MATTER.getBlock(),
 				PEBlocks.RED_MATTER_FURNACE.getBlock()
 		);
-		//TODO - 1.21: Set these
-		tag(PETags.Blocks.INCORRECT_FOR_DARK_MATTER_TOOL);
 		tag(PETags.Blocks.INCORRECT_FOR_RED_MATTER_TOOL);
+		tag(PETags.Blocks.INCORRECT_FOR_DARK_MATTER_TOOL).addTags(PETags.Blocks.NEEDS_RED_MATTER_TOOL);
+		tag(BlockTags.INCORRECT_FOR_NETHERITE_TOOL).addTags(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, PETags.Blocks.NEEDS_RED_MATTER_TOOL);
+		tag(BlockTags.INCORRECT_FOR_DIAMOND_TOOL).addTags(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, PETags.Blocks.NEEDS_RED_MATTER_TOOL);
+		tag(BlockTags.INCORRECT_FOR_IRON_TOOL).addTags(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, PETags.Blocks.NEEDS_RED_MATTER_TOOL);
+		tag(BlockTags.INCORRECT_FOR_STONE_TOOL).addTags(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, PETags.Blocks.NEEDS_RED_MATTER_TOOL);
+		tag(BlockTags.INCORRECT_FOR_GOLD_TOOL).addTags(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, PETags.Blocks.NEEDS_RED_MATTER_TOOL);
+		tag(BlockTags.INCORRECT_FOR_WOODEN_TOOL).addTags(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, PETags.Blocks.NEEDS_RED_MATTER_TOOL);
 
 		tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
 				PEBlocks.ALCHEMICAL_CHEST.getBlock(),

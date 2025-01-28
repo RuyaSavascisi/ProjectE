@@ -15,6 +15,7 @@ import moze_intel.projecte.gameObjs.container.MercurialEyeContainer;
 import moze_intel.projecte.gameObjs.items.MercurialEye.MercurialEyeMode;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
+import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PlayerHelper;
@@ -221,7 +222,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 						if (hitTargets >= size) {
 							break;
 						}
-						for (Direction e : Direction.values()) {
+						for (Direction e : Constants.DIRECTIONS) {
 							if (facing.getAxis() != e.getAxis()) {
 								BlockPos offset = pos.relative(e);
 								if (visited.add(offset)) {

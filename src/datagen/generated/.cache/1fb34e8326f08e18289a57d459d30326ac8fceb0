@@ -1,3 +1,5 @@
-// 1.21.1	2025-01-07T12:26:04.3967603	Damage Type Tags
+// 1.21.1	2025-01-28T13:59:03.1828866	Damage Type Tags
 3b5e763749168a7b66c78109df6636c285a16f64 data/minecraft/tags/damage_type/bypasses_armor.json
+3b5e763749168a7b66c78109df6636c285a16f64 data/minecraft/tags/damage_type/can_break_armor_stand.json
+3b5e763749168a7b66c78109df6636c285a16f64 data/minecraft/tags/damage_type/is_player_attack.json
 3b5e763749168a7b66c78109df6636c285a16f64 data/neoforge/tags/damage_type/is_physical.json
