@@ -1,6 +1,7 @@
 package moze_intel.projecte.emc.mappers.recipe;
 
 import moze_intel.projecte.api.mapper.recipe.RecipeTypeMapper;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.world.item.crafting.RecipeType;
 
 @RecipeTypeMapper
@@ -8,12 +9,17 @@ public class VanillaRecipeTypeMapper extends BaseRecipeTypeMapper {
 
 	@Override
 	public String getName() {
-		return "VanillaRecipeTypes";
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER_VANILLA.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER_VANILLA.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Maps the different vanilla recipe types.";
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER_VANILLA.tooltip();
 	}
 
 	@Override

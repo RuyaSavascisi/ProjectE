@@ -18,6 +18,11 @@ public enum PELang implements ILangEntry {
 	BLACKLIST("misc", "blacklist"),
 	WHITELIST("misc", "whitelist"),
 	DENSITY_MODE_TARGET("misc", "mode_switch"),
+	//Mappers
+	CUSTOM_EMC_PERMISSION_BOTH("mapper", "api_custom_emc.permission.both"),
+	CUSTOM_EMC_PERMISSION_REMOVE("mapper", "api_custom_emc.permission.remove"),
+	CUSTOM_EMC_PERMISSION_SET("mapper", "api_custom_emc.permission.set"),
+	CUSTOM_EMC_PERMISSION_NONE("mapper", "api_custom_emc.permission.none"),
 	//Command
 	CLEAR_KNOWLEDGE_NOTIFY("command", "clear_knowledge.notify"),
 	CLEAR_KNOWLEDGE_SUCCESS("command", "clear_knowledge.success"),

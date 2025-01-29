@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.mappers;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import java.util.List;
 import java.util.Map;
 import moze_intel.projecte.PECore;
@@ -9,6 +8,7 @@ import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -23,7 +23,7 @@ import net.neoforged.neoforge.registries.datamaps.builtin.Oxidizable;
 public class OxidizationMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		Registry<Block> blocks = registryAccess.registryOrThrow(Registries.BLOCK);
 		int recipeCount = 0;
@@ -44,11 +44,16 @@ public class OxidizationMapper implements IEMCMapper<NormalizedSimpleStack, Long
 
 	@Override
 	public String getName() {
-		return "OxidizationMapper";
+		return PEConfigTranslations.MAPPING_OXIDATION_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_OXIDATION_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Add Conversions for all oxidizable blocks";
+		return PEConfigTranslations.MAPPING_OXIDATION_MAPPER.tooltip();
 	}
 }

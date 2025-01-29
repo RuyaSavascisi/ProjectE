@@ -1,11 +1,9 @@
 package moze_intel.projecte.emc;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,10 +22,12 @@ import moze_intel.projecte.api.mapper.collector.IExtendedMappingCollector;
 import moze_intel.projecte.api.mapper.generator.IValueGenerator;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.config.MappingConfig;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.arithmetic.HiddenBigFractionArithmetic;
 import moze_intel.projecte.emc.collector.DumpToFileCollector;
 import moze_intel.projecte.emc.collector.LongToBigFractionCollector;
+import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.emc.generator.BigFractionToLongGenerator;
 import moze_intel.projecte.emc.mappers.TagMapper;
 import moze_intel.projecte.emc.pregenerated.PregeneratedEMC;
@@ -60,17 +60,9 @@ public final class EMCMappingHandler {
 			//Manually register the Tag Mapper to ensure that it is registered last so that it can "fix" all the tags used in any of the other mappers
 			// This also has the side effect to make sure that we can use EMC_MAPPERS.isEmpty to check if we have attempted to initialize our cache yet
 			mappers.add(new TagMapper());
+			//Set up the config for the Mappers and processors
+			MappingConfig.setup(mappers, DataComponentManager.loadProcessors());
 		}
-	}
-
-	public static <T> T getOrSetDefault(CommentedFileConfig config, String key, String comment, T defaultValue) {
-		T val = config.get(key);
-		if (val == null) {
-			val = defaultValue;
-			config.set(key, val);
-			config.setComment(key, comment);
-		}
-		return val;
 	}
 
 	public static void map(ReloadableServerResources serverResources, RegistryAccess registryAccess, ResourceManager resourceManager) {
@@ -80,51 +72,31 @@ public final class EMCMappingHandler {
 		IValueGenerator<NormalizedSimpleStack, Long> valueGenerator = new BigFractionToLongGenerator<>(mapper);
 		IExtendedMappingCollector<NormalizedSimpleStack, Long, IValueArithmetic<BigFraction>> mappingCollector = new LongToBigFractionCollector<>(mapper);
 
-		//TODO - 1.21: Make this a slightly more normal config?? Similar to Data component processors
-		// That way we can also make it so it displays in the config gui
-		Path path = ProjectEConfig.CONFIG_DIR.resolve("mapping.toml");
-		try {
-			if (path.toFile().createNewFile()) {
-				PECore.debugLog("Created mapping.toml");
-			}
-		} catch (IOException ex) {
-			PECore.LOGGER.error("Couldn't create mapping.toml", ex);
+		if (MappingConfig.dumpToFile()) {
+			mappingCollector = new DumpToFileCollector<>(ProjectEConfig.CONFIG_DIR.resolve("mapping_dump.json"), mappingCollector);
 		}
 
-		CommentedFileConfig config = CommentedFileConfig.builder(path).build();
-		config.load();
-
-		boolean dumpToFile = getOrSetDefault(config, "general.dumpEverythingToFile", "Want to take a look at the internals of EMC Calculation? Enable this to write all the conversions and setValue-Commands to config/ProjectE/mappingdump.json", false);
-		boolean shouldUsePregenerated = getOrSetDefault(config, "general.pregenerate", "When the next EMC mapping occurs write the results to config/ProjectE/pregenerated_emc.json and only ever run the mapping again" +
-																					   " when that file does not exist, this setting is set to false, or an error occurred parsing that file.", false);
-		boolean logFoundExploits = getOrSetDefault(config, "general.logEMCExploits", "Log known EMC Exploits. This can not and will not find all possible exploits. " +
-																					 "This will only find exploits that result in fixed/custom emc values that the algorithm did not overwrite. " +
-																					 "Exploits that derive from conversions that are unknown to ProjectE will not be found.", true);
-
-		if (dumpToFile) {
-			mappingCollector = new DumpToFileCollector<>(ProjectEConfig.CONFIG_DIR.resolve("mappingdump.json"), mappingCollector);
-		}
-
+		boolean usePregenerated = MappingConfig.usePregenerated();
 		Path pregeneratedEmcFile = ProjectEConfig.CONFIG_DIR.resolve("pregenerated_emc.json");
 		Map<ItemInfo, Long> graphMapperItemValues;
-		Optional<Map<ItemInfo, Long>> readPregeneratedValues = PregeneratedEMC.read(registryAccess, pregeneratedEmcFile, shouldUsePregenerated);
+		Optional<Map<ItemInfo, Long>> readPregeneratedValues = PregeneratedEMC.read(registryAccess, pregeneratedEmcFile, usePregenerated);
 		if (readPregeneratedValues.isPresent()) {
 			graphMapperItemValues = readPregeneratedValues.get();
 			PECore.LOGGER.info("Loaded {} values from pregenerated EMC File", graphMapperItemValues.size());
 		} else {
-			SimpleGraphMapper.setLogFoundExploits(logFoundExploits);
+			SimpleGraphMapper.setLogFoundExploits(MappingConfig.logExploits());
 
 			PECore.debugLog("Starting to collect Mappings...");
 			for (IEMCMapper<NormalizedSimpleStack, Long> emcMapper : mappers) {
-				try {
-					if (getOrSetDefault(config, "enabledMappers." + emcMapper.getName(), emcMapper.getDescription(), emcMapper.isAvailable())) {
-						DumpToFileCollector.currentGroupName = emcMapper.getName();
-						emcMapper.addMappings(mappingCollector, config, serverResources, registryAccess, resourceManager);
+				if (MappingConfig.isEnabled(emcMapper)) {
+					DumpToFileCollector.currentGroupName = emcMapper.getName();
+					try {
+						emcMapper.addMappings(mappingCollector, serverResources, registryAccess, resourceManager);
 						PECore.debugLog("Collected Mappings from " + emcMapper.getClass().getName());
+					} catch (Exception e) {
+						PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Exception during Mapping Collection from Mapper {}. PLEASE REPORT THIS! EMC VALUES MIGHT BE INCONSISTENT!",
+								emcMapper.getClass().getName(), e);
 					}
-				} catch (Exception e) {
-					PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Exception during Mapping Collection from Mapper {}. PLEASE REPORT THIS! EMC VALUES MIGHT BE INCONSISTENT!",
-							emcMapper.getClass().getName(), e);
 				}
 			}
 			DumpToFileCollector.currentGroupName = "NSSHelper";
@@ -133,16 +105,12 @@ public final class EMCMappingHandler {
 			mappingCollector.finishCollection(registryAccess);
 
 			PECore.debugLog("Starting to generate Values:");
-
-			config.save();
-			config.close();
-
 			Map<NormalizedSimpleStack, Long> graphMapperValues = valueGenerator.generateValues();
 			PECore.debugLog("Generated Values...");
 
 			graphMapperItemValues = filterEMCMap(graphMapperValues);
 
-			if (shouldUsePregenerated) {
+			if (usePregenerated) {
 				//Should have used pregenerated, but the file was not read => regenerate.
 				PregeneratedEMC.write(registryAccess, pregeneratedEmcFile, graphMapperItemValues);
 				PECore.debugLog("Wrote Pregen-file!");

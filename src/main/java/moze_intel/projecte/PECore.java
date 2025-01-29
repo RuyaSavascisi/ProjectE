@@ -13,9 +13,7 @@ import moze_intel.projecte.config.CustomEMCParser;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.emc.FuelMapper;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
-import moze_intel.projecte.emc.mappers.recipe.CraftingMapper;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.items.rings.Arcana;
 import moze_intel.projecte.gameObjs.items.rings.Arcana.ArcanaMode;
@@ -182,15 +180,9 @@ public class PECore {
 		event.registerEntity(PECapabilities.KNOWLEDGE_CAPABILITY, EntityType.PLAYER, (player, context) -> new KnowledgeImpl(player));
 	}
 
-	public static void bootstrapMappers() {
-		EMCMappingHandler.loadMappers();
-		CraftingMapper.loadMappers();
-		DataComponentManager.loadProcessors();
-	}
-
 	private void commonSetup(FMLCommonSetupEvent event) {
 		new ThreadCheckUpdate().start();
-		bootstrapMappers();
+		EMCMappingHandler.loadMappers();
 
 		event.enqueueWork(() -> {
 			//Dispenser Behavior

@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.mappers;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -9,6 +8,7 @@ import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.config.CustomEMCParser;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -17,7 +17,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 public class CustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		for (Object2LongMap.Entry<NSSItem> entry : CustomEMCParser.currentEntries.entries().object2LongEntrySet()) {
 			NSSItem item = entry.getKey();
@@ -30,11 +30,16 @@ public class CustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Long> 
 
 	@Override
 	public String getName() {
-		return "CustomEMCMapper";
+		return PEConfigTranslations.MAPPING_CUSTOM_EMC_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_CUSTOM_EMC_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Uses the `custom_emc.json` File to add EMC values.";
+		return PEConfigTranslations.MAPPING_CUSTOM_EMC_MAPPER.tooltip();
 	}
 }

@@ -1,12 +1,12 @@
 package moze_intel.projecte.emc.mappers;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -21,7 +21,7 @@ import net.minecraft.world.item.alchemy.PotionContents;
 public class TippedArrowMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		int recipeCount = 0;
 		NSSItem nssArrow = NSSItem.createItem(Items.ARROW);
@@ -38,11 +38,16 @@ public class TippedArrowMapper implements IEMCMapper<NormalizedSimpleStack, Long
 
 	@Override
 	public String getName() {
-		return "TippedArrowMapper";
+		return PEConfigTranslations.MAPPING_TIPPED_ARROW_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_TIPPED_ARROW_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Add Conversions for all lingering potions to arrow recipes";
+		return PEConfigTranslations.MAPPING_TIPPED_ARROW_MAPPER.tooltip();
 	}
 }

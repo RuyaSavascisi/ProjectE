@@ -7,9 +7,9 @@ import java.util.HashSet;
 import java.util.Set;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
-import moze_intel.projecte.api.mapper.IEMCMapper;
+import moze_intel.projecte.config.MappingConfig;
 import moze_intel.projecte.emc.mappers.OreBlacklistMapper;
-import moze_intel.projecte.emc.mappers.RawOreBlacklistMapper;
+import moze_intel.projecte.emc.mappers.RawMaterialsBlacklistMapper;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.Minecraft;
@@ -38,17 +38,12 @@ public class DumpMissingEmc {
 				).executes(ctx -> execute(ctx, false));
 	}
 
-	private static boolean isMapperEnabled(IEMCMapper<?, ?> mapper) {
-		//TODO - 1.21: Implement this
-		return true;
-	}
-
 	private static boolean expectedMissing(Holder<Item> item) {
 		if (item.value() instanceof SpawnEggItem) {
 			return true;
-		} else if (item.is(Tags.Items.ORES) && isMapperEnabled(OreBlacklistMapper.INSTANCE)) {
+		} else if (item.is(Tags.Items.ORES) && MappingConfig.isEnabled(OreBlacklistMapper.INSTANCE)) {
 			return true;
-		} else if (item.is(Tags.Items.RAW_MATERIALS)&& isMapperEnabled(RawOreBlacklistMapper.INSTANCE)) {
+		} else if (item.is(Tags.Items.RAW_MATERIALS)&& MappingConfig.isEnabled(RawMaterialsBlacklistMapper.INSTANCE)) {
 			return true;
 		}
 		//TODO - 1.21: Skip any other expected things? Should we just put them in a tag?
@@ -84,6 +79,7 @@ public class DumpMissingEmc {
 		Set<ItemInfo> missing = new HashSet<>();
 		for (Item item : registryAccess.registryOrThrow(Registries.ITEM)) {
 			if (item != Items.AIR) {
+				//noinspection deprecation
 				if (skipExpectedMissing && expectedMissing(item.builtInRegistryHolder())) {
 					//Skip any items that we expected to be missing (for example ores)
 					continue;

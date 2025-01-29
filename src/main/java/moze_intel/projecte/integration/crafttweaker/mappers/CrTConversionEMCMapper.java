@@ -1,6 +1,5 @@
 package moze_intel.projecte.integration.crafttweaker.mappers;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +8,7 @@ import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -29,7 +29,7 @@ public class CrTConversionEMCMapper implements IEMCMapper<NormalizedSimpleStack,
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		for (CrTConversion apiConversion : storedConversions) {
 			TriConsumer<IMappingCollector<NormalizedSimpleStack, Long>, NormalizedSimpleStack, CrTConversion> consumer;
@@ -51,12 +51,17 @@ public class CrTConversionEMCMapper implements IEMCMapper<NormalizedSimpleStack,
 
 	@Override
 	public String getName() {
-		return "CrTConversionEMCMapper";
+		return PEConfigTranslations.MAPPING_CRT_CONVERSION_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_CRT_CONVERSION_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Allows adding custom conversions through CraftTweaker. This behaves similarly to if someone used a custom conversion file instead.";
+		return PEConfigTranslations.MAPPING_CRT_CONVERSION_MAPPER.tooltip();
 	}
 
 	public record CrTConversion(NormalizedSimpleStack output, int amount, boolean propagateTags, boolean set, Object2IntMap<NormalizedSimpleStack> ingredients) {}

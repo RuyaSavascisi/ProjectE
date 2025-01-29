@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.mappers;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,6 +11,7 @@ import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSFluid;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
@@ -38,7 +38,7 @@ import org.jetbrains.annotations.Nullable;
 public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 		//TODO - 1.21: Figure this out? At the very least add a warning that gets logged
@@ -113,12 +113,17 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	@Override
 	public String getName() {
-		return "BrewingMapper";
+		return PEConfigTranslations.MAPPING_BREWING_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_BREWING_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Add Conversions for Brewing Recipes";
+		return PEConfigTranslations.MAPPING_BREWING_MAPPER.tooltip();
 	}
 
 	@Nullable

@@ -1,8 +1,5 @@
 package moze_intel.projecte.emc.mappers;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -11,25 +8,36 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.ToIntFunction;
+import java.util.Optional;
+import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.api.imc.CustomEMCRegistration;
 import moze_intel.projecte.api.imc.IMCMethods;
 import moze_intel.projecte.api.mapper.EMCMapper;
+import moze_intel.projecte.api.mapper.EMCMapper.Instance;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
-import moze_intel.projecte.api.nss.NSSItem;
+import moze_intel.projecte.api.nss.AbstractNSSTag;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import moze_intel.projecte.emc.EMCMappingHandler;
+import moze_intel.projecte.config.PEConfigTranslations;
+import moze_intel.projecte.utils.text.IHasTranslationKey;
+import moze_intel.projecte.utils.text.IHasTranslationKey.IHasEnumNameTranslationKey;
+import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.event.lifecycle.InterModProcessEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import org.jetbrains.annotations.Nullable;
 
 @EMCMapper
 public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
-	@EMCMapper.Instance
+	@Instance
 	public static final APICustomEMCMapper INSTANCE = new APICustomEMCMapper();
 	private static final int PRIORITY_MIN_VALUE = 0;
 	private static final int PRIORITY_MAX_VALUE = 512;
@@ -39,6 +47,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 	}
 
 	private final Map<String, Object2LongMap<NormalizedSimpleStack>> customEMCforMod = new HashMap<>();
+	private final Map<String, DataForMod> configOptionsForMod = new HashMap<>();
 
 	public static void handleIMC(InterModProcessEvent event) {
 		event.getIMCStream(IMCMethods.REGISTER_CUSTOM_EMC::equals).forEach(msg -> {
@@ -59,33 +68,82 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 
 	@Override
 	public String getName() {
-		return "APICustomEMCMapper";
+		return PEConfigTranslations.MAPPING_API_CUSTOM_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_API_CUSTOM_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Allows other mods to easily set EMC values using the ProjectEAPI";
+		return PEConfigTranslations.MAPPING_API_CUSTOM_MAPPER.tooltip();
+	}
+
+	private static void addDisplayInfo(ModConfigSpec.Builder builder, String modid) {
+		Optional<? extends ModContainer> modContainer = ModList.get().getModContainerById(modid);
+		//noinspection OptionalIsPresent - Capturing lambda
+		if (modContainer.isPresent()) {
+			//TODO - 1.21: Can we somehow specify a translation key?
+			builder.comment(modContainer.get().getModInfo().getDisplayName());
+		}
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
-			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		Object2IntMap<String> priorityMap = new Object2IntOpenHashMap<>();
-
+	public void addConfigOptions(IConfigBuilder<IEMCMapper<NormalizedSimpleStack, Long>> configBuilder) {
+		ModConfigSpec.Builder builder = configBuilder.builder();
 		for (String modId : customEMCforMod.keySet()) {
-			String configKey = getName() + ".priority." + modId;
-			int priority = EMCMappingHandler.getOrSetDefault(config, configKey, "Priority for this mod", PRIORITY_DEFAULT_VALUE);
-			priorityMap.put(modId, priority);
-		}
+			addDisplayInfo(builder, modId);
+			builder.push("mod-" + modId);
 
+			PEConfigTranslations.MAPPING_API_CUSTOM_MAPPER_PRIORITY.applyToBuilder(builder);
+			DataForMod data = new DataForMod(configBuilder.create("priority", PRIORITY_DEFAULT_VALUE, PRIORITY_MIN_VALUE, PRIORITY_MAX_VALUE));
+
+			Object2LongMap<NormalizedSimpleStack> stackMap = customEMCforMod.getOrDefault(modId, Object2LongMaps.emptyMap());
+			if (!stackMap.isEmpty()) {
+				PEConfigTranslations.MAPPING_API_CUSTOM_MAPPER_PERMISSIONS.applyToBuilder(builder).push("permissions");
+				for (NormalizedSimpleStack normStack : stackMap.keySet()) {
+					String targetMod = getMod(normStack);
+					if (targetMod != null && !data.permissions.containsKey(targetMod)) {
+						//TODO - 1.21: Comment?? String.format("Allow mod '%s' to set and or remove values for mod '%s'. Options: [both, set, remove, none]", modId, modForStack);
+						addDisplayInfo(builder, targetMod);
+						data.permissions.put(targetMod, configBuilder.create(targetMod, Permission.BOTH));
+					}
+				}
+				builder.pop();//permissions
+			}
+
+			configOptionsForMod.put(modId, data);
+			builder.pop();//mod
+		}
+	}
+
+	@Nullable
+	private String getMod(NormalizedSimpleStack stack) {
+		if (stack instanceof AbstractNSSTag<?> nssTag) {
+			//Allow both item names and tag locations
+			return nssTag.getResourceLocation().getNamespace();
+		}
+		return null;
+	}
+
+	@Override
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources, RegistryAccess registryAccess,
+			ResourceManager resourceManager) {
 		List<String> modIds = new ArrayList<>(customEMCforMod.keySet());
-		modIds.sort(Comparator.comparingInt((ToIntFunction<String>) priorityMap::getInt).reversed());
+		modIds.sort(Comparator.comparingInt((String modId) -> {
+			DataForMod data = configOptionsForMod.get(modId);
+			return data == null ? PRIORITY_DEFAULT_VALUE : data.getPriority();
+		}).reversed());
 
 		for (String modId : modIds) {
+			@Nullable
+			DataForMod dataForMod = configOptionsForMod.get(modId);
 			for (Object2LongMap.Entry<NormalizedSimpleStack> entry : customEMCforMod.getOrDefault(modId, Object2LongMaps.emptyMap()).object2LongEntrySet()) {
 				NormalizedSimpleStack normStack = entry.getKey();
 				long emc = entry.getLongValue();
-				if (isAllowedToSet(modId, normStack, emc, config)) {
+				if (dataForMod == null || dataForMod.hasPermission(getMod(normStack), emc)) {
 					//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
 					normStack.forSelfAndEachElement(mapper, emc, IMappingCollector::setValueBefore);
 					PECore.debugLog("{} setting value for {} to {}", modId, normStack, emc);
@@ -96,24 +154,52 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 		}
 	}
 
-	private boolean isAllowedToSet(String modId, NormalizedSimpleStack stack, Long value, CommentedFileConfig config) {
-		String resourceLocation;
-		if (stack instanceof NSSItem nssItem) {
-			//Allow both item names and tag locations
-			resourceLocation = nssItem.getResourceLocation().toString();
-		} else {
-			resourceLocation = "IntermediateFakeItemsUsedInRecipes:";
+	private static class DataForMod {
+
+		private final Map<String, Supplier<Permission>> permissions = new HashMap<>();
+		private final IntSupplier priority;
+
+		public DataForMod(IntSupplier priority) {
+			this.priority = priority;
 		}
-		String modForItem = resourceLocation.substring(0, resourceLocation.indexOf(':'));
-		String configPath = String.format("permissions.%s.%s", modId, modForItem);
-		String comment = String.format("Allow mod '%s' to set and or remove values for mod '%s'. Options: [both, set, remove, none]", modId, modForItem);
-		String permission = EMCMappingHandler.getOrSetDefault(config, configPath, comment, "both");
-		if (permission.equals("both")) {
-			return true;
+
+		public int getPriority() {
+			return priority.getAsInt();
 		}
-		if (value == 0) {
-			return permission.equals("remove");
+
+		public boolean hasPermission(@Nullable String otherMod, long value) {
+			if (otherMod == null) {
+				return true;
+			}
+			Supplier<Permission> supplier = permissions.get(otherMod);
+			return supplier == null || supplier.get().hasPermission(value);
 		}
-		return permission.equals("set");
+	}
+
+	private enum Permission implements IHasEnumNameTranslationKey {
+		BOTH(PELang.CUSTOM_EMC_PERMISSION_BOTH),
+		REMOVE(PELang.CUSTOM_EMC_PERMISSION_REMOVE),
+		SET(PELang.CUSTOM_EMC_PERMISSION_SET),
+		NONE(PELang.CUSTOM_EMC_PERMISSION_NONE);
+
+		private final IHasTranslationKey langEntry;
+
+		Permission(IHasTranslationKey langEntry) {
+			this.langEntry = langEntry;
+		}
+
+		@Override
+		public String getTranslationKey() {
+			return langEntry.getTranslationKey();
+		}
+
+		public boolean hasPermission(long value) {
+			return switch (this) {
+				case BOTH -> true;
+				case REMOVE -> value == 0;
+				case SET -> value > 0;
+				case NONE -> false;
+			};
+		}
 	}
 }

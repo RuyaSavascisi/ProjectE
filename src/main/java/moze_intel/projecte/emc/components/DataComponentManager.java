@@ -1,10 +1,11 @@
 package moze_intel.projecte.emc.components;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
-import moze_intel.projecte.config.DataComponentProcessorConfig;
+import moze_intel.projecte.config.MappingConfig;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.utils.AnnotationHelper;
@@ -16,12 +17,11 @@ public class DataComponentManager {
 
 	private static final List<IDataComponentProcessor> processors = new ArrayList<>();
 
-	public static void loadProcessors() {
+	public static List<IDataComponentProcessor> loadProcessors() {
 		if (processors.isEmpty()) {
 			processors.addAll(AnnotationHelper.getDataComponentProcessors());
-			//Set up the config for the Data Component Processors
-			DataComponentProcessorConfig.setup(processors);
 		}
+		return Collections.unmodifiableList(processors);
 	}
 
 	@NotNull
@@ -33,7 +33,7 @@ public class DataComponentManager {
 		//Cleans up the tag in item to reduce it as much as possible
 		DataComponentPatch.Builder builder = DataComponentPatch.builder();
 		for (IDataComponentProcessor processor : processors) {
-			if (DataComponentProcessorConfig.isEnabled(processor) && processor.hasPersistentComponents() && DataComponentProcessorConfig.hasPersistent(processor)) {
+			if (MappingConfig.isEnabled(processor) && processor.hasPersistentComponents() && MappingConfig.hasPersistent(processor)) {
 				processor.collectPersistentComponents(info, builder);
 			}
 		}
@@ -59,7 +59,7 @@ public class DataComponentManager {
 
 		//Note: We continue to use our initial ItemInfo so that we are calculating based on the Data Components
 		for (IDataComponentProcessor processor : processors) {
-			if (DataComponentProcessorConfig.isEnabled(processor)) {
+			if (MappingConfig.isEnabled(processor)) {
 				try {
 					emcValue = processor.recalculateEMC(info, emcValue);
 				} catch (ArithmeticException e) {

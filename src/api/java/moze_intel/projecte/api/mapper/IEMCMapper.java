@@ -1,6 +1,7 @@
 package moze_intel.projecte.api.mapper;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import moze_intel.projecte.api.config.IConfigBuilder;
+import moze_intel.projecte.api.config.IConfigurableElement;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.ReloadableServerResources;
@@ -12,37 +13,25 @@ import net.minecraft.server.packs.resources.ResourceManager;
  * @param <T> The type, that is used to uniquely identify Items/Blocks/Everything
  * @param <V> The type for the EMC Value
  */
-public interface IEMCMapper<T, V extends Comparable<V>> {
+public interface IEMCMapper<T, V extends Comparable<V>> extends IConfigurableElement {
+
+	//TODO - 1.21: Docs, and update the docs for addMappings
+	default void addConfigOptions(IConfigBuilder<IEMCMapper<T, V>> configBuilder) {
+	}
 
 	/**
-	 * A unique Name for the {@link IEMCMapper}. This is used to identify the {@link IEMCMapper} in the Configuration.
-	 *
-	 * @return A unique Name
+	 * {@inheritDoc} If this returns {@code false} {@link #addMappings} will not be called.
 	 */
-	String getName();
-
-	/**
-	 * A Description, that will be included as a Comment in the Configuration File
-	 *
-	 * @return A <b>short</b> description
-	 */
-	String getDescription();
-
-	/**
-	 * This method is used to determine the default for enabling/disabling this {@link IEMCMapper}. If this returns {@code false} {@link #addMappings} will not be
-	 * called.
-	 *
-	 * @return {@code true} if you want {@link #addMappings} to be called, {@code false} otherwise.
-	 */
+	@Override
 	default boolean isAvailable() {
-		return true;
+		return IConfigurableElement.super.isAvailable();
 	}
 
 	/**
 	 * The method that allows the {@link IEMCMapper} to contribute to the EMC Mapping. Use the methods provided by the {@link IMappingCollector}. <br/> Use the config
-	 * object to generate a useful Configuration for your {@link IEMCMapper}. <br/> The Configuration Object will be a {@link
-	 * com.electronwill.nightconfig.core.file.CommentedFileConfig} representing the top-level mapping.cfg file. Please use properly prefixed config keys and do not
+	 * object to generate a useful Configuration for your {@link IEMCMapper}. <br/> The Configuration Object will be a
+	 * {@link com.electronwill.nightconfig.core.file.CommentedFileConfig} representing the top-level mapping.cfg file. Please use properly prefixed config keys and do not
 	 * clobber those not belonging to your mapper
 	 */
-	void addMappings(IMappingCollector<T, V> mapper, CommentedFileConfig config, ReloadableServerResources serverResources, RegistryAccess registryAccess, ResourceManager resourceManager);
+	void addMappings(IMappingCollector<T, V> mapper, ReloadableServerResources serverResources, RegistryAccess registryAccess, ResourceManager resourceManager);
 }

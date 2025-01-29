@@ -6,6 +6,7 @@ import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager;
 import moze_intel.projecte.api.mapper.recipe.RecipeTypeMapper;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CraftingRecipe;
@@ -22,14 +23,17 @@ public class FallbackRecipeTypeMapper extends BaseRecipeTypeMapper {
 
 	@Override
 	public String getName() {
-		return "FallbackRecipeType";
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER_FALLBACK.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER_FALLBACK.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Fallback for default handling of recipes that extend ICraftingRecipe, AbstractCookingRecipe, SingleItemRecipe, or SmithingRecipe. "
-			   + "This will catch modded extensions of the vanilla recipe classes, and if the VanillaRecipeTypes mapper is disabled, "
-			   + "this mapper will still catch the vanilla recipes.";
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER_FALLBACK.tooltip();
 	}
 
 	@Override

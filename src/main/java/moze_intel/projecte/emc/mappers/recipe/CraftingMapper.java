@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.mappers.recipe;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
@@ -16,7 +17,7 @@ import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager;
 import moze_intel.projecte.api.mapper.recipe.IRecipeTypeMapper;
 import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import moze_intel.projecte.emc.EMCMappingHandler;
+import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.utils.AnnotationHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -28,23 +29,44 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 @EMCMapper
 public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	//Note: None of our defaults just directly support all recipe types, as mods may extend it for "random" things and have more input types required than just items
 	// We also do this via annotations to allow for broader support for looping specific recipes and handling them
-	private static final List<IRecipeTypeMapper> recipeMappers = new ArrayList<>();
+	private final Map<String, BooleanSupplier> enabledRecipeMappers = new HashMap<>();
+	private final List<IRecipeTypeMapper> recipeMappers;
 
-	public static void loadMappers() {
-		if (recipeMappers.isEmpty()) {
-			recipeMappers.addAll(AnnotationHelper.getRecipeTypeMappers());
+	public CraftingMapper() {
+		//Load any recipe type mappers when instantiating the crafting mapper
+		recipeMappers = AnnotationHelper.getRecipeTypeMappers();
+	}
+
+	private boolean isRecipeMapperEnabled(IRecipeTypeMapper mapper) {
+		BooleanSupplier supplier = enabledRecipeMappers.get(mapper.getName());
+		return supplier == null || supplier.getAsBoolean();
+	}
+
+	@Override
+	public void addConfigOptions(IConfigBuilder<IEMCMapper<NormalizedSimpleStack, Long>> configBuilder) {
+		ModConfigSpec.Builder builder = configBuilder.builder();
+		for (IRecipeTypeMapper recipeMapper : recipeMappers) {
+			//TODO - 1.21: Do we want to prepend this by recipe mapper or anything, or at least document that you shouldn't name a recipe mapper "enabled"
+			builder.comment(recipeMapper.getDescription())
+					.translation(recipeMapper.getTranslationKey())
+					.push(recipeMapper.getConfigPath());
+			PEConfigTranslations.MAPPING_RECIPE_TYPE_MAPPER_ENABLED.applyToBuilder(builder);
+			enabledRecipeMappers.put(recipeMapper.getName(), configBuilder.create("enabled", recipeMapper.isAvailable()));
+			recipeMapper.addConfigOptions(configBuilder);
+			builder.pop();
 		}
 	}
 
 	@Override
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, final CommentedFileConfig config, ReloadableServerResources serverResources,
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		NSSFake.setCurrentNamespace("craftingMapper");
 		Map<ResourceLocation, RecipeCountInfo> recipeCount = new HashMap<>();
@@ -59,8 +81,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 			List<RecipeHolder<?>> recipes = null;
 			List<RecipeHolder<?>> unhandled = new ArrayList<>();
 			for (IRecipeTypeMapper recipeMapper : recipeMappers) {
-				String configKey = getName() + "." + recipeMapper.getName() + ".enabled";
-				if (EMCMappingHandler.getOrSetDefault(config, configKey, recipeMapper.getDescription(), recipeMapper.isAvailable())) {
+				if (isRecipeMapperEnabled(recipeMapper)) {
 					//If the sub mapper is enabled, use it
 					if (recipeMapper.canHandle(recipeType)) {
 						if (recipes == null) {
@@ -131,12 +152,17 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	@Override
 	public String getName() {
-		return "CraftingMapper";
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Add Conversions for Crafting Recipes gathered from net.minecraft.item.crafting.RecipeManager";
+		return PEConfigTranslations.MAPPING_CRAFTING_MAPPER.tooltip();
 	}
 
 	private static class RecipeCountInfo {

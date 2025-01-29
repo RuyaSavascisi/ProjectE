@@ -1,43 +1,22 @@
 package moze_intel.projecte.api.components;
 
 import moze_intel.projecte.api.ItemInfo;
+import moze_intel.projecte.api.config.IConfigurableElement;
 import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Class used for processing what Data Components modifies the EMC value, and what Data Components are needed/should be saved when transmuting an item.
  */
-public interface IDataComponentProcessor {
+public interface IDataComponentProcessor extends IConfigurableElement {
 
 	/**
-	 * A unique Name for the {@link IDataComponentProcessor}. This is used to identify the {@link IDataComponentProcessor} in the Configuration.
-	 *
-	 * @return A unique Name
+	 * {@inheritDoc} If this returns {@code false} neither {@link #collectPersistentComponents(ItemInfo, DataComponentPatch.Builder)} nor
+	 * {@link #recalculateEMC(ItemInfo, long)} will not be called.
 	 */
-	String getName();
-
-	/**
-	 * The translation key representing the translated version of the name, that will be included in the Configuration GUI.
-	 *
-	 * @implNote You should also include translations for this key plus ".tooltip" for the description, and this key plus ".button" for the button to open the section.
-	 */
-	String getTranslationKey();
-
-	/**
-	 * A Description, that will be included as a Comment in the Configuration File
-	 *
-	 * @implNote The translation for this description should be located at {@link #getTranslationKey()} + ".tooltip"
-	 */
-	String getDescription();
-
-	/**
-	 * This method is used to determine the default for enabling/disabling this {@link IDataComponentProcessor}. If this returns {@code false} neither
-	 * {@link #collectPersistentComponents(ItemInfo, DataComponentPatch.Builder)} nor {@link #recalculateEMC(ItemInfo, long)} will not be called.
-	 *
-	 * @return {@code true} if you want this {@link IDataComponentProcessor} to be part of the EMC calculations, {@code false} otherwise.
-	 */
+	@Override
 	default boolean isAvailable() {
-		return true;
+		return IConfigurableElement.super.isAvailable();
 	}
 
 	/**

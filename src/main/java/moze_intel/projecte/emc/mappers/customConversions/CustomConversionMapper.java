@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.mappers.customConversions;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import java.io.IOException;
 import java.io.Reader;
@@ -17,6 +16,7 @@ import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.impl.codec.PECodecHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
@@ -36,16 +36,21 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 
 	@Override
 	public String getName() {
-		return "CustomConversionMapper";
+		return PEConfigTranslations.MAPPING_CUSTOM_CONVERSION_MAPPER.title();
+	}
+
+	@Override
+	public String getTranslationKey() {
+		return PEConfigTranslations.MAPPING_CUSTOM_CONVERSION_MAPPER.getTranslationKey();
 	}
 
 	@Override
 	public String getDescription() {
-		return "Loads json files within datapacks (data/<domain>/pe_custom_conversions/*.json) to add values and conversions";
+		return PEConfigTranslations.MAPPING_CUSTOM_CONVERSION_MAPPER.tooltip();
 	}
 
 	@Override
-	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, CommentedFileConfig config, ReloadableServerResources serverResources,
+	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		Map<ResourceLocation, CustomConversionFile> files = load(registryAccess, resourceManager);
 		for (CustomConversionFile file : files.values()) {

@@ -20,6 +20,7 @@ import moze_intel.projecte.common.tag.PEBlockTagsProvider;
 import moze_intel.projecte.common.tag.PEDamageTypeTagsProvider;
 import moze_intel.projecte.common.tag.PEEntityTypeTagsProvider;
 import moze_intel.projecte.common.tag.PEItemTagsProvider;
+import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.data.DataGenerator;
@@ -40,7 +41,7 @@ public class ProjectEDataGenerator {
 	@SubscribeEvent
 	public static void gatherData(GatherDataEvent event) {
 		//Ensure that we register the configs for data component processors and the like
-		PECore.bootstrapMappers();
+		EMCMappingHandler.loadMappers();
 
 		DataGenerator gen = event.getGenerator();
 		PackOutput output = gen.getPackOutput();

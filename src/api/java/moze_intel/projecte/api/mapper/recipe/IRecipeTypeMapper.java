@@ -1,5 +1,8 @@
 package moze_intel.projecte.api.mapper.recipe;
 
+import moze_intel.projecte.api.config.IConfigBuilder;
+import moze_intel.projecte.api.config.IConfigurableElement;
+import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.core.RegistryAccess;
@@ -10,31 +13,15 @@ import net.minecraft.world.item.crafting.RecipeType;
 /**
  * Interface for Classes that want to make Contributions to the EMC Mapping via the CraftingMapper.
  */
-public interface IRecipeTypeMapper {
+public interface IRecipeTypeMapper extends IConfigurableElement {
 
 	/**
-	 * A unique Name for the {@link IRecipeTypeMapper}. This is used to identify the {@link IRecipeTypeMapper} in the Configuration.
-	 *
-	 * @return A unique Name
+	 * {@inheritDoc} If this returns {@code false} {@link #canHandle(RecipeType)} and
+	 * {@link #handleRecipe(IMappingCollector, RecipeHolder, RegistryAccess, INSSFakeGroupManager)} will not be called.
 	 */
-	String getName();
-
-	/**
-	 * A Description, that will be included as a Comment in the Configuration File
-	 *
-	 * @return A <b>short</b> description
-	 */
-	String getDescription();
-
-	/**
-	 * This method is used to determine the default for enabling/disabling this {@link IRecipeTypeMapper}. If this returns {@code false} {@link #canHandle(RecipeType)}
-	 * and {@link #handleRecipe(IMappingCollector, RecipeHolder, RegistryAccess, INSSFakeGroupManager)} will not be called.
-	 *
-	 * @return {@code true} if you want {@link #canHandle(RecipeType)} and {@link #handleRecipe(IMappingCollector, RecipeHolder, RegistryAccess, INSSFakeGroupManager)} to
-	 * be called, {@code false} otherwise.
-	 */
+	@Override
 	default boolean isAvailable() {
-		return true;
+		return IConfigurableElement.super.isAvailable();
 	}
 
 	/**
@@ -61,4 +48,8 @@ public interface IRecipeTypeMapper {
 	 * descriptions that are more complex than a single integer, as otherwise they may intersect with {@link NormalizedSimpleStack}s created by the fakeGroupManager.
 	 */
 	boolean handleRecipe(IMappingCollector<NormalizedSimpleStack, Long> mapper, RecipeHolder<?> recipeHolder, RegistryAccess registryAccess, INSSFakeGroupManager fakeGroupManager);
+
+	//TODO - 1.21: Docs, and update the docs for addMappings
+	default void addConfigOptions(IConfigBuilder<IEMCMapper<NormalizedSimpleStack, Long>> configBuilder) {
+	}
 }

@@ -110,7 +110,56 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	SERVER_MISC_LOOKING_AT_DISPLAY("server.misc.looking_at_display", "Looking At Display",
 			"Shows the EMC value of blocks when looking at them in Jade, TOP, or WTHIT."),
 
+	//EMC Mapping
+	MAPPING_DUMP_TO_FILE("mapping.dump_to_file", "Dump Everything To File",
+			"Want to take a look at the internals of EMC Calculation? Enable this to write all the conversions and setValue-Commands to config/ProjectE/mapping_dump.json"),
+	MAPPING_PREGENERATED("mapping.pregenerated", "Pregenerate EMC",
+			"When the next EMC mapping occurs write the results to config/ProjectE/pregenerated_emc.json and only ever run the mapping again when that file "
+			+ "does not exist, this setting is set to false, or an error occurred parsing that file."),
+	MAPPING_LOG_EXPLOITS("mapping.log_exploits", "Log Known EMC Exploits",
+			"Logs known EMC Exploits. This can not and will not find all possible exploits. This will only find exploits that result in fixed/custom emc values "
+			+ "that the algorithm did not overwrite. Exploits that derive from conversions that are unknown to ProjectE will not be found."),
+
+	MAPPING_MAPPERS("mapping.mapper", "EMC Mappers", "Used to configure settings for the various EMC Mappers.", true),
+	MAPPING_API_CUSTOM_MAPPER("mapping.mapper.api", "API Custom EMC Mapper", "Allows other mods to easily set EMC values using the ProjectEAPI.", true),
+	MAPPING_API_CUSTOM_MAPPER_PRIORITY("mapping.mapper.api.priority", "Priority", "Priority to apply changes from this mod at."),
+	MAPPING_API_CUSTOM_MAPPER_PERMISSIONS("mapping.mapper.api.permissions", "Permissions", "Controls whether the mod is able to set and/or remove values from another mod."),
+
+	MAPPING_BREWING_MAPPER("mapping.mapper.brewing", "Brewing Mapper", "Add Conversions for Brewing Recipes.", true),
+	MAPPING_OXIDATION_MAPPER("mapping.mapper.oxidation", "Oxidization Mapper", "Add Conversions for all oxidizable blocks.", true),
+	MAPPING_TAG_MAPPER("mapping.mapper.tag", "Tag Mapper",
+			"Adds back and forth conversions of objects and their Tag variant. (EMC values assigned to tags will not behave properly if this mapper is disabled)", true),
+	MAPPING_TIPPED_ARROW_MAPPER("mapping.mapper.tipped_arrow", "Tipped Arrow Mapper", "Add Conversions for all lingering potions to arrow recipes.", true),
+	MAPPING_WAXABLE_MAPPER("mapping.mapper.waxable", "Waxable Mapper", "Add Conversions for all waxable blocks", true),
+
+	MAPPING_CUSTOM_CONVERSION_MAPPER("mapping.mapper.custom.conversion", "Custom Conversion Mapper",
+			"Loads json files within datapacks (data/<domain>/pe_custom_conversions/*.json) to add values and conversions.", true),
+	MAPPING_CUSTOM_EMC_MAPPER("mapping.mapper.custom.emc", "Custom EMC Mapper", "Uses the `custom_emc.json` File to add EMC values.", true),
+
+	MAPPING_CRT_CONVERSION_MAPPER("mapping.mapper.crt.conversion", "CraftTweaker Conversion EMC Mapper",
+			"Allows adding custom conversions through CraftTweaker. This behaves similarly to if someone used a custom conversion file instead.", true),
+	MAPPING_CRT_EMC_MAPPER("mapping.mapper.crt.emc", "CraftTweaker Custom EMC Mapper",
+			"Allows setting EMC values through CraftTweaker. This behaves similarly to if someone used the custom emc file instead.", true),
+
+	MAPPING_BLACKLIST_ORE_MAPPER("mapping.mapper.blacklist.ore", "Ore Blacklist Mapper", "Set EMC=0 for everything in the c:ores tag.", true),
+	MAPPING_BLACKLIST_RAW_ORE_MAPPER("mapping.mapper.blacklist.raw_ore", "Raw Materials Blacklist Mapper", "Set EMC=0 for everything in the c:raw_materials tag.", true),
+
+	MAPPING_CRAFTING_MAPPER("mapping.mapper.crafting", "Crafting Mapper",
+			"Add Conversions for Crafting Recipes gathered from net.minecraft.world.item.crafting.RecipeManager", true),
+	MAPPING_CRAFTING_MAPPER_VANILLA("mapping.mapper.crafting.vanilla", "Vanilla Recipe Types", "Maps the different vanilla recipe types.", true),
+	MAPPING_CRAFTING_MAPPER_SMITHING("mapping.mapper.crafting.smithing", "Smithing", "Maps smithing recipes.", true),
+	MAPPING_CRAFTING_MAPPER_FALLBACK("mapping.mapper.crafting.fallback", "Fallback",
+			"Fallback for default handling of recipes that extend ICraftingRecipe, AbstractCookingRecipe, SingleItemRecipe, or SmithingRecipe. "
+			+ "This will catch modded extensions of the vanilla recipe classes, and if the VanillaRecipeTypes mapper is disabled, "
+			+ "this mapper will still catch the vanilla recipes.", true),
+
+	MAPPING_MAPPER_ENABLED("mapping.mapper.enabled", "Enabled", "Determines whether this EMC Mapper is enabled."),
+	MAPPING_RECIPE_TYPE_MAPPER_ENABLED("mapping.mapper.recipe_type.enabled", "Enabled", "Determines whether this Recipe Type Mapper is enabled."),
+
 	//Data Component Processors
+	MAPPING_PROCESSORS("mapping.processors", "Data Component Processors", "Used to configure settings for the various Data Component Processors.",
+			"Edit Processors"),
+
 	DCP_ARMOR_TRIM("processing.data_component_processor.armor_trim", "Armor Trim Processor", "Calculates EMC value of trimmed armor.", true),
 	DCP_DAMAGE("processing.data_component_processor.damage", "Damage Processor", "Reduces the EMC value the more damaged an item is.", true),
 	DCP_DECORATED_POT("processing.data_component_processor.decorated_pot", "Decorated Pot Processor",
