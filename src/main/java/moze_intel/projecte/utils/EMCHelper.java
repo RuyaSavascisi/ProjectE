@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.ints.Int2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.math.BigInteger;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.PECapabilities;
@@ -39,7 +38,7 @@ public final class EMCHelper {
 		Object2IntMap<K> intMap = new Object2IntArrayMap<>(2);
 		intMap.put(key, value);
 		intMap.put(key2, value2);
-		return Object2IntMaps.unmodifiable(intMap);
+		return intMap;
 	}
 
 	public static <K> Object2IntMap<K> intMapOf(final K key, int value, final K key2, int value2, final K key3, int value3) {
@@ -47,7 +46,7 @@ public final class EMCHelper {
 		intMap.put(key, value);
 		intMap.put(key2, value2);
 		intMap.put(key3, value3);
-		return Object2IntMaps.unmodifiable(intMap);
+		return intMap;
 	}
 
 	/**

@@ -1,6 +1,6 @@
 package moze_intel.projecte.emc.mappers;
 
-import java.util.List;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -9,6 +9,7 @@ import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.config.PEConfigTranslations;
+import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -35,14 +36,17 @@ public class WaxableMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 			if (block != null) {
 				NSSItem base = NSSItem.createItem(block);
 				NSSItem waxed = NSSItem.createItem(entry.getValue().waxed());
-				mapper.addConversion(1, waxed, List.of(base, wax));
+				mapper.addConversion(1, waxed, EMCHelper.intMapOf(
+						base, 1,
+						wax, 1
+				));
 				//Scraping the block does not return the wax
 				//TODO - 1.21: Test this makes sense
-				mapper.addConversion(1, base, List.of(waxed));
+				mapper.addConversion(1, base, Object2IntMaps.singleton(waxed, 1));
 				recipeCount += 2;
 			}
 		}
-		PECore.debugLog("WaxableMapper Statistics:");
+		PECore.debugLog("{} Statistics:", getName());
 		PECore.debugLog("Found {} Waxable Conversions", recipeCount);
 	}
 

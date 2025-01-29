@@ -131,6 +131,13 @@ public final class ItemInfo {
 	}
 
 	/**
+	 * Creates an {@link NSSItem} object from this item info.
+	 */
+	public NSSItem toNSS() {
+		return NSSItem.createItem(item, componentsPatch);
+	}
+
+	/**
 	 * @return The {@link Holder} that represents the item stored by this {@link ItemInfo}.
 	 */
 	@NotNull

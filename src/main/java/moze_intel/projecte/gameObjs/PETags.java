@@ -35,6 +35,10 @@ public class PETags {
 		 * Items in this tag can contribute and are "valid dusts" for the covalence repair recipe
 		 */
 		public static final TagKey<Item> COVALENCE_DUST = tag("covalence_dust");
+		/**
+		 * Items in this tag won't be listed by the dump missing emc command even if they are missing emc.
+		 */
+		public static final TagKey<Item> IGNORE_MISSING_EMC = tag("ignore_missing_emc");
 		//Curios tags
 		public static final TagKey<Item> CURIOS_BELT = curiosTag("belt");
 		public static final TagKey<Item> CURIOS_KLEIN_STAR = curiosTag("klein_star");

@@ -486,6 +486,18 @@
           "ingredients": [
             {
               "type": "projecte:item",
+              "id": "minecraft:writable_book"
+            }
+          ],
+          "output": {
+            "type": "projecte:item",
+            "id": "minecraft:written_book"
+          }
+        },
+        {
+          "ingredients": [
+            {
+              "type": "projecte:item",
               "id": "minecraft:book"
             }
           ],
@@ -1032,267 +1044,6 @@
           "output": {
             "type": "projecte:item",
             "id": "minecraft:milk_bucket"
-          }
-        }
-      ]
-    },
-    "shulker_box_recoloring": {
-      "comment": "Propagate shulker box values to colored variants.",
-      "conversions": [
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/white"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:white_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/orange"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:orange_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/magenta"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:magenta_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/light_blue"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:light_blue_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/yellow"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:yellow_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/lime"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:lime_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/pink"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:pink_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/gray"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:gray_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/light_gray"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:light_gray_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/cyan"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:cyan_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/purple"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:purple_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/blue"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:blue_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/brown"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:brown_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/green"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:green_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/red"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:red_shulker_box"
-          }
-        },
-        {
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:shulker_box"
-            },
-            {
-              "type": "projecte:item",
-              "tag": "c:dyes/black"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:black_shulker_box"
           }
         }
       ]
@@ -2031,8 +1782,13 @@
       },
       {
         "type": "projecte:item",
-        "id": "minecraft:blaze_rod",
+        "tag": "c:rods/blaze",
         "value": 1536
+      },
+      {
+        "type": "projecte:item",
+        "tag": "c:rods/breeze",
+        "value": 2304
       },
       {
         "type": "projecte:item",

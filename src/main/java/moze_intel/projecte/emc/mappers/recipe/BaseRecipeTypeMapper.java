@@ -9,6 +9,7 @@ import java.util.Set;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager;
+import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager.FakeGroupData;
 import moze_intel.projecte.api.mapper.recipe.IRecipeTypeMapper;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
@@ -16,7 +17,6 @@ import moze_intel.projecte.emc.IngredientMap;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -52,7 +52,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			return true;
 		}
 		ResourceLocation recipeID = recipeHolder.id();
-		List<Tuple<NormalizedSimpleStack, List<IngredientMap<NormalizedSimpleStack>>>> dummyGroupInfos = new ArrayList<>();
+		List<DummyGroupInfo> dummyGroupInfos = new ArrayList<>();
 		IngredientMap<NormalizedSimpleStack> ingredientMap = new IngredientMap<>();
 		for (Ingredient recipeItem : ingredientsChecked) {
 			ItemStack[] matches = getMatchingStacks(recipeItem, recipeID);
@@ -74,10 +74,11 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			} else if (matches.length > 0) {
 				Set<NormalizedSimpleStack> rawNSSMatches = new HashSet<>();
 				List<ItemStack> stacks = new ArrayList<>();
-				for (ItemStack match : matches) {
-					if (!match.isEmpty()) {
+				for (ItemStack match : matches) {//TODO - 1.21: Do we have to worry about matches potentially containing duplicate stacks?
+					if (!match.isEmpty() && rawNSSMatches.add(NSSItem.createItem(match))) {
 						//Validate it is not an empty stack in case mods do weird things in custom ingredients
-						rawNSSMatches.add(NSSItem.createItem(match));
+						// Note: We only add it to the list of stacks, if we haven't already added it to rawNSSMatches before
+						// This allows us to avoid potential duplicates
 						stacks.add(match);
 					}
 				}
@@ -95,10 +96,10 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 					}
 				} else {
 					//Handle this ingredient as the representation of all the stacks it supports
-					Tuple<NormalizedSimpleStack, Boolean> group = fakeGroupManager.getOrCreateFakeGroup(rawNSSMatches);
-					NormalizedSimpleStack dummy = group.getA();
+					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroup(rawNSSMatches);
+					NormalizedSimpleStack dummy = group.dummy();
 					ingredientMap.addIngredient(dummy, 1);
-					if (group.getB()) {
+					if (group.created()) {
 						//Only lookup the matching stacks for the group with conversion if we don't already have
 						// a group created for this dummy ingredient
 						// Note: We soft ignore cases where it fails/there are no matching group ingredients
@@ -116,7 +117,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 							}
 							groupIngredientMaps.add(groupIngredientMap);
 						}
-						dummyGroupInfos.add(new Tuple<>(dummy, groupIngredientMaps));
+						dummyGroupInfos.add(new DummyGroupInfo(dummy, groupIngredientMaps));
 					}
 				}
 			}
@@ -130,13 +131,10 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 	 * conversions that we have, regardless of whether the recipe as a whole is valid, because we only create one instance of our group's NSS representation so even if
 	 * parts of the recipe are not valid, the conversion may be valid and exist in another recipe.
 	 */
-	private boolean addConversionsAndReturn(IMappingCollector<NormalizedSimpleStack, Long> mapper,
-			List<Tuple<NormalizedSimpleStack, List<IngredientMap<NormalizedSimpleStack>>>> dummyGroupInfos, boolean returnValue) {
+	private boolean addConversionsAndReturn(IMappingCollector<NormalizedSimpleStack, Long> mapper, List<DummyGroupInfo> dummyGroupInfos, boolean returnValue) {
 		//If we have any conversions make sure to add them even if we are returning early
-		for (Tuple<NormalizedSimpleStack, List<IngredientMap<NormalizedSimpleStack>>> dummyGroupInfo : dummyGroupInfos) {
-			for (IngredientMap<NormalizedSimpleStack> groupIngredientMap : dummyGroupInfo.getB()) {
-				mapper.addConversion(1, dummyGroupInfo.getA(), groupIngredientMap.getMap());
-			}
+		for (DummyGroupInfo dummyGroupInfo : dummyGroupInfos) {
+			dummyGroupInfo.addConversions(mapper);
 		}
 		return returnValue;
 	}
@@ -221,5 +219,14 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 	//Allow overwriting the ingredients list because Smithing recipes don't override it themselves
 	protected Collection<Ingredient> getIngredients(Recipe<?> recipe) {
 		return recipe.getIngredients();
+	}
+
+	private record DummyGroupInfo(NormalizedSimpleStack output, List<IngredientMap<NormalizedSimpleStack>> groupIngredientMap) {
+
+		private void addConversions(IMappingCollector<NormalizedSimpleStack, Long> mapper) {
+			for (IngredientMap<NormalizedSimpleStack> groupIngredientMap : groupIngredientMap) {
+				mapper.addConversion(1, output, groupIngredientMap.getMap());
+			}
+		}
 	}
 }

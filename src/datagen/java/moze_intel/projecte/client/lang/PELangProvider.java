@@ -20,7 +20,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		super(output, PECore.MODID);
 	}
 
-	@Override
+	@Override//TODO - 1.21: Add translations for our tags
 	protected void addTranslations() {
 		addAdvancements();
 		addBlocks();

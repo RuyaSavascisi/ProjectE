@@ -73,7 +73,7 @@ public class CrTCustomConversion {
 		if (ingredients.length == 0) {
 			throw new IllegalArgumentException("No ingredients specified for conversion.");
 		}
-		addConversion(stack, amount, propagateTags, Arrays.stream(ingredients).collect(Collectors.toMap(ingredient -> ingredient, ingredient -> 1, Integer::sum)));
+		addConversion(stack, amount, propagateTags, Arrays.stream(ingredients).collect(Collectors.toMap(Function.identity(), ingredient -> 1, Integer::sum)));
 	}
 
 	/**

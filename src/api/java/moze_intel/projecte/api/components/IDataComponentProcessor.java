@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Class used for processing what Data Components modifies the EMC value, and what Data Components are needed/should be saved when transmuting an item.
  */
-public interface IDataComponentProcessor extends IConfigurableElement {
+public interface IDataComponentProcessor extends IConfigurableElement<IDataComponentProcessor> {
 
 	/**
 	 * {@inheritDoc} If this returns {@code false} neither {@link #collectPersistentComponents(ItemInfo, DataComponentPatch.Builder)} nor

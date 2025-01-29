@@ -129,7 +129,6 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	MAPPING_OXIDATION_MAPPER("mapping.mapper.oxidation", "Oxidization Mapper", "Add Conversions for all oxidizable blocks.", true),
 	MAPPING_TAG_MAPPER("mapping.mapper.tag", "Tag Mapper",
 			"Adds back and forth conversions of objects and their Tag variant. (EMC values assigned to tags will not behave properly if this mapper is disabled)", true),
-	MAPPING_TIPPED_ARROW_MAPPER("mapping.mapper.tipped_arrow", "Tipped Arrow Mapper", "Add Conversions for all lingering potions to arrow recipes.", true),
 	MAPPING_WAXABLE_MAPPER("mapping.mapper.waxable", "Waxable Mapper", "Add Conversions for all waxable blocks", true),
 
 	MAPPING_CUSTOM_CONVERSION_MAPPER("mapping.mapper.custom.conversion", "Custom Conversion Mapper",
@@ -153,6 +152,14 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			+ "This will catch modded extensions of the vanilla recipe classes, and if the VanillaRecipeTypes mapper is disabled, "
 			+ "this mapper will still catch the vanilla recipes.", true),
 
+	MAPPING_CRAFTING_MAPPER_FIREWORK_STAR("mapping.mapper.crafting.firework_star", "Firework Star Mapper", "Maps the Firework Star custom recipe.", true),
+	MAPPING_CRAFTING_MAPPER_SHULKER_RECOLORING("mapping.mapper.crafting.shulker_recoloring", "Shulker Recoloring Mapper",
+			"Propagates shulker box values to colored variants.", true),
+	MAPPING_CRAFTING_MAPPER_TIPPED_ARROW("mapping.mapper.crafting.tipped_arrow", "Tipped Arrow Mapper",
+			"Add conversions for all lingering potions to arrow recipes.", true),
+	MAPPING_CRAFTING_MAPPER_DECORATED_POT("mapping.mapper.crafting.decorated_pot", "Decorated Pot Mapper",
+			"Adds conversions for all the different decorated pot combinations.", true),
+
 	MAPPING_MAPPER_ENABLED("mapping.mapper.enabled", "Enabled", "Determines whether this EMC Mapper is enabled."),
 	MAPPING_RECIPE_TYPE_MAPPER_ENABLED("mapping.mapper.recipe_type.enabled", "Enabled", "Determines whether this Recipe Type Mapper is enabled."),
 
@@ -161,6 +168,8 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			"Edit Processors"),
 
 	DCP_ARMOR_TRIM("processing.data_component_processor.armor_trim", "Armor Trim Processor", "Calculates EMC value of trimmed armor.", true),
+	DCP_BUNDLE("processing.data_component_processor.bundle", "Bundle Processor", "Calculates EMC value of items stored in bundles.", true),
+	DCP_CONTAINER("processing.data_component_processor.container", "Container Processor", "Calculates EMC value of items stored in vanilla's container component. For example shulker boxes.", true),
 	DCP_DAMAGE("processing.data_component_processor.damage", "Damage Processor", "Reduces the EMC value the more damaged an item is.", true),
 	DCP_DECORATED_POT("processing.data_component_processor.decorated_pot", "Decorated Pot Processor",
 			"Takes the different sherds into account for each decorated pot.", true),
@@ -168,6 +177,10 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			"Increases the EMC value to take into account any enchantments on an item.", true),
 	DCP_STORED_EMC("processing.data_component_processor.stored_emc", "Stored EMC Processor",
 			"Increases the EMC value of the item to take into account any EMC the item has stored.", true),
+	DCP_WRITABLE_BOOK("processing.data_component_processor.writable_book", "Writable Book Processor",
+			"Allows persisting the contents of writable books. Does not change the EMC value.", true),
+	DCP_WRITTEN_BOOK("processing.data_component_processor.written_book", "Written Book Processor",
+			"Allows persisting the contents of written books. Does not change the EMC value.", true),
 
 	DCP_ENABLED("processing.enabled", "Enabled", "Determines whether this Data Component Processor is enabled and can adjust the EMC value of items."),
 	DCP_PERSISTENT("processing.persistent", "Persistent",

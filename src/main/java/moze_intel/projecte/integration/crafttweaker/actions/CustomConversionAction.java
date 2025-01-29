@@ -1,8 +1,8 @@
 package moze_intel.projecte.integration.crafttweaker.actions;
 
 import com.blamejared.crafttweaker.api.action.base.IUndoableAction;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.nss.NSSTag;
@@ -15,7 +15,9 @@ public class CustomConversionAction implements IUndoableAction {
 	private final CrTConversion conversion;
 
 	public CustomConversionAction(NormalizedSimpleStack output, int amount, boolean propagateTags, boolean set, Map<NormalizedSimpleStack, Integer> ingredients) {
-		conversion = new CrTConversion(output, amount, propagateTags, set, new Object2IntOpenHashMap<>(ingredients));
+		//Note: We use an array map under the assumption that no conversion will have a massive number of ingredients
+		// especially as copying into an array map via constructor is cheaper, and then we only iterate it in the mapper
+		conversion = new CrTConversion(output, amount, propagateTags, set, new Object2IntArrayMap<>(ingredients));
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package moze_intel.projecte.emc.mappers;
 
-import java.util.List;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -33,12 +33,12 @@ public class OxidizationMapper implements IEMCMapper<NormalizedSimpleStack, Long
 			if (block != null) {
 				NSSItem unweathered = NSSItem.createItem(block);
 				NSSItem weathered = NSSItem.createItem(entry.getValue().nextOxidationStage());
-				mapper.addConversion(1, weathered, List.of(unweathered));
-				mapper.addConversion(1, unweathered, List.of(weathered));
+				mapper.addConversion(1, weathered, Object2IntMaps.singleton(unweathered, 1));
+				mapper.addConversion(1, unweathered, Object2IntMaps.singleton(weathered, 1));
 				recipeCount += 2;
 			}
 		}
-		PECore.debugLog("OxidizationMapper Statistics:");
+		PECore.debugLog("{} Statistics:", getName());
 		PECore.debugLog("Found {} Oxidizable Conversions", recipeCount);
 	}
 

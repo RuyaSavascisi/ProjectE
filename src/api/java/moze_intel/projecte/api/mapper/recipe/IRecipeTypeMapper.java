@@ -1,6 +1,5 @@
 package moze_intel.projecte.api.mapper.recipe;
 
-import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.api.config.IConfigurableElement;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
@@ -13,7 +12,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 /**
  * Interface for Classes that want to make Contributions to the EMC Mapping via the CraftingMapper.
  */
-public interface IRecipeTypeMapper extends IConfigurableElement {
+public interface IRecipeTypeMapper extends IConfigurableElement<IEMCMapper<NormalizedSimpleStack, Long>> {
 
 	/**
 	 * {@inheritDoc} If this returns {@code false} {@link #canHandle(RecipeType)} and
@@ -48,8 +47,4 @@ public interface IRecipeTypeMapper extends IConfigurableElement {
 	 * descriptions that are more complex than a single integer, as otherwise they may intersect with {@link NormalizedSimpleStack}s created by the fakeGroupManager.
 	 */
 	boolean handleRecipe(IMappingCollector<NormalizedSimpleStack, Long> mapper, RecipeHolder<?> recipeHolder, RegistryAccess registryAccess, INSSFakeGroupManager fakeGroupManager);
-
-	//TODO - 1.21: Docs, and update the docs for addMappings
-	default void addConfigOptions(IConfigBuilder<IEMCMapper<NormalizedSimpleStack, Long>> configBuilder) {
-	}
 }

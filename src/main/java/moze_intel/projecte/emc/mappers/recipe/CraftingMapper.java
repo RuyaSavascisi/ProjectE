@@ -1,6 +1,8 @@
 package moze_intel.projecte.emc.mappers.recipe;
 
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.UnaryOperator;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -25,7 +28,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -130,7 +132,7 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				canNotMap.add(typeRegistryName);
 			}
 		}
-		PECore.debugLog("CraftingMapper Statistics:");
+		PECore.debugLog("{} Statistics:", getName());
 		for (Map.Entry<ResourceLocation, RecipeCountInfo> entry : recipeCount.entrySet()) {
 			ResourceLocation typeRegistryName = entry.getKey();
 			RecipeCountInfo countInfo = entry.getValue();
@@ -190,13 +192,23 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	private static class NSSFakeGroupManager implements INSSFakeGroupManager {
 
-		private final Map<Set<NormalizedSimpleStack>, NormalizedSimpleStack> groups = new HashMap<>();
+		private final Map<Set<NormalizedSimpleStack>, FakeGroupData> groups = new HashMap<>();
+		private final Map<Object2IntMap<NormalizedSimpleStack>, FakeGroupData> groupsWithCount = new HashMap<>();
 		private int fakeIndex;
 
 		@Override
-		public Tuple<NormalizedSimpleStack, Boolean> getOrCreateFakeGroup(Set<NormalizedSimpleStack> normalizedSimpleStacks) {
-			NormalizedSimpleStack stack = groups.get(normalizedSimpleStacks);
-			if (stack == null) {
+		public FakeGroupData getOrCreateFakeGroup(Set<NormalizedSimpleStack> normalizedSimpleStacks) {
+			return getOrCreateFakeGroup(groups, normalizedSimpleStacks, HashSet::new);
+		}
+
+		@Override
+		public FakeGroupData getOrCreateFakeGroup(Object2IntMap<NormalizedSimpleStack> normalizedSimpleStacks) {
+			return getOrCreateFakeGroup(groupsWithCount, normalizedSimpleStacks, Object2IntOpenHashMap::new);
+		}
+
+		private <COLLECTION> FakeGroupData getOrCreateFakeGroup(Map<COLLECTION, FakeGroupData> groups, COLLECTION stacks, UnaryOperator<COLLECTION> copyFunction) {
+			FakeGroupData data = groups.get(stacks);
+			if (data == null) {
 				//Doesn't exist, create one with the next index add it as known and return
 				// the group and the fact that we had to create a representation for it
 				// Note: We use an incrementing index here as our crafting mapper sets a namespace
@@ -205,13 +217,15 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				// the IRecipeTypeMapper java docs that if fake stacks are needed by an implementer
 				// they should make sure to make the name more complex than just a simple integer to
 				// ensure that they do not collide with stacks created by this method.
-				stack = NSSFake.create(Integer.toString(fakeIndex++));
+				NormalizedSimpleStack stack = NSSFake.create(Integer.toString(fakeIndex++));
 				//Copy the set into a new set to ensure that it can't be modified by changing
 				// the set that was passed in
-				groups.put(new HashSet<>(normalizedSimpleStacks), stack);
-				return new Tuple<>(stack, true);
+				//TODO - 1.21: What map implementation do we want to use? And do we even want to have to be copying it?
+				//Note: We put that it wasn't created in the map, so when it is retrieved, we know this wasn't the first time
+				groups.put(copyFunction.apply(stacks), new FakeGroupData(stack, false));
+				return new FakeGroupData(stack, true);
 			}
-			return new Tuple<>(stack, false);
+			return data;
 		}
 	}
 }

@@ -91,7 +91,7 @@ public class MappingConfig extends BasePEConfig {
 	 */
 	public static boolean isEnabled(IEMCMapper<NormalizedSimpleStack, Long> mapper) {
 		if (INSTANCE == null) {
-			return true;
+			return mapper.isAvailable();
 		}
 		String name = mapper.getName();
 		BooleanSupplier isEnabled = INSTANCE.mappersEnabledConfig.get(name);
@@ -107,7 +107,7 @@ public class MappingConfig extends BasePEConfig {
 	 */
 	public static boolean isEnabled(IDataComponentProcessor processor) {
 		if (INSTANCE == null) {
-			return true;
+			return processor.isAvailable();
 		}
 		String name = processor.getName();
 		ProcessorConfig processorConfig = INSTANCE.processorConfigs.get(name);
@@ -123,17 +123,17 @@ public class MappingConfig extends BasePEConfig {
 	 */
 	public static boolean hasPersistent(IDataComponentProcessor processor) {
 		if (INSTANCE == null) {
-			return false;
+			return processor.hasPersistentComponents() && processor.usePersistentComponents();
 		}
 		String name = processor.getName();
 		ProcessorConfig processorConfig = INSTANCE.processorConfigs.get(name);
 		if (processorConfig == null) {
 			PECore.LOGGER.warn("Persistent processor Config: '{}' is missing from the config.", name);
-			return processor.hasPersistentComponents();
+			return processor.hasPersistentComponents() && processor.usePersistentComponents();
 		} else if (processorConfig.persistent == null) {
 			if (processor.hasPersistentComponents()) {
 				PECore.LOGGER.warn("Processor Config: '{}' has persistent Data Components but is missing the config option.", name);
-				return true;
+				return processor.usePersistentComponents();
 			}
 			return false;
 		}
@@ -176,6 +176,7 @@ public class MappingConfig extends BasePEConfig {
 			} else {
 				persistent = null;
 			}
+			processor.addConfigOptions(new ConfigBuilder<>(config, builder, processor));
 			builder.pop();
 		}
 	}

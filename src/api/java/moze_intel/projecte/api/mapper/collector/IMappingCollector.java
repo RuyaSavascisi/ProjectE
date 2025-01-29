@@ -39,6 +39,7 @@ public interface IMappingCollector<T, V extends Comparable<V>> {
 	 * @param ingredients What is consumed
 	 */
 	void addConversion(int outnumber, T output, Iterable<T> ingredients);
+	//TODO - 1.21: Do we want to deprecate or at least add a warning for this as converting from iterable to obj2intmap has some performance overhead?
 
 	/**
 	 * Set a fixed {@code value} for {@code something} before the calculation happens.

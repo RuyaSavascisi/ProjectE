@@ -60,15 +60,14 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 		// As the PotionBrewing class does not contain all valid mappings (For example: Potion of luck + gunpowder -> splash potion of luck)
 		for (ItemInfo inputInfo : allInputs) {
 			ItemStack validInput = inputInfo.createStack();
-			NormalizedSimpleStack nssInput = NSSItem.createItem(validInput);
+			NormalizedSimpleStack nssInput = inputInfo.toNSS();
 			for (ItemInfo reagentInfo : allReagents) {
-				ItemStack validReagent = reagentInfo.createStack();
-				ItemStack output = potionBrewing.mix(validReagent, validInput);
+				ItemStack output = potionBrewing.mix(reagentInfo.createStack(), validInput);
 				if (!output.isEmpty()) {
 					//Add the conversion, 3 input + reagent = 3 y output as the output technically could be stacked
 					mapper.addConversion(3 * output.getCount(), NSSItem.createItem(output), EMCHelper.intMapOf(
 							nssInput, 3,
-							NSSItem.createItem(validReagent), 1
+							reagentInfo.toNSS(), 1
 					));
 					recipeCount++;
 				}
@@ -104,7 +103,7 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 			}
 		}
 
-		PECore.debugLog("BrewingMapper Statistics:");
+		PECore.debugLog("{} Statistics:", getName());
 		PECore.debugLog("Found {} Brewing Recipes", recipeCount);
 		for (Class<?> c : canNotMap) {
 			PECore.debugLog("Could not map Brewing Recipes with Type: {}", c.getName());

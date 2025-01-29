@@ -2,6 +2,7 @@ package moze_intel.projecte.utils;
 
 import java.math.BigInteger;
 import java.text.NumberFormat;
+import java.util.function.IntBinaryOperator;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Direction;
 
@@ -17,6 +18,8 @@ public final class Constants {
 		format.setMaximumFractionDigits(1);
 		return format;
 	}
+
+	public static final IntBinaryOperator INT_SUM = Integer::sum;
 
 	public static final BigInteger MAX_EXACT_TRANSMUTATION_DISPLAY = BigInteger.valueOf(1_000_000_000_000L);
 	public static final BigInteger MAX_INTEGER = BigInteger.valueOf(Integer.MAX_VALUE);

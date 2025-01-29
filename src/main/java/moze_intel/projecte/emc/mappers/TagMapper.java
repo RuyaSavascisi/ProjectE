@@ -1,6 +1,6 @@
 package moze_intel.projecte.emc.mappers;
 
-import java.util.List;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.AbstractNSSTag;
@@ -19,9 +19,9 @@ public class TagMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 		for (NSSTag stack : AbstractNSSTag.getAllCreatedTags()) {
 			stack.forEachElement(mapper, stack, (collector, normalizedSimpleStack, tag) -> {
 				//Tag -> element
-				collector.addConversion(1, tag, List.of(normalizedSimpleStack));
+				collector.addConversion(1, tag, Object2IntMaps.singleton(normalizedSimpleStack, 1));
 				//Element -> tag
-				collector.addConversion(1, normalizedSimpleStack, List.of(tag));
+				collector.addConversion(1, normalizedSimpleStack, Object2IntMaps.singleton(tag, 1));
 			});
 		}
 	}

@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
 import moze_intel.projecte.api.mapper.collector.IExtendedMappingCollector;
+import moze_intel.projecte.utils.Constants;
 import net.minecraft.core.HolderLookup;
 
 public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A extends IValueArithmetic<?>> implements IExtendedMappingCollector<T, V, A> {
@@ -27,14 +28,14 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 	private Object2IntMap<T> listToMapOfCounts(Iterable<T> iterable) {
 		Object2IntMap<T> map = new Object2IntOpenHashMap<>();
 		for (T ingredient : iterable) {
-			map.mergeInt(ingredient, 1, Integer::sum);
+			map.mergeInt(ingredient, 1, Constants.INT_SUM);
 		}
 		return map;
 	}
 
 	@Override
-	public void setValueFromConversion(int outnumber, T something, Iterable<T> ingredients) {
-		this.setValueFromConversion(outnumber, something, listToMapOfCounts(ingredients));
+	public void setValueFromConversion(int outnumber, T output, Iterable<T> ingredients) {
+		this.setValueFromConversion(outnumber, output, listToMapOfCounts(ingredients));
 	}
 
 	@Override

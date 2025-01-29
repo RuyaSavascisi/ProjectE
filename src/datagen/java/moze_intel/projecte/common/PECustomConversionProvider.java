@@ -2,8 +2,6 @@ package moze_intel.projecte.common;
 
 import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.api.data.ConversionGroupBuilder;
-import moze_intel.projecte.api.data.CustomConversionBuilder;
 import moze_intel.projecte.api.data.CustomConversionProvider;
 import moze_intel.projecte.api.nss.NSSFake;
 import moze_intel.projecte.api.nss.NSSItem;
@@ -13,7 +11,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.InstrumentItem;
 import net.minecraft.world.item.Instruments;
@@ -21,8 +18,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +52,7 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 		;
 		NormalizedSimpleStack singleEMC = NSSFake.create("single_emc");
 		ItemStack waterBottle = PotionContents.createItemStack(Items.POTION, Potions.WATER);
-		CustomConversionBuilder defaultBuilder = createConversionBuilder(PECore.rl("defaults"))
+		createConversionBuilder(PECore.rl("defaults"))
 				.comment("Default values for vanilla items.")
 				.group("default")
 				.comment("Default conversion group.")
@@ -75,6 +70,7 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.conversion(Items.CARVED_PUMPKIN).ingredient(Items.PUMPKIN).end()
 				.conversion(Items.TORCHFLOWER_SEEDS).ingredient(Items.TORCHFLOWER).end()
 				.conversion(Items.PITCHER_POD).ingredient(Items.PITCHER_PLANT).end()
+				.conversion(Items.WRITTEN_BOOK).ingredient(Items.WRITABLE_BOOK).end()
 				.conversion(Items.ENCHANTED_BOOK).ingredient(Items.BOOK).end()
 				.conversion(Items.ENCHANTED_GOLDEN_APPLE).ingredient(Items.APPLE).ingredient(Tags.Items.STORAGE_BLOCKS_GOLD, 8).end()
 				.conversion(Items.STRIPPED_BAMBOO_BLOCK).ingredient(Items.BAMBOO_BLOCK).end()
@@ -305,7 +301,9 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.PIGLIN_BANNER_PATTERN, 512)
 				.before(Items.ENDER_PEARL, 1_024)
 				.before(Items.NAUTILUS_SHELL, 1_024)
-				.before(Items.BLAZE_ROD, 1_536)
+				.before(Tags.Items.RODS_BLAZE, 1_536)
+				//TODO - 1.21: Re-evaluate this value
+				.before(Tags.Items.RODS_BREEZE, 2_304)
 				.before(Items.SHULKER_SHELL, 2_048)
 				.before(Items.SNIFFER_EGG, 2_048)
 				.before(Items.GHAST_TEAR, 4_096)
@@ -364,15 +362,10 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, 10_176)
 				.before(Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, 10_176)
 				.before(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, 7_533)
+				//TODO - 1.21: Figure out how we actually calculated the above ones in terms of an equation
+				//.before(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, 7_533)
+				//.before(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, 7_533)
 				;
-		ConversionGroupBuilder shulkerGroupBuilder = defaultBuilder.group("shulker_box_recoloring")
-				.comment("Propagate shulker box values to colored variants.");
-		for (DyeColor color : DyeColor.values()) {
-			shulkerGroupBuilder.conversion(ShulkerBoxBlock.getBlockByColor(color))
-					.ingredient(Blocks.SHULKER_BOX)
-					.ingredient(color.getTag())
-					.end();
-		}
 	}
 
 	private ItemStack horn(HolderLookup.Provider registries, ResourceKey<Instrument> instrument) {
