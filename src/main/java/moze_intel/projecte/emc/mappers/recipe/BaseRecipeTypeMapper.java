@@ -19,9 +19,11 @@ import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.utils.Constants;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
@@ -59,46 +61,52 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 		ResourceLocation recipeID = recipeHolder.id();
 		Object2IntMap<NormalizedSimpleStack> ingredientMap = new Object2IntOpenHashMap<>();
 		for (Ingredient recipeItem : ingredientsChecked) {
+			if (recipeItem.isEmpty()) {
+				//Skip any explicitly empty ingredients as they are just used for spacing
+				continue;
+			}
 			ItemStack[] matches = getMatchingStacks(recipeItem, recipeID);
 			if (matches == null) {
 				//Failed to get matching stacks ingredient, bail but mark that we handled it as there is a 99% chance a later
 				// mapper would fail as well due to it being an invalid recipe
 				return true;
+			} else if (matches.length == 0) {
+				//If we don't have any matches for the ingredient just return that we handled it, as if it is an accidentally empty ingredient,
+				// nothing will be able to handle it. If it was explicitly empty, then it will be skipped above
+				return true;
 			} else if (matches.length == 1) {
 				//Handle this ingredient as a direct representation of the stack it represents
-				if (matches[0].isEmpty()) {
+				ItemStack match = matches[0];
+				if (match.isEmpty()) {
 					//If we don't have any matches for the ingredient just return that we couldn't handle it,
 					// given a later recipe might be able to
 					return false;
-				} else if (addIngredient(ingredientMap, matches[0], recipeID)) {
+				} else if (representsEmptyTag(match)) {
+					//Note: Similar to Ingredient#hasNoItems, we also check if the singular stack that matches is a barrier representing the tag is empty
+					// Return that we handled it, as if it is an accidentally empty ingredient, nothing will be able to handle it
+					return true;
+				} else if (addIngredient(ingredientMap, match, recipeID)) {
 					//Failed to add ingredient, bail but mark that we handled it as there is a 99% chance a later
 					// mapper would fail as well due to it being an invalid recipe
 					return true;
 				}
-			} else if (matches.length > 0) {
+			} else {
 				Set<NormalizedSimpleStack> rawNSSMatches = new HashSet<>(matches.length);
 				List<ItemStack> stacks = new ArrayList<>(matches.length);
 				for (ItemStack match : matches) {
-					if (!match.isEmpty() && rawNSSMatches.add(NSSItem.createItem(match))) {
+					if (!match.isEmpty() && !representsEmptyTag(match)) {
 						//Validate it is not an empty stack in case mods do weird things in custom ingredients
-						// Note: We only add it to the list of stacks, if we haven't already added it to rawNSSMatches before
-						// This allows us to avoid potential duplicates
+						// Note: We don't have to worry about duplicates, as Ingredient#getItems, returns a distinct set of items
+						rawNSSMatches.add(NSSItem.createItem(match));
 						stacks.add(match);
 					}
 				}
 				int count = stacks.size();
 				if (count == 0) {
-					//If we don't have any matches for the ingredient just return that we couldn't handle it,
-					// given a later recipe might be able to
-					return false;
-				} else if (count == 1) {
-					//There is only actually one non-empty ingredient
-					if (addIngredient(ingredientMap, stacks.getFirst(), recipeID)) {
-						//Failed to add ingredient, bail but mark that we handled it as there is a 99% chance a later
-						// mapper would fail as well due to it being an invalid recipe
-						return true;
-					}
-				} else {
+					//If we don't have any matches for the ingredient just return that we handled it, as if it is an accidentally empty ingredient,
+					// nothing will be able to handle it. If it was explicitly empty, then it will be skipped above
+					return true;
+				} else if (count > 1) {
 					//Handle this ingredient as the representation of all the stacks it supports
 					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroup(rawNSSMatches);
 					NormalizedSimpleStack dummy = group.dummy();
@@ -126,11 +134,19 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 							return true;
 						}
 					}
+				} else if (addIngredient(ingredientMap, stacks.getFirst(), recipeID)) {//There is only actually one non-empty ingredient
+					//Failed to add ingredient, bail but mark that we handled it as there is a 99% chance a later
+					// mapper would fail as well due to it being an invalid recipe
+					return true;
 				}
 			}
 		}
 		mapper.addConversion(recipeOutput.getCount(), NSSItem.createItem(recipeOutput), ingredientMap);
 		return true;
+	}
+
+	private static boolean representsEmptyTag(ItemStack stack) {
+		return stack.getItem() == Items.BARRIER && stack.getHoverName() instanceof MutableComponent hoverName && hoverName.getString().startsWith("Empty Tag: ");
 	}
 
 	@Nullable
@@ -141,8 +157,13 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			ICustomIngredient customIngredient = ingredient.getCustomIngredient();
 			if (customIngredient != null) {//Should basically always be the case
 				ResourceLocation name = NeoForgeRegistries.INGREDIENT_TYPES.getKey(customIngredient.getType());
-				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Ingredient of type: {} crashed when getting the matching stacks. "
-														   + "Please report this to the ingredient's creator ({}).", recipeID, name, name.getNamespace(), e);
+				if (name == null) {
+					PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Ingredient of type: {} crashed when getting the matching stacks. "
+															   + "Please report this to the ingredient's creator.", recipeID, customIngredient.getClass(), e);
+				} else {
+					PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Ingredient of type: {} crashed when getting the matching stacks. "
+															   + "Please report this to the ingredient's creator ({}).", recipeID, name, name.getNamespace(), e);
+				}
 			} else {
 				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Crashed when getting the matching stacks.", recipeID, e);
 			}
@@ -150,7 +171,9 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 		}
 	}
 
-	//Returns true if it failed and is invalid
+	/**
+	 * Returns true if it failed and is invalid
+	 */
 	private boolean addIngredient(Object2IntMap<NormalizedSimpleStack> ingredientMap, ItemStack stack, ResourceLocation recipeID) {
 		stack = stack.copy();
 		Item item = stack.getItem();
