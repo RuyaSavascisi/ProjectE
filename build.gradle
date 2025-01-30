@@ -151,45 +151,30 @@ neoForge {
 }
 
 neoForge.runs {
-    configureEach { net.neoforged.moddevgradle.dsl.RunModel run ->
-        run.gameDirectory = file("run")
-
-        boolean supportsGameTests = run.name != "data"
-        if (supportsGameTests) {
-            //Specify all our mods as domains to look for game tests
-            run.systemProperty('neoforge.enabledGameTestNamespaces', 'projecte')
-        }
-
+    configureEach {
         if (project.hasProperty('forge_force_ansi')) {
             //Force ansi if declared as a gradle variable, as the auto detection doesn't detect IntelliJ properly
             // or eclipse's plugin that adds support for ansi escape in console
-            run.jvmArgument("-Dterminal.ansi=${run.project.property('forge_force_ansi')}")
+            systemProperties.put('terminal.ansi', (String) property('forge_force_ansi'))
         }
 
         //if the selected toolchain is a JBR, enable DCEVM
-        final vmVendor = run.project.javaToolchains.launcherFor(java.toolchain).map { it.metadata.vendor }.getOrElse("")
-        if (vmVendor.contains("JetBrains")) {
-            run.jvmArgument("-XX:+IgnoreUnrecognizedVMOptions")
-            run.jvmArgument("-XX:+AllowEnhancedClassRedefinition")
+        if (javaToolchains.launcherFor(java.toolchain).map { it.metadata.vendor }.getOrElse('').contains('JetBrains')) {
+            jvmArguments.addAll('-XX:+IgnoreUnrecognizedVMOptions', '-XX:+AllowEnhancedClassRedefinition')
         }
     }
     client {
         client()
-        //Note: To enable logging into the client account, set the neogradle.subsystems.devLogin.conventionForRun property to true in your gradle user home
-        // https://github.com/neoforged/NeoGradle?tab=readme-ov-file#per-run-configuration
-        //TODO: Re-evaluate if we want this to have its own property instead of make use of the path for the neogradle one
-        if (findProperty('neogradle.subsystems.devLogin.conventionForRun') ?: false) {
+        //Note: To enable logging into the client account, set the mc_devlogin property to true in your gradle user home
+        if (findProperty('mc_devlogin') ?: false) {
             //If the property is present and set to true, enable dev login
             devLogin = true
         }
     }
     clientAlt {
         client()
-        if (!(findProperty('neogradle.subsystems.devLogin.conventionForRun') ?: false)) {
-            //If the property is missing or set to false (so the normal runClient task would use Dev as the name),
-            // change the name of the alt client type so that it doesn't conflict with the main dev one
-            programArguments.addAll((String[]) ['--username', 'AltDev'])
-        }
+        // Force a different username in case devlogin is not enabled for the main run
+        programArguments.addAll((String[]) ['--username', 'AltDev'])
     }
     server {
         server()
