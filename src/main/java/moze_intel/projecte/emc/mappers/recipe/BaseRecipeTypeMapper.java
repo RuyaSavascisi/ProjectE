@@ -1,6 +1,9 @@
 package moze_intel.projecte.emc.mappers.recipe;
 
 import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -13,7 +16,7 @@ import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager.FakeGroupData;
 import moze_intel.projecte.api.mapper.recipe.IRecipeTypeMapper;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
-import moze_intel.projecte.emc.IngredientMap;
+import moze_intel.projecte.utils.Constants;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -22,6 +25,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.neoforged.neoforge.common.crafting.ICustomIngredient;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 //TODO: Fix recipe mapping for things containing EMC not working properly? (aka full klein stars)
@@ -52,29 +57,28 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			return true;
 		}
 		ResourceLocation recipeID = recipeHolder.id();
-		List<DummyGroupInfo> dummyGroupInfos = new ArrayList<>();
-		IngredientMap<NormalizedSimpleStack> ingredientMap = new IngredientMap<>();
+		Object2IntMap<NormalizedSimpleStack> ingredientMap = new Object2IntOpenHashMap<>();
 		for (Ingredient recipeItem : ingredientsChecked) {
 			ItemStack[] matches = getMatchingStacks(recipeItem, recipeID);
 			if (matches == null) {
 				//Failed to get matching stacks ingredient, bail but mark that we handled it as there is a 99% chance a later
 				// mapper would fail as well due to it being an invalid recipe
-				return addConversionsAndReturn(mapper, dummyGroupInfos, true);
+				return true;
 			} else if (matches.length == 1) {
 				//Handle this ingredient as a direct representation of the stack it represents
 				if (matches[0].isEmpty()) {
 					//If we don't have any matches for the ingredient just return that we couldn't handle it,
 					// given a later recipe might be able to
-					return addConversionsAndReturn(mapper, dummyGroupInfos, false);
-				} else if (addIngredient(ingredientMap, matches[0].copy(), recipeID)) {
+					return false;
+				} else if (addIngredient(ingredientMap, matches[0], recipeID)) {
 					//Failed to add ingredient, bail but mark that we handled it as there is a 99% chance a later
 					// mapper would fail as well due to it being an invalid recipe
-					return addConversionsAndReturn(mapper, dummyGroupInfos, true);
+					return true;
 				}
 			} else if (matches.length > 0) {
-				Set<NormalizedSimpleStack> rawNSSMatches = new HashSet<>();
-				List<ItemStack> stacks = new ArrayList<>();
-				for (ItemStack match : matches) {//TODO - 1.21: Do we have to worry about matches potentially containing duplicate stacks?
+				Set<NormalizedSimpleStack> rawNSSMatches = new HashSet<>(matches.length);
+				List<ItemStack> stacks = new ArrayList<>(matches.length);
+				for (ItemStack match : matches) {
 					if (!match.isEmpty() && rawNSSMatches.add(NSSItem.createItem(match))) {
 						//Validate it is not an empty stack in case mods do weird things in custom ingredients
 						// Note: We only add it to the list of stacks, if we haven't already added it to rawNSSMatches before
@@ -86,57 +90,47 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 				if (count == 0) {
 					//If we don't have any matches for the ingredient just return that we couldn't handle it,
 					// given a later recipe might be able to
-					return addConversionsAndReturn(mapper, dummyGroupInfos, false);
+					return false;
 				} else if (count == 1) {
 					//There is only actually one non-empty ingredient
-					if (addIngredient(ingredientMap, stacks.getFirst().copy(), recipeID)) {
+					if (addIngredient(ingredientMap, stacks.getFirst(), recipeID)) {
 						//Failed to add ingredient, bail but mark that we handled it as there is a 99% chance a later
 						// mapper would fail as well due to it being an invalid recipe
-						return addConversionsAndReturn(mapper, dummyGroupInfos, true);
+						return true;
 					}
 				} else {
 					//Handle this ingredient as the representation of all the stacks it supports
 					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroup(rawNSSMatches);
 					NormalizedSimpleStack dummy = group.dummy();
-					ingredientMap.addIngredient(dummy, 1);
+					ingredientMap.mergeInt(dummy, 1, Constants.INT_SUM);
 					if (group.created()) {
 						//Only lookup the matching stacks for the group with conversion if we don't already have
 						// a group created for this dummy ingredient
 						// Note: We soft ignore cases where it fails/there are no matching group ingredients
 						// as then our fake ingredient will never actually have an emc value assigned with it
 						// so the recipe won't either
-						List<IngredientMap<NormalizedSimpleStack>> groupIngredientMaps = new ArrayList<>();
+						boolean success = false;
 						for (ItemStack stack : stacks) {
-							IngredientMap<NormalizedSimpleStack> groupIngredientMap = new IngredientMap<>();
+							//Note: We use a capacity of two as it will only contain the stack itself and potentially a container
+							Object2IntMap<NormalizedSimpleStack> groupIngredientMap = new Object2IntArrayMap<>(2);
 							//Copy the stack to ensure a mod that is implemented poorly doesn't end up changing
 							// the source stack in the recipe
-							if (addIngredient(groupIngredientMap, stack.copy(), recipeID)) {
-								//Failed to add ingredient, bail but mark that we handled it as there is a 99% chance a later
-								// mapper would fail as well due to it being an invalid recipe
-								return addConversionsAndReturn(mapper, dummyGroupInfos, true);
+							if (!addIngredient(groupIngredientMap, stack, recipeID)) {
+								mapper.addConversion(1, dummy, groupIngredientMap);
+								success = true;
 							}
-							groupIngredientMaps.add(groupIngredientMap);
 						}
-						dummyGroupInfos.add(new DummyGroupInfo(dummy, groupIngredientMaps));
+						if (!success) {
+							//Failed to add any of the ingredients, bail but mark that we handled it as there is a 99% chance a later
+							// mapper would fail as well due to it being an invalid recipe
+							return true;
+						}
 					}
 				}
 			}
 		}
-		mapper.addConversion(recipeOutput.getCount(), NSSItem.createItem(recipeOutput), ingredientMap.getMap());
-		return addConversionsAndReturn(mapper, dummyGroupInfos, true);
-	}
-
-	/**
-	 * This method can be used as a helper method to return a specific value and add any existing group conversions. It is important that we add any valid group
-	 * conversions that we have, regardless of whether the recipe as a whole is valid, because we only create one instance of our group's NSS representation so even if
-	 * parts of the recipe are not valid, the conversion may be valid and exist in another recipe.
-	 */
-	private boolean addConversionsAndReturn(IMappingCollector<NormalizedSimpleStack, Long> mapper, List<DummyGroupInfo> dummyGroupInfos, boolean returnValue) {
-		//If we have any conversions make sure to add them even if we are returning early
-		for (DummyGroupInfo dummyGroupInfo : dummyGroupInfos) {
-			dummyGroupInfo.addConversions(mapper);
-		}
-		return returnValue;
+		mapper.addConversion(recipeOutput.getCount(), NSSItem.createItem(recipeOutput), ingredientMap);
+		return true;
 	}
 
 	@Nullable
@@ -144,20 +138,21 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 		try {
 			return ingredient.getItems();
 		} catch (Exception e) {
-			if (isTagException(e)) {
-				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Ingredient of type: {} crashed when getting the matching stacks "
-														   + "due to not properly deserializing and handling tags. Please report this to the ingredient's creator.",
-						recipeID, ingredient.getClass().getName(), e);
-			} else {
+			ICustomIngredient customIngredient = ingredient.getCustomIngredient();
+			if (customIngredient != null) {//Should basically always be the case
+				ResourceLocation name = NeoForgeRegistries.INGREDIENT_TYPES.getKey(customIngredient.getType());
 				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Ingredient of type: {} crashed when getting the matching stacks. "
-														   + "Please report this to the ingredient's creator.", recipeID, ingredient.getClass().getName(), e);
+														   + "Please report this to the ingredient's creator ({}).", recipeID, name, name.getNamespace(), e);
+			} else {
+				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Crashed when getting the matching stacks.", recipeID, e);
 			}
 			return null;
 		}
 	}
 
 	//Returns true if it failed and is invalid
-	private boolean addIngredient(IngredientMap<NormalizedSimpleStack> ingredientMap, ItemStack stack, ResourceLocation recipeID) {
+	private boolean addIngredient(Object2IntMap<NormalizedSimpleStack> ingredientMap, ItemStack stack, ResourceLocation recipeID) {
+		stack = stack.copy();
 		Item item = stack.getItem();
 		boolean hasContainerItem = false;
 		try {
@@ -166,23 +161,13 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			hasContainerItem = item.hasCraftingRemainingItem(stack);
 			if (hasContainerItem) {
 				//If this item has a container for the stack, we remove the cost of the container itself
-				ingredientMap.addIngredient(NSSItem.createItem(item.getCraftingRemainingItem(stack)), -1);
+				ingredientMap.mergeInt(NSSItem.createItem(item.getCraftingRemainingItem(stack)), -1, Constants.INT_SUM);
 			}
 		} catch (Exception e) {
 			ResourceLocation itemName = BuiltInRegistries.ITEM.getKey(item);
 			if (hasContainerItem) {
-				if (isTagException(e)) {
-					PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Item: {} reported that it has a container item, "
-															   + "but errors when trying to get the container item due to not properly deserializing and handling tags. "
-															   + "Please report this to {}.", recipeID, itemName, itemName.getNamespace(), e);
-				} else {
-					PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Item: {} reported that it has a container item, "
-															   + "but errors when trying to get the container item based on the stack in the recipe. "
-															   + "Please report this to {}.", recipeID, itemName, itemName.getNamespace(), e);
-				}
-			} else if (isTagException(e)) {
-				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Item: {} crashed when checking if the stack has a container item, "
-														   + "due to not properly deserializing and handling tags. Please report this to {}.", recipeID, itemName,
+				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Item: {} reported that it has a container item, but errors when trying to get "
+														   + "the container item based on the stack in the recipe. Please report this to {}.", recipeID, itemName,
 						itemName.getNamespace(), e);
 			} else {
 				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Item: {} crashed when checking if the stack in the recipe has a container item. "
@@ -192,12 +177,8 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			// as there is a 99% chance it will just fail again anyways
 			return true;
 		}
-		ingredientMap.addIngredient(NSSItem.createItem(stack), 1);
+		ingredientMap.mergeInt(NSSItem.createItem(stack), 1, Constants.INT_SUM);
 		return false;
-	}
-
-	private boolean isTagException(Exception e) {
-		return e instanceof IllegalStateException && e.getMessage().matches("Tag \\S*:\\S* used before it was bound");
 	}
 
 	@Nullable
@@ -206,12 +187,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			return getIngredients(recipeHolder.value());
 		} catch (Exception e) {
 			ResourceLocation recipeID = recipeHolder.id();
-			if (isTagException(e)) {
-				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Failed to get ingredients due to the recipe not properly deserializing and handling tags. "
-														   + "Please report this to {}.", recipeID, recipeID.getNamespace(), e);
-			} else {
-				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Failed to get ingredients. Please report this to {}.", recipeID, recipeID.getNamespace(), e);
-			}
+			PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Failed to get ingredients. Please report this to {}.", recipeID, recipeID.getNamespace(), e);
 		}
 		return null;
 	}
@@ -219,14 +195,5 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 	//Allow overwriting the ingredients list because Smithing recipes don't override it themselves
 	protected Collection<Ingredient> getIngredients(Recipe<?> recipe) {
 		return recipe.getIngredients();
-	}
-
-	private record DummyGroupInfo(NormalizedSimpleStack output, List<IngredientMap<NormalizedSimpleStack>> groupIngredientMap) {
-
-		private void addConversions(IMappingCollector<NormalizedSimpleStack, Long> mapper) {
-			for (IngredientMap<NormalizedSimpleStack> groupIngredientMap : groupIngredientMap) {
-				mapper.addConversion(1, output, groupIngredientMap.getMap());
-			}
-		}
 	}
 }
