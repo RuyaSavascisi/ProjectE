@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMaps;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceArrayMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -159,7 +159,7 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		if (targets == null) {
 			return Object2ReferenceMaps.emptyMap();
 		}
-		Map<BlockState, BlockState> conversions = new Reference2ReferenceArrayMap<>();
+		Map<BlockState, BlockState> conversions = new Reference2ReferenceOpenHashMap<>();
 		conversions.put(targeted, result);
 		Object2ReferenceMap<BlockPos, BlockState> changes = new Object2ReferenceOpenHashMap<>();
 		Block targetBlock = targeted.getBlock();

@@ -29,10 +29,12 @@ public final class NSSFake implements NormalizedSimpleStack {
 
 	private final String namespace;
 	private final String description;
+	private final int cachedHash;
 
 	private NSSFake(String namespace, String description) {
 		this.namespace = namespace;
 		this.description = description;
+		this.cachedHash = Objects.hashCode(this.namespace, this.description);
 	}
 
 	/**
@@ -73,7 +75,7 @@ public final class NSSFake implements NormalizedSimpleStack {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(namespace, description);
+		return cachedHash;
 	}
 
 	@Override

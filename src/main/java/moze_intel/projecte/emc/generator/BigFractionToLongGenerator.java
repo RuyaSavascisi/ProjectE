@@ -2,8 +2,10 @@ package moze_intel.projecte.emc.generator;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import java.math.BigInteger;
 import java.util.Map;
 import moze_intel.projecte.api.mapper.generator.IValueGenerator;
+import moze_intel.projecte.utils.MathUtils;
 import org.apache.commons.math3.fraction.BigFraction;
 
 /**
@@ -25,8 +27,13 @@ public class BigFractionToLongGenerator<T> implements IValueGenerator<T, Long> {
 		Object2LongMap<T> myResult = new Object2LongOpenHashMap<>();
 		for (Map.Entry<T, BigFraction> entry : innerResult.entrySet()) {
 			BigFraction value = entry.getValue();
-			if (value.longValue() > 0) {
-				myResult.put(entry.getKey(), value.longValue());
+			BigInteger numerator = value.getNumerator();
+			if (numerator.signum() == 1) {//if value > 0
+				BigInteger bigInt = numerator.divide(value.getDenominator());
+				//If it is > 0 and is <= max long
+				if (bigInt.signum() == 1 && !MathUtils.isGreaterThanLong(bigInt)) {
+					myResult.put(entry.getKey(), bigInt.longValue());
+				}
 			}
 		}
 		return myResult;

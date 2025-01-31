@@ -108,7 +108,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 					return true;
 				} else if (count > 1) {
 					//Handle this ingredient as the representation of all the stacks it supports
-					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroup(rawNSSMatches);
+					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroupDirect(rawNSSMatches);
 					NormalizedSimpleStack dummy = group.dummy();
 					ingredientMap.mergeInt(dummy, 1, Constants.INT_SUM);
 					if (group.created()) {

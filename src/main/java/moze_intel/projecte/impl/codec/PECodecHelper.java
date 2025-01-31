@@ -186,7 +186,11 @@ public class PECodecHelper implements IPECodecHelper {
 		return Optional.empty();
 	}
 
-	public static <TYPE> Optional<TYPE> read(HolderLookup.Provider registries, Reader reader, Codec<TYPE> codec, String description) {
+	public static <TYPE> Optional<TYPE> read(HolderLookup.Provider registryAccess, Reader reader, Codec<TYPE> codec, String description) {
+		return read(registryAccess.createSerializationContext(JsonOps.INSTANCE), reader, codec, description);
+	}
+
+	public static <TYPE> Optional<TYPE> read(DynamicOps<JsonElement> ops, Reader reader, Codec<TYPE> codec, String description) {
 		JsonElement json;
 		try {
 			json = JsonParser.parseReader(reader);
@@ -194,7 +198,7 @@ public class PECodecHelper implements IPECodecHelper {
 			PECore.LOGGER.error("Couldn't parse {}", description, e);
 			return Optional.empty();
 		}
-		DataResult<TYPE> result = codec.parse(registries.createSerializationContext(JsonOps.INSTANCE), json);
+		DataResult<TYPE> result = codec.parse(ops, json);
 		if (result.isError()) {
 			PECore.LOGGER.error("Couldn't parse {}: {}", description, result.error().orElseThrow().message());
 			return Optional.empty();

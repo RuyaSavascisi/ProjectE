@@ -3,6 +3,9 @@ package moze_intel.projecte.emc.mappers.recipe;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,13 +74,13 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		NSSFake.setCurrentNamespace("craftingMapper");
-		Map<ResourceLocation, RecipeCountInfo> recipeCount = new HashMap<>();
-		Set<ResourceLocation> canNotMap = new HashSet<>();
+		Reference2ObjectMap<ResourceKey<RecipeType<?>>, RecipeCountInfo> recipeCount = new Reference2ObjectOpenHashMap<>();
+		Set<ResourceKey<RecipeType<?>>> canNotMap = new ReferenceOpenHashSet<>();
 		RecipeManager recipeManager = serverResources.getRecipeManager();
 		//Make a new fake group manager here instead of across the entire mapper so that we can reclaim the memory when we are done with this method
 		NSSFakeGroupManager fakeGroupManager = new NSSFakeGroupManager();
 		for (Map.Entry<ResourceKey<RecipeType<?>>, RecipeType<?>> entry : BuiltInRegistries.RECIPE_TYPE.entrySet()) {
-			ResourceLocation typeRegistryName = entry.getKey().location();
+			ResourceKey<RecipeType<?>> typeRegistryKey = entry.getKey();
 			RecipeType<?> recipeType = entry.getValue();
 			boolean wasHandled = false;
 			List<RecipeHolder<?>> recipes = null;
@@ -107,10 +110,11 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 							}
 						}
 						if (numHandled > 0 || recipes.isEmpty()) {
-							if (recipeCount.containsKey(typeRegistryName)) {
-								recipeCount.get(typeRegistryName).setUnhandled(unhandled);
+							RecipeCountInfo recipeCountInfo = recipeCount.get(typeRegistryKey);
+							if (recipeCountInfo != null) {
+								recipeCountInfo.setUnhandled(unhandled);
 							} else {
-								recipeCount.put(typeRegistryName, new RecipeCountInfo(recipes.size(), unhandled));
+								recipeCount.put(typeRegistryKey, new RecipeCountInfo(recipes.size(), unhandled));
 							}
 							wasHandled = true;
 							if (unhandled.isEmpty()) {
@@ -129,12 +133,12 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 			if (!wasHandled) {
 				//Note: We cannot just look at not unhandled is empty as then if none of the mappers even support the type
 				// it will not be true. We also don't have any issues due to how we modify the unhandled
-				canNotMap.add(typeRegistryName);
+				canNotMap.add(typeRegistryKey);
 			}
 		}
 		PECore.debugLog("{} Statistics:", getName());
-		for (Map.Entry<ResourceLocation, RecipeCountInfo> entry : recipeCount.entrySet()) {
-			ResourceLocation typeRegistryName = entry.getKey();
+		for (Map.Entry<ResourceKey<RecipeType<?>>, RecipeCountInfo> entry : recipeCount.entrySet()) {
+			ResourceLocation typeRegistryName = entry.getKey().location();
 			RecipeCountInfo countInfo = entry.getValue();
 			int total = countInfo.getTotalRecipes();
 			List<RecipeHolder<?>> unhandled = countInfo.getUnhandled();
@@ -146,8 +150,8 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				}
 			}
 		}
-		for (ResourceLocation typeRegistryName : canNotMap) {
-			PECore.debugLog("Could not map any Recipes of Type: {}", typeRegistryName);
+		for (ResourceKey<RecipeType<?>> typeRegistryKey : canNotMap) {
+			PECore.debugLog("Could not map any Recipes of Type: {}", typeRegistryKey.location());
 		}
 		NSSFake.resetNamespace();
 	}
@@ -202,8 +206,18 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 		}
 
 		@Override
+		public FakeGroupData getOrCreateFakeGroupDirect(Set<NormalizedSimpleStack> normalizedSimpleStacks) {
+			return getOrCreateFakeGroup(groups, normalizedSimpleStacks, UnaryOperator.identity());
+		}
+
+		@Override
 		public FakeGroupData getOrCreateFakeGroup(Object2IntMap<NormalizedSimpleStack> normalizedSimpleStacks) {
 			return getOrCreateFakeGroup(groupsWithCount, normalizedSimpleStacks, Object2IntOpenHashMap::new);
+		}
+
+		@Override
+		public FakeGroupData getOrCreateFakeGroupDirect(Object2IntMap<NormalizedSimpleStack> normalizedSimpleStacks) {
+			return getOrCreateFakeGroup(groupsWithCount, normalizedSimpleStacks, UnaryOperator.identity());
 		}
 
 		private <COLLECTION> FakeGroupData getOrCreateFakeGroup(Map<COLLECTION, FakeGroupData> groups, COLLECTION stacks, UnaryOperator<COLLECTION> copyFunction) {
@@ -218,9 +232,6 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				// they should make sure to make the name more complex than just a simple integer to
 				// ensure that they do not collide with stacks created by this method.
 				NormalizedSimpleStack stack = NSSFake.create(Integer.toString(fakeIndex++));
-				//Copy the set into a new set to ensure that it can't be modified by changing
-				// the set that was passed in
-				//TODO - 1.21: What map implementation do we want to use? And do we even want to have to be copying it?
 				//Note: We put that it wasn't created in the map, so when it is retrieved, we know this wasn't the first time
 				groups.put(copyFunction.apply(stacks), new FakeGroupData(stack, false));
 				return new FakeGroupData(stack, true);

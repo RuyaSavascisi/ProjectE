@@ -60,7 +60,7 @@ public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<V
 		private static final DataResult<Unit> INITIAL_RESULT = DataResult.success(Unit.INSTANCE, Lifecycle.stable());
 
 		private final DynamicOps<T> ops;
-		//TODO - 1.21: Should this be a Object2ObjectArrayMap like Vanilla's BaseMapCodec uses?
+		//TODO - 1.21: Should this be a Object2ObjectArrayMap like Vanilla's BaseMapCodec uses? Performance might be worse (at least compared to fast utils linked hash map)
 		private final Map<KEY, VALUE> elements = new LinkedHashMap<>();
 		private final Stream.Builder<T> failed = Stream.builder();
 		private DataResult<Unit> result = INITIAL_RESULT;

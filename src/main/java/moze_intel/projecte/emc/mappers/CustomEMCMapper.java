@@ -1,6 +1,8 @@
 package moze_intel.projecte.emc.mappers;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongSortedMaps;
+import java.util.Iterator;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
@@ -19,7 +21,8 @@ public class CustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Long> 
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		for (Object2LongMap.Entry<NSSItem> entry : CustomEMCParser.currentEntries.entries().object2LongEntrySet()) {
+		for (Iterator<Object2LongMap.Entry<NSSItem>> iterator = Object2LongSortedMaps.fastIterator(CustomEMCParser.currentEntries.entries()); iterator.hasNext(); ) {
+			Object2LongMap.Entry<NSSItem> entry = iterator.next();
 			NSSItem item = entry.getKey();
 			long emc = entry.getLongValue();
 			PECore.debugLog("Adding custom EMC value for {}: {}", item, emc);

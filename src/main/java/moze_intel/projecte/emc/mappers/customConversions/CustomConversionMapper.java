@@ -1,9 +1,13 @@
 package moze_intel.projecte.emc.mappers.customConversions;
 
+import com.google.gson.JsonElement;
+import com.mojang.serialization.JsonOps;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongSortedMaps;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -20,6 +24,7 @@ import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.impl.codec.PECodecHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.packs.resources.Resource;
@@ -61,6 +66,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 	private static Map<ResourceLocation, CustomConversionFile> load(RegistryAccess registryAccess, ResourceManager resourceManager) {
 		Map<ResourceLocation, CustomConversionFile> loading = new HashMap<>();
 
+		RegistryOps<JsonElement> serializationContext = registryAccess.createSerializationContext(JsonOps.INSTANCE);
 		// Find all data/<domain>/pe_custom_conversions/foo/bar.json
 		for (Map.Entry<ResourceLocation, List<Resource>> entry : CONVERSION_LISTER.listMatchingResourceStacks(resourceManager).entrySet()) {
 			ResourceLocation file = entry.getKey();//<domain>:foo/bar
@@ -72,7 +78,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			// Iterate through all copies of this conversion, from lowest to highest priority datapack, merging the results together
 			for (Resource resource : entry.getValue()) {
 				try (Reader reader = resource.openAsReader()) {
-					Optional<CustomConversionFile> fileOptional = PECodecHelper.read(registryAccess, reader, CustomConversionFile.CODEC, "custom conversion file");
+					Optional<CustomConversionFile> fileOptional = PECodecHelper.read(serializationContext, reader, CustomConversionFile.CODEC, "custom conversion file");
 					//noinspection OptionalIsPresent - Capturing lambda
 					if (fileOptional.isPresent()) {
 						loading.merge(conversionId, fileOptional.get(), CustomConversionFile::merge);
@@ -96,12 +102,14 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 		}
 
 		//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-		for (Object2LongMap.Entry<NormalizedSimpleStack> entry : file.values().setValueBefore().object2LongEntrySet()) {
+		for (Iterator<Object2LongMap.Entry<NormalizedSimpleStack>> iterator = Object2LongSortedMaps.fastIterator(file.values().setValueBefore()); iterator.hasNext(); ) {
+			Object2LongMap.Entry<NormalizedSimpleStack> entry = iterator.next();
 			entry.getKey().forSelfAndEachElement(mapper, entry.getLongValue(), IMappingCollector::setValueBefore);
 		}
 
 		//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-		for (Object2LongMap.Entry<NormalizedSimpleStack> entry : file.values().setValueAfter().object2LongEntrySet()) {
+		for (Iterator<Object2LongMap.Entry<NormalizedSimpleStack>> iterator = Object2LongSortedMaps.fastIterator(file.values().setValueAfter()); iterator.hasNext(); ) {
+			Object2LongMap.Entry<NormalizedSimpleStack> entry = iterator.next();
 			entry.getKey().forSelfAndEachElement(mapper, entry.getLongValue(), IMappingCollector::setValueAfter);
 		}
 

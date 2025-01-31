@@ -16,11 +16,6 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 	}
 
 	@Override
-	public void addConversion(int outnumber, T output, Iterable<T> ingredients) {
-		addConversion(outnumber, output, listToMapOfCounts(ingredients));
-	}
-
-	@Override
 	public void addConversion(int outnumber, T output, Iterable<T> ingredients, A arithmeticForConversion) {
 		addConversion(outnumber, output, listToMapOfCounts(ingredients), arithmeticForConversion);
 	}
@@ -35,12 +30,7 @@ public abstract class AbstractMappingCollector<T, V extends Comparable<V>, A ext
 
 	@Override
 	public void setValueFromConversion(int outnumber, T output, Iterable<T> ingredients) {
-		this.setValueFromConversion(outnumber, output, listToMapOfCounts(ingredients));
-	}
-
-	@Override
-	public void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount) {
-		this.addConversion(outnumber, output, ingredientsWithAmount, getArithmetic());
+		setValueFromConversion(outnumber, output, listToMapOfCounts(ingredients));
 	}
 
 	@Override

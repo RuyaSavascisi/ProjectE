@@ -28,6 +28,11 @@ public interface IExtendedMappingCollector<T, V extends Comparable<V>, A extends
 	 */
 	void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount, A arithmeticForConversion);
 
+	@Override
+	default void addConversion(int outnumber, T output, Iterable<T> ingredients) {
+		addConversion(outnumber, output, ingredients, getArithmetic());
+	}
+
 	/**
 	 * Add a Conversion that produced {@code outnumber} items of {@code output} by consuming the {@code ingredients}, using the given {@code arithmeticForConversion}
 	 *
@@ -41,6 +46,11 @@ public interface IExtendedMappingCollector<T, V extends Comparable<V>, A extends
 	 * @param arithmeticForConversion The {@link IValueArithmetic} to use for calculating the conversion.
 	 */
 	void addConversion(int outnumber, T output, Iterable<T> ingredients, A arithmeticForConversion);
+
+	@Override
+	default void addConversion(int outnumber, T output, Object2IntMap<T> ingredientsWithAmount) {
+		addConversion(outnumber, output, ingredientsWithAmount, getArithmetic());
+	}
 
 	/**
 	 * @return The {@link IValueArithmetic} this {@link IExtendedMappingCollector} uses.

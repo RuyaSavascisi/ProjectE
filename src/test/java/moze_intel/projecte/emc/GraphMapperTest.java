@@ -1,13 +1,11 @@
 package moze_intel.projecte.emc;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import moze_intel.projecte.api.ProjectEAPI;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
 import moze_intel.projecte.api.mapper.collector.IExtendedMappingCollector;
-import moze_intel.projecte.api.mapper.generator.IValueGenerator;
 import moze_intel.projecte.emc.arithmetic.HiddenBigFractionArithmetic;
 import moze_intel.projecte.emc.collector.LongToBigFractionCollector;
 import moze_intel.projecte.emc.generator.BigFractionToLongGenerator;
@@ -30,7 +28,7 @@ class GraphMapperTest {
 		mappingCollector = new LongToBigFractionCollector<>(mapper);
 	}
 
-	private IValueGenerator<String, Long> valueGenerator;
+	private BigFractionToLongGenerator<String> valueGenerator;
 	private IExtendedMappingCollector<String, Long, IValueArithmetic<BigFraction>> mappingCollector;
 
 	@Test
@@ -40,10 +38,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "c4", List.of("a1", "a1", "a1", "a1"));
 		mappingCollector.addConversion(1, "b2", List.of("a1", "a1"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(2, getValue(values, "b2"));
-		Assertions.assertEquals(4, getValue(values, "c4"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(2, values.getLong("b2"));
+		Assertions.assertEquals(4, values.getLong("c4"));
 
 	}
 
@@ -56,10 +54,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(2, "c4", List.of("b2", "b2"));
 		mappingCollector.addConversion(1, "b2", List.of("a1", "a1"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(2, getValue(values, "b2"));
-		Assertions.assertEquals(2, getValue(values, "c4")); //2 * c4 = 2 * b2 => 2 * (2) = 2 * (2)
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(2, values.getLong("b2"));
+		Assertions.assertEquals(2, values.getLong("c4")); //2 * c4 = 2 * b2 => 2 * (2) = 2 * (2)
 	}
 
 	@Test
@@ -71,10 +69,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "c4", new LinkedList<>());
 		mappingCollector.addConversion(1, "b2", List.of("a1", "a1"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(2, getValue(values, "b2"));
-		Assertions.assertEquals(4, getValue(values, "c4")); //2 * c4 = 2 * b2 => 2 * (2) = 2 * (2)
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(2, values.getLong("b2"));
+		Assertions.assertEquals(4, values.getLong("c4")); //2 * c4 = 2 * b2 => 2 * (2) = 2 * (2)
 	}
 
 	@Test
@@ -85,10 +83,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "b2", List.of("a1", "a1"));
 		mappingCollector.setValueAfter("b2", 20L);
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(20, getValue(values, "b2"));
-		Assertions.assertEquals(4, getValue(values, "c4"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(20, values.getLong("b2"));
+		Assertions.assertEquals(4, values.getLong("c4"));
 	}
 
 	@Test
@@ -100,10 +98,10 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("b2", 0L);
 		mappingCollector.setValueAfter("b2", 20L);
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(20, getValue(values, "b2"));
-		Assertions.assertEquals(0, getValue(values, "c4"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(20, values.getLong("b2"));
+		Assertions.assertEquals(0, values.getLong("c4"));
 	}
 
 	@Test
@@ -115,10 +113,10 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("b", 0L);
 		mappingCollector.setValueAfter("b", 20L);
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(20, getValue(values, "b"));
-		Assertions.assertEquals(2, getValue(values, "c"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(20, values.getLong("b"));
+		Assertions.assertEquals(2, values.getLong("c"));
 	}
 
 	@Test
@@ -129,10 +127,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "c", List.of("a1", "a1"));
 		mappingCollector.addConversion(1, "c", List.of("b2", "b2"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(2, getValue(values, "b2"));
-		Assertions.assertEquals(2, getValue(values, "c"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(2, values.getLong("b2"));
+		Assertions.assertEquals(2, values.getLong("c"));
 	}
 
 	@Test
@@ -144,11 +142,11 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "c", List.of("b2", "b2"));
 		mappingCollector.addConversion(1, "d", List.of("c", "c"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(2, getValue(values, "b2"));
-		Assertions.assertEquals(2, getValue(values, "c"));
-		Assertions.assertEquals(4, getValue(values, "d"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(2, values.getLong("b2"));
+		Assertions.assertEquals(2, values.getLong("c"));
+		Assertions.assertEquals(4, values.getLong("d"));
 	}
 
 	@Test
@@ -158,10 +156,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(4, "planks", List.of("wood"));
 		mappingCollector.addConversion(1, "workbench", List.of("planks", "planks", "planks", "planks"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(0, getValue(values, "wood"));
-		Assertions.assertEquals(1, getValue(values, "planks"));
-		Assertions.assertEquals(4, getValue(values, "workbench"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(0, values.getLong("wood"));
+		Assertions.assertEquals(1, values.getLong("planks"));
+		Assertions.assertEquals(4, values.getLong("workbench"));
 	}
 
 	@Test
@@ -188,16 +186,16 @@ class GraphMapperTest {
 			}
 		}
 
-		Map<String, Long> values = valueGenerator.generateValues();
+		Object2LongMap<String> values = valueGenerator.generateValues();
 		for (char i : "ABCD".toCharArray()) {
-			Assertions.assertEquals(32, getValue(values, "wood" + i));
+			Assertions.assertEquals(32, values.getLong("wood" + i));
 		}
 		for (char i : "ABCD".toCharArray()) {
-			Assertions.assertEquals(8, getValue(values, "planks" + i));
+			Assertions.assertEquals(8, values.getLong("planks" + i));
 		}
-		Assertions.assertEquals(4, getValue(values, "stick"));
-		Assertions.assertEquals(32, getValue(values, "crafting_table"));
-		Assertions.assertEquals(24, getValue(values, "wooden_hoe"));
+		Assertions.assertEquals(4, values.getLong("stick"));
+		Assertions.assertEquals(32, values.getLong("crafting_table"));
+		Assertions.assertEquals(24, values.getLong("wooden_hoe"));
 
 	}
 
@@ -208,10 +206,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "b1", List.of("a1"));
 		mappingCollector.addConversion(1, "c1", List.of("b1"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(1, getValue(values, "b1"));
-		Assertions.assertEquals(1, getValue(values, "c1"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(1, values.getLong("b1"));
+		Assertions.assertEquals(1, values.getLong("c1"));
 	}
 
 	@Test
@@ -222,12 +220,12 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "invalid1", List.of("a1", "invalid2"));
 		mappingCollector.addConversion(1, "invalid2", List.of("a1", "invalid3"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(0, getValue(values, "b"));
-		Assertions.assertEquals(0, getValue(values, "invalid1"));
-		Assertions.assertEquals(0, getValue(values, "invalid2"));
-		Assertions.assertEquals(0, getValue(values, "invalid3"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(0, values.getLong("b"));
+		Assertions.assertEquals(0, values.getLong("invalid1"));
+		Assertions.assertEquals(0, values.getLong("invalid2"));
+		Assertions.assertEquals(0, values.getLong("invalid3"));
 	}
 
 	@Test
@@ -238,11 +236,11 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "b2", List.of("invalid1"));
 		mappingCollector.addConversion(1, "invalid1", List.of("a1", "invalid2"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(2, getValue(values, "b2"));
-		Assertions.assertEquals(0, getValue(values, "invalid1"));
-		Assertions.assertEquals(0, getValue(values, "invalid2"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(2, values.getLong("b2"));
+		Assertions.assertEquals(0, values.getLong("invalid1"));
+		Assertions.assertEquals(0, values.getLong("invalid2"));
 	}
 
 	@Test
@@ -252,10 +250,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "b2", List.of("a1", "a1"));
 		mappingCollector.addConversion(1, "b2", List.of("invalid"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(2, getValue(values, "b2"));
-		Assertions.assertEquals(0, getValue(values, "invalid"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(2, values.getLong("b2"));
+		Assertions.assertEquals(0, values.getLong("invalid"));
 	}
 
 	@Test
@@ -266,10 +264,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "cycle-2", List.of("cycle-1"));
 		mappingCollector.addConversion(1, "cycle-1", List.of("cycle-2"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(1, getValue(values, "cycle-1"));
-		Assertions.assertEquals(1, getValue(values, "cycle-2"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(1, values.getLong("cycle-1"));
+		Assertions.assertEquals(1, values.getLong("cycle-2"));
 	}
 
 	@Test
@@ -283,13 +281,13 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "cycle-5", List.of("cycle-4"));
 		mappingCollector.addConversion(1, "cycle-1", List.of("cycle-5"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(1, getValue(values, "cycle-1"));
-		Assertions.assertEquals(1, getValue(values, "cycle-2"));
-		Assertions.assertEquals(1, getValue(values, "cycle-3"));
-		Assertions.assertEquals(1, getValue(values, "cycle-4"));
-		Assertions.assertEquals(1, getValue(values, "cycle-5"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(1, values.getLong("cycle-1"));
+		Assertions.assertEquals(1, values.getLong("cycle-2"));
+		Assertions.assertEquals(1, values.getLong("cycle-3"));
+		Assertions.assertEquals(1, values.getLong("cycle-4"));
+		Assertions.assertEquals(1, values.getLong("cycle-5"));
 	}
 
 	@Test
@@ -337,19 +335,19 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, rMatter, List.of(rMatterBlock));
 		mappingCollector.addConversion(4, rMatterBlock, List.of(rMatter, rMatter, rMatter, rMatter));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(128, getValue(values, coal));
-		Assertions.assertEquals(512, getValue(values, aCoal));
-		Assertions.assertEquals(4608, getValue(values, aCoalBlock));
-		Assertions.assertEquals(2048, getValue(values, mFuel));
-		Assertions.assertEquals(18432, getValue(values, mFuelBlock));
-		Assertions.assertEquals(8192, getValue(values, aFuel));
-		Assertions.assertEquals(73728, getValue(values, aFuelBlock));
-		Assertions.assertEquals(73728, getValue(values, "diamondBlock"));
-		Assertions.assertEquals(139264, getValue(values, dMatter));
-		Assertions.assertEquals(139264, getValue(values, dMatterBlock));
-		Assertions.assertEquals(466944, getValue(values, rMatter));
-		Assertions.assertEquals(466944, getValue(values, rMatterBlock));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(128, values.getLong(coal));
+		Assertions.assertEquals(512, values.getLong(aCoal));
+		Assertions.assertEquals(4608, values.getLong(aCoalBlock));
+		Assertions.assertEquals(2048, values.getLong(mFuel));
+		Assertions.assertEquals(18432, values.getLong(mFuelBlock));
+		Assertions.assertEquals(8192, values.getLong(aFuel));
+		Assertions.assertEquals(73728, values.getLong(aFuelBlock));
+		Assertions.assertEquals(73728, values.getLong("diamondBlock"));
+		Assertions.assertEquals(139264, values.getLong(dMatter));
+		Assertions.assertEquals(139264, values.getLong(dMatterBlock));
+		Assertions.assertEquals(466944, values.getLong(rMatter));
+		Assertions.assertEquals(466944, values.getLong(rMatterBlock));
 	}
 
 	@Test
@@ -372,23 +370,23 @@ class GraphMapperTest {
 			mappingCollector.addConversion(1, "painting", List.of("wool" + dye, "stick", "stick", "stick", "stick", "stick", "stick", "stick", "stick"));
 		}
 
-		Map<String, Long> values = valueGenerator.generateValues();
+		Object2LongMap<String> values = valueGenerator.generateValues();
 		for (int i = 0; i < dyes.length; i++) {
-			Assertions.assertEquals(dyeValue[i], getValue(values, "dye" + dyes[i]));
+			Assertions.assertEquals(dyeValue[i], values.getLong("dye" + dyes[i]));
 		}
-		Assertions.assertEquals(12, getValue(values, "string"));
-		Assertions.assertEquals(48, getValue(values, "woolWhite"));
-		Assertions.assertEquals(224, getValue(values, "woolBrown"));
-		Assertions.assertEquals(912, getValue(values, "woolBlue"));
-		Assertions.assertEquals(64, getValue(values, "woolOther"));
+		Assertions.assertEquals(12, values.getLong("string"));
+		Assertions.assertEquals(48, values.getLong("woolWhite"));
+		Assertions.assertEquals(224, values.getLong("woolBrown"));
+		Assertions.assertEquals(912, values.getLong("woolBlue"));
+		Assertions.assertEquals(64, values.getLong("woolOther"));
 
-		Assertions.assertEquals(32, getValue(values, "carpetWhite"));
-		Assertions.assertEquals(149, getValue(values, "carpetBrown"));
-		Assertions.assertEquals(608, getValue(values, "carpetBlue"));
-		Assertions.assertEquals(42, getValue(values, "carpetOther"));
+		Assertions.assertEquals(32, values.getLong("carpetWhite"));
+		Assertions.assertEquals(149, values.getLong("carpetBrown"));
+		Assertions.assertEquals(608, values.getLong("carpetBlue"));
+		Assertions.assertEquals(42, values.getLong("carpetOther"));
 
-		Assertions.assertEquals(168, getValue(values, "bed"));
-		Assertions.assertEquals(80, getValue(values, "painting"));
+		Assertions.assertEquals(168, values.getLong("bed"));
+		Assertions.assertEquals(80, values.getLong("painting"));
 	}
 
 	@Test
@@ -406,12 +404,12 @@ class GraphMapperTest {
 				"somethingElse", 2
 		));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(9, getValue(values, "somethingElse"));
-		Assertions.assertEquals(23, getValue(values, "container"));
-		Assertions.assertEquals(17, getValue(values, "fluid"));
-		Assertions.assertEquals(17 + 23, getValue(values, "filledContainer"));
-		Assertions.assertEquals(17 + 2 * 9, getValue(values, "fluidCraft"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(9, values.getLong("somethingElse"));
+		Assertions.assertEquals(23, values.getLong("container"));
+		Assertions.assertEquals(17, values.getLong("fluid"));
+		Assertions.assertEquals(17 + 23, values.getLong("filledContainer"));
+		Assertions.assertEquals(17 + 2 * 9, values.getLong("fluidCraft"));
 
 	}
 
@@ -430,12 +428,12 @@ class GraphMapperTest {
 				"somethingElse", 2
 		));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(9, getValue(values, "somethingElse"));
-		Assertions.assertEquals(23, getValue(values, "container"));
-		Assertions.assertEquals(0, getValue(values, "fluid"));
-		Assertions.assertEquals(23, getValue(values, "filledContainer"));
-		Assertions.assertEquals(2 * 9, getValue(values, "fluidCraft"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(9, values.getLong("somethingElse"));
+		Assertions.assertEquals(23, values.getLong("container"));
+		Assertions.assertEquals(0, values.getLong("fluid"));
+		Assertions.assertEquals(23, values.getLong("filledContainer"));
+		Assertions.assertEquals(2 * 9, values.getLong("fluidCraft"));
 
 	}
 
@@ -451,10 +449,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "notExploitable", List.of("a1"));
 		mappingCollector.addConversion(2, "notExploitable", List.of("notExploitable", "notExploitable"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(0, getValue(values, "exploitable"));
-		Assertions.assertEquals(1, getValue(values, "notExploitable"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(0, values.getLong("exploitable"));
+		Assertions.assertEquals(1, values.getLong("notExploitable"));
 	}
 
 	@Test
@@ -466,10 +464,10 @@ class GraphMapperTest {
 		mappingCollector.addConversion(2, "exploitable2", List.of("exploitable1"));
 		mappingCollector.addConversion(1, "exploitable1", List.of("exploitable2"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(0, getValue(values, "exploitable1"));
-		Assertions.assertEquals(0, getValue(values, "exploitable2"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(0, values.getLong("exploitable1"));
+		Assertions.assertEquals(0, values.getLong("exploitable2"));
 	}
 
 	@Test
@@ -485,11 +483,11 @@ class GraphMapperTest {
 		mappingCollector.addConversion(1, "notExploitable", List.of("a1"));
 		mappingCollector.addConversion(2, "notExploitable", List.of("notExploitable", "notExploitable"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a1"));
-		Assertions.assertEquals(0, getValue(values, "exploitable"));
-		Assertions.assertEquals(1, getValue(values, "notExploitable"));
-		Assertions.assertEquals(0, getValue(values, "b"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a1"));
+		Assertions.assertEquals(0, values.getLong("exploitable"));
+		Assertions.assertEquals(1, values.getLong("notExploitable"));
+		Assertions.assertEquals(0, values.getLong("b"));
 	}
 
 	@Test
@@ -518,7 +516,7 @@ class GraphMapperTest {
 			mappingCollector.addConversion(3, "firecharge", List.of(coalType, "gunpowder", "blazepowder"));
 		}
 		mappingCollector.addConversion(1, "firecharge*", List.of("firecharge"));
-		mappingCollector.addConversion(1, "coalblock", Object2IntMaps.singleton("coal0", 9));
+		mappingCollector.addConversion(1, "coalblock", EMCHelper.intMapOf("coal0", 9));
 
 		//Philosophers stone smelting 7xCoalOre -> 7xCoal
 		mappingCollector.addConversion(7, "coal0", EMCHelper.intMapOf(
@@ -543,15 +541,15 @@ class GraphMapperTest {
 		//Coal Block
 		mappingCollector.addConversion(9, "coal0", List.of("coalblock"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
+		Object2LongMap<String> values = valueGenerator.generateValues();
 		for (String logType : logTypes) {
-			Assertions.assertEquals(32, getValue(values, logType));
+			Assertions.assertEquals(32, values.getLong(logType));
 		}
-		Assertions.assertEquals(32, getValue(values, "log*"));
-		Assertions.assertEquals(128, getValue(values, "coal0"));
-		Assertions.assertEquals(32, getValue(values, "coal1"));
-		Assertions.assertEquals(32, getValue(values, "coal*"));
-		Assertions.assertEquals(330, getValue(values, "firecharge"));
+		Assertions.assertEquals(32, values.getLong("log*"));
+		Assertions.assertEquals(128, values.getLong("coal0"));
+		Assertions.assertEquals(32, values.getLong("coal1"));
+		Assertions.assertEquals(32, values.getLong("coal*"));
+		Assertions.assertEquals(330, values.getLong("firecharge"));
 	}
 
 	@Test
@@ -579,12 +577,12 @@ class GraphMapperTest {
 				stone, gDust, stone,
 				stone, stone, stone));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals((8 + 384) / 8, getValue(values, "antiblockWhite"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals((8 + 384) / 8, values.getLong("antiblockWhite"));
 		for (int i = 0; i < dyes.length; i++) {
-			Assertions.assertEquals(dyeValue[i], getValue(values, "dye" + dyes[i]));
+			Assertions.assertEquals(dyeValue[i], values.getLong("dye" + dyes[i]));
 			if (!dyes[i].equals("White")) {
-				Assertions.assertEquals((dyeValue[i] + ((8 + 384) / 8) * 8) / 8, getValue(values, "antiblock" + dyes[i]));
+				Assertions.assertEquals((dyeValue[i] + ((8 + 384) / 8) * 8) / 8, values.getLong("antiblock" + dyes[i]));
 			}
 		}
 	}
@@ -606,15 +604,15 @@ class GraphMapperTest {
 				"notConsume2", 0
 		));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(2, getValue(values, "a"));
-		Assertions.assertEquals(3, getValue(values, "b"));
-		Assertions.assertEquals(1, getValue(values, "notConsume1"));
-		Assertions.assertEquals(0, getValue(values, "notConsume2"));
-		Assertions.assertEquals(5, getValue(values, "c1"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(2, values.getLong("a"));
+		Assertions.assertEquals(3, values.getLong("b"));
+		Assertions.assertEquals(1, values.getLong("notConsume1"));
+		Assertions.assertEquals(0, values.getLong("notConsume2"));
+		Assertions.assertEquals(5, values.getLong("c1"));
 		//Even though notConsume2 has no EMC value, it is not actually consumed so need to be
 		// taken into account when calculating the EMC value of c2
-		Assertions.assertEquals(5, getValue(values, "c2"));
+		Assertions.assertEquals(5, values.getLong("c2"));
 	}
 
 
@@ -628,12 +626,12 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("a", 3L);
 		mappingCollector.addConversion(1, "result", List.of("a", "waterGroup"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(3, getValue(values, "a"));
-		Assertions.assertEquals(0, getValue(values, "freeWater"));
-		Assertions.assertEquals(0, getValue(values, "waterBottle"));
-		Assertions.assertEquals(0, getValue(values, "waterGroup"));
-		Assertions.assertEquals(3, getValue(values, "result"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(3, values.getLong("a"));
+		Assertions.assertEquals(0, values.getLong("freeWater"));
+		Assertions.assertEquals(0, values.getLong("waterBottle"));
+		Assertions.assertEquals(0, values.getLong("waterGroup"));
+		Assertions.assertEquals(3, values.getLong("result"));
 	}
 
 	@Test
@@ -650,12 +648,12 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("a", 3L);
 		mappingCollector.addConversion(1, "result", List.of("a", "waterGroup"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(3, getValue(values, "a"));
-		Assertions.assertEquals(768, getValue(values, "bucket"));
-		Assertions.assertEquals(768, getValue(values, "waterBucket"));
-		Assertions.assertEquals(0, getValue(values, "waterGroup"));
-		Assertions.assertEquals(3, getValue(values, "result"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(3, values.getLong("a"));
+		Assertions.assertEquals(768, values.getLong("bucket"));
+		Assertions.assertEquals(768, values.getLong("waterBucket"));
+		Assertions.assertEquals(0, values.getLong("waterGroup"));
+		Assertions.assertEquals(3, values.getLong("result"));
 	}
 
 
@@ -666,10 +664,10 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("b", Long.MAX_VALUE / 2 + 1);
 		mappingCollector.addConversion(1, "c", List.of("a", "b"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(Long.MAX_VALUE / 2 + 1, getValue(values, "a"));
-		Assertions.assertEquals(Long.MAX_VALUE / 2 + 1, getValue(values, "b"));
-		Assertions.assertEquals(0, getValue(values, "c"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(Long.MAX_VALUE / 2 + 1, values.getLong("a"));
+		Assertions.assertEquals(Long.MAX_VALUE / 2 + 1, values.getLong("b"));
+		Assertions.assertEquals(0, values.getLong("c"));
 	}
 
 	@Test
@@ -678,8 +676,8 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("a", Long.MAX_VALUE / 2);
 		mappingCollector.addConversion(3, "a", List.of("something"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(Long.MAX_VALUE / 2, getValue(values, "a"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(Long.MAX_VALUE / 2, values.getLong("a"));
 	}
 
 	@Test
@@ -688,8 +686,19 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("a", Long.MAX_VALUE);
 		mappingCollector.addConversion(1, "b", List.of("a", "a", "a", "a", "a", "a", "a", "a", "a"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(0, getValue(values, "b"));
+		//TODO
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+		// 9_223_372_036_854_775_807
+
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(0, values.getLong("b"));
 	}
 
 	@Test
@@ -699,9 +708,9 @@ class GraphMapperTest {
 		mappingCollector.addConversion(2, "b", List.of("a", "a"));
 		mappingCollector.addConversion(5, "c", List.of("a", "a", "a", "a", "a"));
 
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(Long.MAX_VALUE, getValue(values, "b"));
-		Assertions.assertEquals(Long.MAX_VALUE, getValue(values, "c"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(Long.MAX_VALUE, values.getLong("b"));
+		Assertions.assertEquals(Long.MAX_VALUE, values.getLong("c"));
 	}
 
 	@Test
@@ -711,15 +720,10 @@ class GraphMapperTest {
 		mappingCollector.setValueFromConversion(1, "b", List.of("a", "a", "a"));
 		mappingCollector.addConversion(1, "b", List.of("a"));
 		mappingCollector.addConversion(1, "c", List.of("b", "b"));
-		Map<String, Long> values = valueGenerator.generateValues();
-		Assertions.assertEquals(1, getValue(values, "a"));
-		Assertions.assertEquals(3, getValue(values, "b"));
-		Assertions.assertEquals(6, getValue(values, "c"));
+		Object2LongMap<String> values = valueGenerator.generateValues();
+		Assertions.assertEquals(1, values.getLong("a"));
+		Assertions.assertEquals(3, values.getLong("b"));
+		Assertions.assertEquals(6, values.getLong("c"));
 
-	}
-
-	private static <T, V extends Number> long getValue(Map<T, V> map, T key) {
-		V val = map.get(key);
-		return val == null ? 0 : val.longValue();
 	}
 }

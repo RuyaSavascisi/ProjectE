@@ -24,6 +24,8 @@ public abstract class AbstractDataComponentHolderNSSTag<TYPE> extends AbstractNS
 
 	@NotNull
 	private final DataComponentPatch componentsPatch;
+	private boolean hasCachedHash;
+	private int cachedHashCode;
 
 	protected AbstractDataComponentHolderNSSTag(@NotNull ResourceLocation resourceLocation, boolean isTag, @NotNull DataComponentPatch componentsPatch) {
 		super(resourceLocation, isTag);
@@ -53,7 +55,15 @@ public abstract class AbstractDataComponentHolderNSSTag<TYPE> extends AbstractNS
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(super.hashCode(), componentsPatch);
+		if (componentsPatch == null) {
+			//Happens when adding to the set of created tags in super
+			hasCachedHash = true;
+			cachedHashCode = Objects.hash(super.hashCode(), DataComponentPatch.EMPTY);
+		} else if (!hasCachedHash) {
+			hasCachedHash = true;
+			cachedHashCode = Objects.hash(super.hashCode(), componentsPatch);
+		}
+		return cachedHashCode;
 	}
 
 	/**

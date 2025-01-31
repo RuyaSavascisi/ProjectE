@@ -14,7 +14,45 @@ public interface IValueArithmetic<T extends Comparable<T>> {
 	 *
 	 * @return True if value is equal to {@link #getZero()}
 	 */
-	boolean isZero(T value);
+	default boolean isZero(T value) {
+		return getZero().equals(value);
+	}
+
+	/**
+	 * Checks if a given value is smaller than {@link #getZero()}
+	 *
+	 * @param value The value to check.
+	 *
+	 * @return True if value is smaller than {@link #getZero()}
+	 */
+	boolean isLessThanZero(T value);
+
+	/**
+	 * Checks if a given value is smaller than or equal to {@link #getZero()}
+	 *
+	 * @param value The value to check.
+	 *
+	 * @return True if value is smaller than or equal to {@link #getZero()}
+	 */
+	boolean isLessThanEqualZero(T value);
+
+	/**
+	 * Checks if a given value is greater than {@link #getZero()}
+	 *
+	 * @param value The value to check.
+	 *
+	 * @return True if value is greater than {@link #getZero()}
+	 */
+	boolean isGreaterThanZero(T value);
+
+	/**
+	 * Checks if a given value is greater than or equal to {@link #getZero()}
+	 *
+	 * @param value The value to check.
+	 *
+	 * @return True if value is greater than or equal to {@link #getZero()}
+	 */
+	boolean isGreaterThanEqualZero(T value);
 
 	/**
 	 * @return The value that represents "zero" in this {@link IValueArithmetic}

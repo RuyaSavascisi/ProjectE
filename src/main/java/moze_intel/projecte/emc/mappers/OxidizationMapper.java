@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.mappers;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -9,6 +8,7 @@ import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.config.PEConfigTranslations;
+import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
@@ -33,8 +33,8 @@ public class OxidizationMapper implements IEMCMapper<NormalizedSimpleStack, Long
 			if (block != null) {
 				NSSItem unweathered = NSSItem.createItem(block);
 				NSSItem weathered = NSSItem.createItem(entry.getValue().nextOxidationStage());
-				mapper.addConversion(1, weathered, Object2IntMaps.singleton(unweathered, 1));
-				mapper.addConversion(1, unweathered, Object2IntMaps.singleton(weathered, 1));
+				mapper.addConversion(1, weathered, EMCHelper.intMapOf(unweathered, 1));
+				mapper.addConversion(1, unweathered, EMCHelper.intMapOf(weathered, 1));
 				recipeCount += 2;
 			}
 		}

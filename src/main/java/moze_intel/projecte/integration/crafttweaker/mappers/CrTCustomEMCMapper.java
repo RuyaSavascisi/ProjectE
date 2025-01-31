@@ -1,7 +1,9 @@
 package moze_intel.projecte.integration.crafttweaker.mappers;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import java.util.Iterator;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
@@ -29,7 +31,8 @@ public class CrTCustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 	@Override
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
-		for (Object2LongMap.Entry<NormalizedSimpleStack> entry : customEmcValues.object2LongEntrySet()) {
+		for (Iterator<Object2LongMap.Entry<NormalizedSimpleStack>> iterator = Object2LongMaps.fastIterator(customEmcValues); iterator.hasNext(); ) {
+			Object2LongMap.Entry<NormalizedSimpleStack> entry = iterator.next();
 			NormalizedSimpleStack normStack = entry.getKey();
 			long value = entry.getLongValue();
 			//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values

@@ -2,9 +2,12 @@ package moze_intel.projecte.utils;
 
 import it.unimi.dsi.fastutil.ints.Int2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.Int2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.math.BigInteger;
+import java.util.Iterator;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
@@ -33,6 +36,10 @@ import org.jetbrains.annotations.Range;
  * Helper class for EMC. Notice: Please try to keep methods tidy and alphabetically ordered. Thanks!
  */
 public final class EMCHelper {
+
+	public static <K> Object2IntMap<K> intMapOf(final K key, int value) {
+		return Object2IntMaps.singleton(key, value);
+	}
 
 	public static <K> Object2IntMap<K> intMapOf(final K key, int value, final K key2, int value2) {
 		Object2IntMap<K> intMap = new Object2IntArrayMap<>(2);
@@ -101,7 +108,8 @@ public final class EMCHelper {
 				}
 			}
 			if (metRequirement) {
-				for (Int2IntMap.Entry entry : map.int2IntEntrySet()) {
+				for (Iterator<Int2IntMap.Entry> iterator = Int2IntMaps.fastIterator(map); iterator.hasNext(); ) {
+					Int2IntMap.Entry entry = iterator.next();
 					//TODO - 1.21: Should we be validating we were able to actually extract the items?
 					inv.extractItem(entry.getIntKey(), entry.getIntValue(), false);
 				}

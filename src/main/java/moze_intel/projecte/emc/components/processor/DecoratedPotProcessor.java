@@ -1,6 +1,7 @@
 package moze_intel.projecte.emc.components.processor;
 
 import moze_intel.projecte.api.ItemInfo;
+import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.component.DataComponentType;
@@ -12,7 +13,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import org.jetbrains.annotations.NotNull;
 
-//@DataComponentProcessor//TODO - 1.21: Figure out if we should remove this
+@DataComponentProcessor//TODO - 1.21: Figure out if we should remove this
 public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecorations> {
 
 	private static final ResourceKey<Item> DECORATED_POT = BuiltInRegistries.ITEM.getResourceKey(Items.DECORATED_POT).orElseThrow();

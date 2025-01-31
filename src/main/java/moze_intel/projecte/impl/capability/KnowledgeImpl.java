@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.math.BigInteger;
@@ -258,7 +259,8 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 	public void receiveInputsAndLocks(Int2ObjectMap<ItemStack> changes) {
 		KnowledgeAttachment attachment = attachment();
 		int slots = attachment.inputLocks.getSlots();
-		for (Int2ObjectMap.Entry<ItemStack> entry : changes.int2ObjectEntrySet()) {
+		for (Iterator<Int2ObjectMap.Entry<ItemStack>> iterator = Int2ObjectMaps.fastIterator(changes); iterator.hasNext(); ) {
+			Int2ObjectMap.Entry<ItemStack> entry = iterator.next();
 			int slot = entry.getIntKey();
 			if (slot >= 0 && slot < slots) {
 				//Validate the slot is a valid index

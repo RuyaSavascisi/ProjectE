@@ -49,10 +49,10 @@ public final class MathUtils {
 
 	//Note: This does not clamp to negative so will error if a negative big int is passed that is out of long's bounds
 	public static long clampToLong(BigInteger bigInt) {
-		if (bigInt.compareTo(Constants.MAX_LONG) > 0) {
-			return Long.MAX_VALUE;
-		}
-		//Can use longValueExact, as this should ALWAYS be less than max long
-		return bigInt.longValueExact();
+		return bigInt.compareTo(Constants.MAX_LONG) >= 0 ? Long.MAX_VALUE : bigInt.longValue();
+	}
+
+	public static boolean isGreaterThanLong(BigInteger bigInt) {
+		return bigInt.compareTo(Constants.MAX_LONG) > 0;
 	}
 }

@@ -1,6 +1,5 @@
 package moze_intel.projecte.emc.mappers;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
@@ -42,7 +41,7 @@ public class WaxableMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 				));
 				//Scraping the block does not return the wax
 				//TODO - 1.21: Test this makes sense
-				mapper.addConversion(1, base, Object2IntMaps.singleton(waxed, 1));
+				mapper.addConversion(1, base, EMCHelper.intMapOf(waxed, 1));
 				recipeCount += 2;
 			}
 		}

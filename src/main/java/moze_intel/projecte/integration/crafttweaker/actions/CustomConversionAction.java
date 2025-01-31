@@ -3,6 +3,8 @@ package moze_intel.projecte.integration.crafttweaker.actions;
 import com.blamejared.crafttweaker.api.action.base.IUndoableAction;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
+import java.util.Iterator;
 import java.util.Map;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.nss.NSSTag;
@@ -28,7 +30,8 @@ public class CustomConversionAction implements IUndoableAction {
 	@Override
 	public String describe() {
 		StringBuilder inputString = new StringBuilder();
-		for (Object2IntMap.Entry<NormalizedSimpleStack> entry : conversion.ingredients().object2IntEntrySet()) {
+		for (Iterator<Object2IntMap.Entry<NormalizedSimpleStack>> iterator = Object2IntMaps.fastIterator(conversion.ingredients()); iterator.hasNext(); ) {
+			Object2IntMap.Entry<NormalizedSimpleStack> entry = iterator.next();
 			if (!inputString.isEmpty()) {
 				//If we already have elements, prepend a comma
 				inputString.append(", ");

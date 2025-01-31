@@ -54,6 +54,8 @@ public final class ItemInfo {
 	private final Holder<Item> item;
 	@NotNull
 	private final DataComponentPatch componentsPatch;
+	private boolean hasCachedHash;
+	private int cachedHashCode;
 
 	private ItemInfo(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
 		this.item = item;
@@ -176,10 +178,13 @@ public final class ItemInfo {
 
 	@Override
 	public int hashCode() {
-		ResourceKey<Item> resourceKey = item.getKey();
-		int code = resourceKey == null ? 0 : resourceKey.hashCode();
-		code = 31 * code + componentsPatch.hashCode();
-		return code;
+		if (!hasCachedHash) {
+			hasCachedHash = true;
+			ResourceKey<Item> resourceKey = item.getKey();
+			int code = resourceKey == null ? 0 : resourceKey.hashCode();
+			cachedHashCode = 31 * code + componentsPatch.hashCode();
+		}
+		return cachedHashCode;
 	}
 
 	@Override

@@ -1,11 +1,14 @@
 package moze_intel.projecte.emc.mappers;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -138,17 +141,21 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 		}).reversed());
 
 		for (String modId : modIds) {
-			@Nullable
-			DataForMod dataForMod = configOptionsForMod.get(modId);
-			for (Object2LongMap.Entry<NormalizedSimpleStack> entry : customEMCforMod.getOrDefault(modId, Object2LongMaps.emptyMap()).object2LongEntrySet()) {
-				NormalizedSimpleStack normStack = entry.getKey();
-				long emc = entry.getLongValue();
-				if (dataForMod == null || dataForMod.hasPermission(getMod(normStack), emc)) {
-					//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
-					normStack.forSelfAndEachElement(mapper, emc, IMappingCollector::setValueBefore);
-					PECore.debugLog("{} setting value for {} to {}", modId, normStack, emc);
-				} else {
-					PECore.debugLog("Disallowed {} to set the value for {} to {}", modId, normStack, emc);
+			Object2LongMap<NormalizedSimpleStack> emcForMod = customEMCforMod.get(modId);
+			if (emcForMod != null) {
+				@Nullable
+				DataForMod dataForMod = configOptionsForMod.get(modId);
+				for (Iterator<Object2LongMap.Entry<NormalizedSimpleStack>> iterator = Object2LongMaps.fastIterator(emcForMod); iterator.hasNext(); ) {
+					Object2LongMap.Entry<NormalizedSimpleStack> entry = iterator.next();
+					NormalizedSimpleStack normStack = entry.getKey();
+					long emc = entry.getLongValue();
+					if (dataForMod == null || dataForMod.hasPermission(getMod(normStack), emc)) {
+						//Note: We set it for each of the values in the tag to make sure it is properly taken into account when calculating the individual EMC values
+						normStack.forSelfAndEachElement(mapper, emc, IMappingCollector::setValueBefore);
+						PECore.debugLog("{} setting value for {} to {}", modId, normStack, emc);
+					} else {
+						PECore.debugLog("Disallowed {} to set the value for {} to {}", modId, normStack, emc);
+					}
 				}
 			}
 		}

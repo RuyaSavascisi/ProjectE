@@ -1,9 +1,11 @@
 package moze_intel.projecte.gameObjs.block_entities;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import moze_intel.projecte.api.capabilities.PECapabilities;
@@ -440,7 +442,8 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		tag.put("Fuel", fuelInv.serializeNBT(registries));
 		//[VanillaCopy] AbstractFurnaceBlockEntity
 		CompoundTag usedRecipes = new CompoundTag();
-		for (Object2IntMap.Entry<ResourceLocation> entry : this.recipesUsed.object2IntEntrySet()) {
+		for (Iterator<Object2IntMap.Entry<ResourceLocation>> iterator = Object2IntMaps.fastIterator(recipesUsed); iterator.hasNext(); ) {
+			Object2IntMap.Entry<ResourceLocation> entry = iterator.next();
 			usedRecipes.putInt(entry.getKey().toString(), entry.getIntValue());
 		}
 		tag.put("RecipesUsed", usedRecipes);
@@ -484,7 +487,8 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 	public List<RecipeHolder<?>> getRecipesToAwardAndPopExperience(ServerLevel level, Vec3 popVec) {
 		RecipeManager recipeManager = level.getRecipeManager();
 		List<RecipeHolder<?>> list = new ArrayList<>();
-		for (Object2IntMap.Entry<ResourceLocation> entry : this.recipesUsed.object2IntEntrySet()) {
+		for (Iterator<Object2IntMap.Entry<ResourceLocation>> iterator = Object2IntMaps.fastIterator(recipesUsed); iterator.hasNext(); ) {
+			Object2IntMap.Entry<ResourceLocation> entry = iterator.next();
 			Optional<RecipeHolder<?>> optionalRecipe = recipeManager.byKey(entry.getKey());
 			if (optionalRecipe.isPresent()) {
 				RecipeHolder<?> recipeHolder = optionalRecipe.get();
