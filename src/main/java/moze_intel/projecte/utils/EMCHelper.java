@@ -1,8 +1,8 @@
 package moze_intel.projecte.utils;
 
-import it.unimi.dsi.fastutil.ints.Int2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMaps;
+import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
@@ -80,8 +80,7 @@ public final class EMCHelper {
 		IItemHandler inv = player.getCapability(ItemHandler.ENTITY);
 		if (inv != null) {
 			//Ensure that we have an item handler capability, because if for example the player is dead we will not
-			//TODO - 1.21: Does this actually need to be linked?
-			Int2IntMap map = new Int2IntLinkedOpenHashMap();
+			Int2IntMap map = new Int2IntOpenHashMap();
 			boolean metRequirement = false;
 			long emcConsumed = 0;
 			for (int i = 0, slots = inv.getSlots(); i < slots; i++) {

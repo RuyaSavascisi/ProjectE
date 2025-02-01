@@ -3,6 +3,7 @@ package moze_intel.projecte.client.lang;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
@@ -20,7 +21,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		super(output, PECore.MODID);
 	}
 
-	@Override//TODO - 1.21: Add translations for our tags
+	@Override
 	protected void addTranslations() {
 		addAdvancements();
 		addBlocks();
@@ -28,6 +29,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		addConfigs();
 		addEMC();
 		addEntityTypes();
+		addTags();
 		addItems();
 		addModes();
 		addPedestalTooltips();
@@ -47,7 +49,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PELang.WHITELIST, "Whitelist");
 		add(PELang.DENSITY_MODE_TARGET, "Set target to: %s");
 		//Mappers
-		//TODO - 1.21: Figure out a way to specify which mod it is modifying
+		//TODO: Figure out a way to specify which mod it is modifying
 		add(PELang.CUSTOM_EMC_PERMISSION_BOTH, "Allow the mod to modify (add and remove) EMC values.");
 		add(PELang.CUSTOM_EMC_PERMISSION_REMOVE, "Allow the mod to remove EMC values, but not add EMC values.");
 		add(PELang.CUSTOM_EMC_PERMISSION_SET,  "Allow the mod to add EMC values, but not remove EMC values.");
@@ -258,6 +260,40 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PEEntityTypes.NOVA_CATACLYSM_PRIMED, "Primed Nova Cataclysm");
 		add(PEEntityTypes.SWRG_PROJECTILE, "SWRG Projectile");
 		add(PEEntityTypes.WATER_PROJECTILE, "Water Orb");
+	}
+
+	private void addTags() {
+		add(PETags.Items.ALCHEMICAL_BAGS, "Alchemical Bags");
+		add(PETags.Items.COLLECTOR_FUEL, "Collector Fuels");
+		add(PETags.Items.DATA_COMPONENT_WHITELIST, "Data Component Whitelist");
+		add(PETags.Items.COVALENCE_DUST, "Covalence Dusts");
+		add(PETags.Items.IGNORE_MISSING_EMC, "Ignore Missing EMC");
+		add(PETags.Items.TOOLS_HAMMERS, "Hammers");
+		add(PETags.Items.TOOLS_KATARS, "Katars");
+		add(PETags.Items.TOOLS_MORNING_STARS, "Morning Stars");
+		
+		add(PETags.Blocks.BLACKLIST_HARVEST, "Harvest Band Blacklist");
+		add(PETags.Blocks.BLACKLIST_TIME_WATCH, "Time Watch Blacklist");
+		add(PETags.Blocks.FARMING_OVERRIDE, "Farming Override");
+		add(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, "Needs Dark Matter Tools");
+		add(PETags.Blocks.NEEDS_RED_MATTER_TOOL, "Needs Red Matter Tools");
+		add(PETags.Blocks.INCORRECT_FOR_DARK_MATTER_TOOL, "Alchemical");
+		add(PETags.Blocks.INCORRECT_FOR_RED_MATTER_TOOL, "Alchemical");
+		add(PETags.Blocks.MINEABLE_WITH_PE_KATAR, PECore.MODNAME + " Katar Mineable");
+		add(PETags.Blocks.MINEABLE_WITH_PE_HAMMER, PECore.MODNAME + " Hammer Mineable");
+		add(PETags.Blocks.MINEABLE_WITH_PE_MORNING_STAR, PECore.MODNAME + " Morning Star Mineable");
+		add(PETags.Blocks.MINEABLE_WITH_PE_SHEARS, PECore.MODNAME + " Shears Mineable");
+		add(PETags.Blocks.MINEABLE_WITH_PE_SWORD, PECore.MODNAME + " Sword Mineable");
+		add(PETags.Blocks.MINEABLE_WITH_HAMMER, "Hammer Mineable");
+		add(PETags.Blocks.MINEABLE_WITH_KATAR, "Katar Mineable");
+		add(PETags.Blocks.MINEABLE_WITH_MORNING_STAR, "Morning Star Mineable");
+
+		add(PETags.Entities.BLACKLIST_SWRG, "SWRG Blacklist");
+		add(PETags.Entities.BLACKLIST_INTERDICTION, "Interdiction Blacklist");
+		add(PETags.Entities.RANDOMIZER_PEACEFUL, "Peaceful Randomizer Mobs");
+		add(PETags.Entities.RANDOMIZER_HOSTILE, "Hostile Randomizer Mobs");
+
+		add(PETags.BlockEntities.BLACKLIST_TIME_WATCH, "Time Watch Blacklist");
 	}
 
 	private void addItems() {

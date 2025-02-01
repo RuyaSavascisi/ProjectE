@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -22,11 +23,8 @@ public class LayerYue extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
 	private static final ResourceLocation HEART_LOC = PECore.rl("textures/models/heartcircle.png");
 	private static final ResourceLocation YUE_LOC = PECore.rl("textures/models/yuecircle.png");
 
-	private final PlayerRenderer render;
-
 	public LayerYue(PlayerRenderer renderer) {
 		super(renderer);
-		this.render = renderer;
 	}
 
 	@Override
@@ -35,20 +33,19 @@ public class LayerYue extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
 		if (player.isInvisible()) {
 			return;
 		}
-		//TODO - 1.21: Test that this behaves properly with Attributes.SCALE
 		if (!FMLEnvironment.production || SIN_UUID.equals(player.getUUID()) || CLAR_UUID.equals(player.getUUID())) {
 			matrix.pushPose();
-			render.getModel().jacket.translateAndRotate(matrix);
+			getParentModel().body.translateAndRotate(matrix);
 			double yShift = -0.498;
 			if (player.isCrouching()) {
 				//Only modify where it renders if the player's pose is crouching
-				matrix.mulPose(Axis.XP.rotationDegrees(-28.64789F));
+				matrix.mulPose(Axis.XN.rotation(0.5F));
 				yShift = -0.44;
 			}
-			matrix.mulPose(Axis.ZP.rotationDegrees(180));
+			matrix.mulPose(Axis.ZP.rotation(Mth.PI));
 			matrix.scale(3, 3, 3);
 			matrix.translate(-0.5, yShift, -0.5);
-			VertexConsumer builder = renderer.getBuffer(PERenderType.YEU_RENDERER.apply(CLAR_UUID.equals(player.getUUID()) ? HEART_LOC : YUE_LOC));
+			VertexConsumer builder = renderer.getBuffer(PERenderType.YEU_RENDERER.apply(getTextureLocation(player)));
 			Matrix4f matrix4f = matrix.last().pose();
 			builder.addVertex(matrix4f, 0, 0, 0).setUv(0, 0).setColor(0, 255, 0, 255);
 			builder.addVertex(matrix4f, 0, 0, 1).setUv(0, 1).setColor(0, 255, 0, 255);
@@ -56,5 +53,11 @@ public class LayerYue extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
 			builder.addVertex(matrix4f, 1, 0, 0).setUv(1, 0).setColor(0, 255, 0, 255);
 			matrix.popPose();
 		}
+	}
+
+	@NotNull
+	@Override
+	protected ResourceLocation getTextureLocation(AbstractClientPlayer player) {
+		return CLAR_UUID.equals(player.getUUID()) ? HEART_LOC : YUE_LOC;
 	}
 }
