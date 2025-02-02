@@ -304,7 +304,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		private static final Codec<Set<ItemInfo>> MUTABLE_KNOWLEDGE_CODEC = ItemInfo.CODEC.listOf().xmap(HashSet::new, ImmutableList::copyOf);
 		public static final Codec<KnowledgeAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 				MUTABLE_KNOWLEDGE_CODEC.fieldOf("knowledge").forGetter(attachment -> attachment.knowledge),
-				PECodecHelper.HANDLER_CODEC.fieldOf("input_locks").forGetter(attachment -> attachment.inputLocks),
+				PECodecHelper.MUTABLE_HANDLER_CODEC.fieldOf("input_locks").forGetter(attachment -> attachment.inputLocks),
 				IPECodecHelper.INSTANCE.nonNegativeBigInt().optionalFieldOf("emc", BigInteger.ZERO).forGetter(attachment -> attachment.emc),
 				Codec.BOOL.optionalFieldOf("full_knowledge", false).forGetter(attachment -> attachment.fullKnowledge)
 		).apply(instance, KnowledgeAttachment::new));

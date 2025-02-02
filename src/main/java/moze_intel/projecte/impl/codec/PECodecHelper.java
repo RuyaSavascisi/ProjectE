@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -54,9 +55,14 @@ public class PECodecHelper implements IPECodecHelper {
 	});
 
 	//TODO - 1.21: How do codec and optional codec handle this if an item was removed and is no longer registered
-	public static final Codec<ItemStackHandler> HANDLER_CODEC = NonNullList.codecOf(ItemStack.OPTIONAL_CODEC).flatComapMap(ItemStackHandler::new, handler -> {
+	public static final Codec<ItemStackHandler> MUTABLE_HANDLER_CODEC = ItemStack.OPTIONAL_CODEC.listOf().flatComapMap(
+			list -> {
+				NonNullList<ItemStack> itemList = NonNullList.createWithCapacity(list.size());
+				itemList.addAll(list);
+				return new ItemStackHandler(itemList);
+			}, handler -> {
 		try {
-			return DataResult.success((NonNullList<ItemStack>) HANDLER_STACK_FIELD.invokeExact(handler));
+			return DataResult.<List<ItemStack>>success((NonNullList<ItemStack>) HANDLER_STACK_FIELD.invokeExact(handler));
 		} catch (Throwable t) {
 			return DataResult.error(t::getMessage);
 		}

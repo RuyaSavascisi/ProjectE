@@ -22,6 +22,10 @@ public abstract class SimplePersistentComponentProcessor<TYPE> implements IDataC
 		return true;
 	}
 
+	protected TYPE cleanPersistentComponent(@NotNull TYPE component) {
+		return component;
+	}
+
 	@Override
 	public final void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
 		if (validItem(info)) {
@@ -30,7 +34,7 @@ public abstract class SimplePersistentComponentProcessor<TYPE> implements IDataC
 			if (storedComponent != null && storedComponent.isPresent()) {
 				TYPE component = storedComponent.get();
 				if (shouldPersist(info, component)) {
-					builder.set(componentType, component);
+					builder.set(componentType, cleanPersistentComponent(component));
 				}
 			}
 		}

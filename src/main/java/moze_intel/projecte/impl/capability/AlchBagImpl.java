@@ -63,7 +63,7 @@ public final class AlchBagImpl implements IAlchBagProvider {
 	public static class AlchemicalBagAttachment {
 
 		private static final int BAG_SIZE = 104;
-		public static final Codec<AlchemicalBagAttachment> CODEC = Codec.unboundedMap(DyeColor.CODEC, PECodecHelper.HANDLER_CODEC).xmap(
+		public static final Codec<AlchemicalBagAttachment> CODEC = Codec.unboundedMap(DyeColor.CODEC, PECodecHelper.MUTABLE_HANDLER_CODEC).xmap(
 				map -> new AlchemicalBagAttachment(map.isEmpty() ? new EnumMap<>(DyeColor.class) : new EnumMap<>(map)),
 				attachment -> attachment.inventories
 		);
