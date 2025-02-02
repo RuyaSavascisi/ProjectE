@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,17 +35,11 @@ import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.impl.capability.KnowledgeImpl;
 import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
 import moze_intel.projecte.utils.AnnotationHelper;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.world.item.BannerPatternItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.entity.BannerPattern;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.apache.commons.math3.fraction.BigFraction;
@@ -60,8 +53,6 @@ public final class EMCMappingHandler {
 	private static final List<IEMCMapper<NormalizedSimpleStack, Long>> mappers = new ArrayList<>();
 	@Nullable
 	private static Object2LongMap<ItemInfo> emc;
-	@Nullable
-	private static Object2LongMap<BannerPattern> bannerPatternEmc;
 	private static int loadIndex = -1;
 
 	public static void loadMappers() {
@@ -93,7 +84,7 @@ public final class EMCMappingHandler {
 		Optional<Map<ItemInfo, Long>> readPregeneratedValues = PregeneratedEMC.read(registryAccess, pregeneratedEmcFile, usePregenerated);
 		if (readPregeneratedValues.isPresent()) {
 			//TODO - 1.21: Can we get rid of the extra copy?
-			int values = updateEmcValues(registryAccess, new Object2LongOpenHashMap<>(readPregeneratedValues.get()));
+			int values = updateEmcValues(new Object2LongOpenHashMap<>(readPregeneratedValues.get()));
 			PECore.LOGGER.info("Loaded {} values from pregenerated EMC File", values);
 		} else {
 			SimpleGraphMapper.setLogFoundExploits(MappingConfig.logExploits());
@@ -120,7 +111,7 @@ public final class EMCMappingHandler {
 			Object2LongMap<NormalizedSimpleStack> graphMapperValues = valueGenerator.generateValues();
 			PECore.debugLog("Generated Values...");
 
-			updateEmcValues(registryAccess, filterEMCMap(graphMapperValues));
+			updateEmcValues(filterEMCMap(graphMapperValues));
 			PECore.debugLog("Filtered Values...");
 
 			if (usePregenerated && emc != null) {//Note: It should never be null here as we just set it
@@ -191,14 +182,8 @@ public final class EMCMappingHandler {
 		return emc == null ? 0 : emc.getLong(info);
 	}
 
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getBannerPatternEmc(@NotNull Holder<BannerPattern> pattern) {
-		return bannerPatternEmc == null ? 0 : bannerPatternEmc.getLong(pattern.value());
-	}
-
 	public static void clearEmcMap() {
 		emc = null;
-		bannerPatternEmc = null;
 	}
 
 	/**
@@ -212,34 +197,9 @@ public final class EMCMappingHandler {
 	}
 
 	@ApiStatus.Internal
-	public static int updateEmcValues(RegistryAccess registryAccess, Object2LongMap<ItemInfo> data) {
+	public static int updateEmcValues(Object2LongMap<ItemInfo> data) {
 		emc = data;
-		//TODO - 1.21: Test this
-		bannerPatternEmc = new Object2LongOpenHashMap<>();
-		List<BannerPatternItem> bannerPatternItems = new ReferenceArrayList<>();
-		for (Item item : registryAccess.registryOrThrow(Registries.ITEM)) {
-			if (item instanceof BannerPatternItem patternItem) {
-				bannerPatternItems.add(patternItem);
-			}
-		}
-		Registry<BannerPattern> bannerPatterns = registryAccess.registryOrThrow(Registries.BANNER_PATTERN);
-		for (BannerPattern pattern : bannerPatterns) {
-			long minPatternEmc = 0;
-			Holder<BannerPattern> patternHolder = bannerPatterns.wrapAsHolder(pattern);
-			//Find the lowest EMC value pattern item usable to create this pattern
-			for (BannerPatternItem bannerPatternItem : bannerPatternItems) {
-				if (patternHolder.is(bannerPatternItem.getBannerPattern())) {
-					long patternEmc = data.getLong(bannerPatternItem);
-					if (patternEmc != 0 && (minPatternEmc == 0 || patternEmc < minPatternEmc)) {
-						minPatternEmc = patternEmc;
-					}
-				}
-			}
-			if (minPatternEmc > 0) {
-				bannerPatternEmc.put(pattern, minPatternEmc);
-			}
-		}
-		return data.size();
+		return emc.size();
 	}
 
 	public static SyncEmcPKT createPacketData() {
