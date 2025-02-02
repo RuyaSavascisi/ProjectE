@@ -12,6 +12,7 @@ import moze_intel.projecte.emc.components.processor.DecoratedPotProcessor;
 import moze_intel.projecte.emc.components.processor.DecoratedShieldProcessor;
 import moze_intel.projecte.emc.components.processor.FireworkProcessor;
 import moze_intel.projecte.emc.components.processor.FireworkStarProcessor;
+import moze_intel.projecte.emc.components.processor.MapScaleProcessor;
 import moze_intel.projecte.gameObjs.customRecipes.PhiloStoneSmeltingRecipe;
 import moze_intel.projecte.gameObjs.customRecipes.RecipesCovalenceRepair;
 import net.minecraft.core.RegistryAccess;
@@ -23,6 +24,7 @@ import net.minecraft.world.item.crafting.FireworkRocketRecipe;
 import net.minecraft.world.item.crafting.FireworkStarFadeRecipe;
 import net.minecraft.world.item.crafting.FireworkStarRecipe;
 import net.minecraft.world.item.crafting.MapCloningRecipe;
+import net.minecraft.world.item.crafting.MapExtendingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -53,6 +55,8 @@ public class SpecialRecipeMarkHandledMapper implements IRecipeTypeMapper {
 			return recipe instanceof PhiloStoneSmeltingRecipe
 				   //Cloning recipes, creates something from itself, doesn't change overall emc values as amounts all balance out
 					|| recipe instanceof BookCloningRecipe || recipe instanceof MapCloningRecipe || recipe instanceof BannerDuplicateRecipe;
+		} else if (recipe instanceof MapExtendingRecipe) {
+			return MappingConfig.isEnabled(MapScaleProcessor.INSTANCE);
 		}
 		return false;
 	}
