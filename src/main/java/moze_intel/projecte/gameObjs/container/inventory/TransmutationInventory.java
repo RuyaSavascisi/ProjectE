@@ -9,7 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
@@ -18,11 +17,12 @@ import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.api.event.PlayerAttemptLearnEvent;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.emc.components.DataComponentManager;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.PlayerHelper;
+import net.minecraft.Util;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -131,8 +131,8 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on client only
 	 */
 	public void checkForUpdates() {
-		long matterEmc = EMCHelper.getEmcValue(outputs.getStackInSlot(0));
-		long fuelEmc = EMCHelper.getEmcValue(outputs.getStackInSlot(FUEL_START));
+		long matterEmc = IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(0));
+		long fuelEmc = IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(FUEL_START));
 		if (BigInteger.valueOf(Math.max(matterEmc, fuelEmc)).compareTo(getAvailableEmc()) > 0) {
 			updateClientTargets();
 		}
@@ -143,9 +143,9 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			return;
 		}
 		knowledge = provider.getKnowledge().stream()
-				.filter(EMCHelper::doesItemHaveEmc)
-				.sorted(Collections.reverseOrder(Comparator.comparingLong(EMCHelper::getEmcValue)))
-				.collect(Collectors.toList());//Note: cannot use .toList() as that is immutable, and we remove lower down
+				.filter(IEMCProxy.INSTANCE::hasValue)
+				.sorted(Collections.reverseOrder(Comparator.comparingLong(IEMCProxy.INSTANCE::getValue)))
+				.collect(Util.toMutableList());
 		for (int i = 0; i < outputs.getSlots(); i++) {
 			outputs.setStackInSlot(i, ItemStack.EMPTY);
 		}
@@ -159,7 +159,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			//Note: We look up using only the persistent information here, instead of all the data as
 			// we cannot replicate the extra data anyways since it cannot be learned. So we need to make
 			// sure that we only go off of the data that can be matched
-			long reqEmc = EMCHelper.getEmcValue(lockInfo);
+			long reqEmc = IEMCProxy.INSTANCE.getValue(lockInfo);
 			if (availableEMC.compareTo(BigInteger.valueOf(reqEmc)) < 0) {
 				return;
 			}
@@ -167,7 +167,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			Iterator<ItemInfo> iter = knowledge.iterator();
 			while (iter.hasNext()) {
 				ItemInfo info = iter.next();
-				if (EMCHelper.getEmcValue(info) > reqEmc || info.equals(lockInfo) || !doesItemMatchFilter(info)) {
+				if (IEMCProxy.INSTANCE.getValue(info) > reqEmc || info.equals(lockInfo) || !doesItemMatchFilter(info)) {
 					iter.remove();
 				} else if (pagecounter < desiredPage) {
 					pagecounter++;
@@ -178,7 +178,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			Iterator<ItemInfo> iter = knowledge.iterator();
 			while (iter.hasNext()) {
 				ItemInfo info = iter.next();
-				if (availableEMC.compareTo(BigInteger.valueOf(EMCHelper.getEmcValue(info))) < 0 || !doesItemMatchFilter(info)) {
+				if (availableEMC.compareTo(BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(info))) < 0 || !doesItemMatchFilter(info)) {
 					iter.remove();
 				} else if (pagecounter < desiredPage) {
 					pagecounter++;
@@ -235,7 +235,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	public void writeIntoOutputSlot(int slot, ItemStack item) {
-		long emcValue = EMCHelper.getEmcValue(item);
+		long emcValue = IEMCProxy.INSTANCE.getValue(item);
 		if (emcValue > 0 && BigInteger.valueOf(emcValue).compareTo(getAvailableEmc()) <= 0 && provider.hasKnowledge(item)) {
 			outputs.setStackInSlot(slot, item);
 		} else {

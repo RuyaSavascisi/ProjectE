@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
@@ -15,6 +16,7 @@ import moze_intel.projecte.utils.AnnotationHelper;
 import moze_intel.projecte.utils.Constants;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -35,6 +37,16 @@ public class DataComponentManager {
 			processors.addAll(AnnotationHelper.getDataComponentProcessors());
 		}
 		return Collections.unmodifiableList(processors);
+	}
+
+	@Nullable
+	@SuppressWarnings("OptionalAssignedToNull")//TODO - 1.21: Rename? also expose as a helper?
+	public static <T> T getOrNull(DataComponentPatch patch, DataComponentType<? extends T> type) {
+		Optional<? extends T> storedComponent = patch.get(type);
+		if (storedComponent == null || storedComponent.isEmpty()) {
+			return null;
+		}
+		return storedComponent.get();
 	}
 
 	@Range(from = 0, to = Long.MAX_VALUE)

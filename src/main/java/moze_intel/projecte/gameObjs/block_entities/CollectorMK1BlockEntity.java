@@ -2,6 +2,7 @@ package moze_intel.projecte.gameObjs.block_entities;
 
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.gameObjs.EnumCollectorTier;
 import moze_intel.projecte.gameObjs.container.CollectorMK1Container;
@@ -10,7 +11,6 @@ import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObj
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.utils.Constants;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.TextComponentUtil;
@@ -213,7 +213,7 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 				ItemStack lock = getLock();
 				ItemStack result = lock.isEmpty() ? FuelMapper.getFuelUpgrade(upgrading) : lock.copy();
 
-				long upgradeCost = EMCHelper.getEmcValue(result) - EMCHelper.getEmcValue(upgrading);
+				long upgradeCost = IEMCProxy.INSTANCE.getValue(result) - IEMCProxy.INSTANCE.getValue(upgrading);
 
 				if (upgradeCost >= 0 && this.getStoredEmc() >= upgradeCost) {
 					ItemStack upgrade = getUpgraded();
@@ -244,11 +244,11 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 		ItemStack upgrading = getUpgrading();
 		long targetEmc;
 		if (lock.isEmpty()) {
-			targetEmc = EMCHelper.getEmcValue(FuelMapper.getFuelUpgrade(upgrading));
+			targetEmc = IEMCProxy.INSTANCE.getValue(FuelMapper.getFuelUpgrade(upgrading));
 		} else {
-			targetEmc = EMCHelper.getEmcValue(lock);
+			targetEmc = IEMCProxy.INSTANCE.getValue(lock);
 		}
-		return Math.max(targetEmc - EMCHelper.getEmcValue(upgrading), 0);
+		return Math.max(targetEmc - IEMCProxy.INSTANCE.getValue(upgrading), 0);
 	}
 
 	public long getItemCharge() {
@@ -294,7 +294,7 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 		long reqEmc;
 		ItemStack lock = getLock();
 		if (!lock.isEmpty()) {
-			reqEmc = EMCHelper.getEmcValue(lock) - EMCHelper.getEmcValue(upgrading);
+			reqEmc = IEMCProxy.INSTANCE.getValue(lock) - IEMCProxy.INSTANCE.getValue(upgrading);
 			if (reqEmc < 0) {
 				return 0;
 			}
@@ -304,7 +304,7 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 				auxSlots.setStackInSlot(UPGRADING_SLOT, ItemStack.EMPTY);
 				return 0;
 			}
-			reqEmc = EMCHelper.getEmcValue(fuelUpgrade) - EMCHelper.getEmcValue(upgrading);
+			reqEmc = IEMCProxy.INSTANCE.getValue(fuelUpgrade) - IEMCProxy.INSTANCE.getValue(upgrading);
 		}
 		if (getStoredEmc() >= reqEmc) {
 			return 1;

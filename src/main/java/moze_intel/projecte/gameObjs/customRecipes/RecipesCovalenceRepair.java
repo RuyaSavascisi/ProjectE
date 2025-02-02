@@ -2,6 +2,7 @@ package moze_intel.projecte.gameObjs.customRecipes;
 
 import java.util.ArrayList;
 import java.util.List;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
 import moze_intel.projecte.utils.EMCHelper;
@@ -41,7 +42,7 @@ public class RecipesCovalenceRepair extends CustomRecipe {
 			//If there is no tool, or no dusts where found, return that we don't have any matching ingredients
 			return null;
 		}
-		return new RepairTargetInfo(tool, dust.stream().mapToLong(EMCHelper::getEmcValue).sum());
+		return new RepairTargetInfo(tool, dust.stream().mapToLong(IEMCProxy.INSTANCE::getValue).sum());
 	}
 
 	@Override

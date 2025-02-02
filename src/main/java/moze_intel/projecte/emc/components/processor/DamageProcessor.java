@@ -34,13 +34,13 @@ public class DamageProcessor implements IDataComponentProcessor {
 		int maxDamage = fakeStack.getMaxDamage();
 		if (maxDamage > 0) {
 			int damage = fakeStack.getDamageValue();
-			if (damage > maxDamage) {
-				//This may happen if mods implement their custom damage values incorrectly
-				throw new ArithmeticException();
+			//This may happen if mods implement their custom damage values incorrectly,
+			// in which case we just ignore the damage data rather than making the item have no emc
+			if (damage <= maxDamage) {
+				//maxDmg + 1 because vanilla lets you use the tool one more time
+				// when item damage == max damage (shows as Durability: 0 / max)
+				currentEMC = Math.multiplyExact(currentEMC, Math.addExact(maxDamage - damage, 1)) / maxDamage;
 			}
-			//maxDmg + 1 because vanilla lets you use the tool one more time
-			// when item damage == max damage (shows as Durability: 0 / max)
-			currentEMC = Math.multiplyExact(currentEMC, Math.addExact(maxDamage - damage, 1)) / maxDamage;
 		}
 		return currentEMC;
 	}

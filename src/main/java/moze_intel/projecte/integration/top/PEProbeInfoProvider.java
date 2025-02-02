@@ -7,11 +7,11 @@ import mcjty.theoneprobe.api.IProbeInfoProvider;
 import mcjty.theoneprobe.api.ITheOneProbe;
 import mcjty.theoneprobe.api.ProbeMode;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -22,7 +22,7 @@ public class PEProbeInfoProvider implements IProbeInfoProvider, Function<ITheOne
 	@Override
 	public void addProbeInfo(ProbeMode mode, IProbeInfo probeInfo, Player player, Level level, BlockState blockState, IProbeHitData data) {
 		if (ProjectEConfig.server.misc.lookingAtDisplay.get()) {
-			long value = EMCHelper.getEmcValue(new ItemStack(blockState.getBlock()));
+			long value = IEMCProxy.INSTANCE.getValue(blockState.getBlock());
 			if (value > 0) {
 				probeInfo.mcText(EMCHelper.getEmcTextComponent(value, 1));
 			}

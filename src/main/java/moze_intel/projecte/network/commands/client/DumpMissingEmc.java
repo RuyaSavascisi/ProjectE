@@ -7,11 +7,11 @@ import java.util.HashSet;
 import java.util.Set;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.MappingConfig;
 import moze_intel.projecte.emc.mappers.OreBlacklistMapper;
 import moze_intel.projecte.emc.mappers.RawMaterialsBlacklistMapper;
 import moze_intel.projecte.gameObjs.PETags;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
@@ -107,7 +107,7 @@ public class DumpMissingEmc {
 				}
 				//Note: This is intentionally not using Item#getDefaultInstance as data component based variants should be based on the creative mode tabs
 				ItemInfo itemInfo = ItemInfo.fromItem(item);
-				if (!EMCHelper.doesItemHaveEmc(itemInfo)) {
+				if (!IEMCProxy.INSTANCE.hasValue(itemInfo)) {
 					//If the item doesn't have EMC add it to the list of items we haven't addressed yet
 					missing.add(itemInfo);
 				}
@@ -118,7 +118,7 @@ public class DumpMissingEmc {
 			if (!stack.isEmpty() && !stack.isComponentsPatchEmpty()) {
 				//If the stack is not empty, and it has non defaulted components: see if any of the added variants have EMC
 				ItemInfo itemInfo = ItemInfo.fromStack(stack);
-				if (EMCHelper.doesItemHaveEmc(itemInfo)) {
+				if (IEMCProxy.INSTANCE.hasValue(itemInfo)) {
 					//If it does, remove the default variant from missing if it was missing
 					missing.remove(itemInfo.itemOnly());
 				} else {

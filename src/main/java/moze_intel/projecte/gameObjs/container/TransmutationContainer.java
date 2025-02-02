@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import moze_intel.projecte.api.capabilities.PECapabilities;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotConsume;
 import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotInput;
@@ -13,7 +14,6 @@ import moze_intel.projecte.gameObjs.container.slots.transmutation.SlotUnlearn;
 import moze_intel.projecte.gameObjs.items.Tome;
 import moze_intel.projecte.gameObjs.registries.PEContainerTypes;
 import moze_intel.projecte.network.packets.to_server.SearchUpdatePKT;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -120,7 +120,7 @@ public class TransmutationContainer extends PEHandContainer {
 		if (slotIndex >= 11 && slotIndex <= 26) {
 			ItemStack stack = currentSlot.getItem().copy();
 			// Output Slots
-			long itemEmc = EMCHelper.getEmcValue(stack);
+			long itemEmc = IEMCProxy.INSTANCE.getValue(stack);
 			//Double-check the item actually has Emc and something didn't just go terribly wrong
 			if (itemEmc > 0) {
 				//Note: We can just set the size here as newStack is a copy stack used for modifications
@@ -168,7 +168,7 @@ public class TransmutationContainer extends PEHandContainer {
 				}
 			}
 			//Else if we failed to do that also, transfer to the learn slot if the item has EMC
-			long emc = EMCHelper.getEmcSellValue(stackToInsert);
+			long emc = IEMCProxy.INSTANCE.getSellValue(stackToInsert);
 			if (emc > 0 || stackToInsert.getItem() instanceof Tome) {
 				if (transmutationInventory.isServer()) {
 					BigInteger emcBigInt = BigInteger.valueOf(emc);

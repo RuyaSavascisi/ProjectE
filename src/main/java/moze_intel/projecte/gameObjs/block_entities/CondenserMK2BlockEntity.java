@@ -1,10 +1,10 @@
 package moze_intel.projecte.gameObjs.block_entities;
 
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.container.CondenserMK2Container;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -61,7 +61,7 @@ public class CondenserMK2BlockEntity extends CondenserBlockEntity {
 			for (int i = 0; i < getInput().getSlots(); i++) {
 				ItemStack stack = getInput().getStackInSlot(i);
 				if (!stack.isEmpty()) {
-					forceInsertEmc(EMCHelper.getEmcSellValue(stack) * stack.getCount(), EmcAction.EXECUTE);
+					forceInsertEmc(IEMCProxy.INSTANCE.getSellValue(stack) * stack.getCount(), EmcAction.EXECUTE);
 					getInput().setStackInSlot(i, ItemStack.EMPTY);
 					break;
 				}

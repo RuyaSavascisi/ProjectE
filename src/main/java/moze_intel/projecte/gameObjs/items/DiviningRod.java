@@ -8,10 +8,10 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.IntFunction;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.items.DiviningRod.DiviningMode;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.IHasTranslationKey;
 import moze_intel.projecte.utils.text.PELang;
@@ -73,7 +73,7 @@ public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 				continue;
 			}
 			ItemStack blockStack = drops.getFirst();
-			long blockEmc = EMCHelper.getEmcValue(blockStack);
+			long blockEmc = IEMCProxy.INSTANCE.getValue(blockStack);
 			if (blockEmc == 0) {
 				if (furnaceRecipes == null) {//Lazily init the list of furnace recipes
 					furnaceRecipes = level.getRecipeManager().getAllRecipesFor(RecipeType.SMELTING);
@@ -81,7 +81,7 @@ public class DiviningRod extends ItemPE implements IItemMode<DiviningMode> {
 				for (RecipeHolder<SmeltingRecipe> furnaceRecipeHolder : furnaceRecipes) {
 					SmeltingRecipe furnaceRecipe = furnaceRecipeHolder.value();
 					if (furnaceRecipe.getIngredients().getFirst().test(blockStack)) {
-						long currentValue = EMCHelper.getEmcValue(furnaceRecipe.getResultItem(level.registryAccess()));
+						long currentValue = IEMCProxy.INSTANCE.getValue(furnaceRecipe.getResultItem(level.registryAccess()));
 						if (currentValue != 0) {
 							if (!emcValues.contains(currentValue)) {
 								emcValues.add(currentValue);

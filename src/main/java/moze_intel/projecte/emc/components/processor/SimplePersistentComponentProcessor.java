@@ -1,8 +1,8 @@
 package moze_intel.projecte.emc.components.processor;
 
-import java.util.Optional;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
+import moze_intel.projecte.emc.components.DataComponentManager;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import org.jetbrains.annotations.NotNull;
@@ -30,12 +30,9 @@ public abstract class SimplePersistentComponentProcessor<TYPE> implements IDataC
 	public final void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
 		if (validItem(info)) {
 			DataComponentType<TYPE> componentType = getComponentType(info);
-			Optional<? extends TYPE> storedComponent = info.getComponentsPatch().get(componentType);
-			if (storedComponent != null && storedComponent.isPresent()) {
-				TYPE component = storedComponent.get();
-				if (shouldPersist(info, component)) {
-					builder.set(componentType, cleanPersistentComponent(component));
-				}
+			TYPE component = DataComponentManager.getOrNull(info.getComponentsPatch(), componentType);
+			if (component != null && shouldPersist(info, component)) {
+				builder.set(componentType, cleanPersistentComponent(component));
 			}
 		}
 	}

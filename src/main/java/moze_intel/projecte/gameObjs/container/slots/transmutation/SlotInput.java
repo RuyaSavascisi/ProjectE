@@ -6,10 +6,10 @@ import moze_intel.projecte.api.capabilities.IKnowledgeProvider.TargetUpdateType;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.InventoryContainerSlot;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +53,7 @@ public class SlotInput extends InventoryContainerSlot {
 			if (stack.isEmpty()) {
 				inv.syncChangedSlots(IntList.of(getSlotIndex()), TargetUpdateType.ALL);
 			} else {
-				if (EMCHelper.doesItemHaveEmc(stack)) {
+				if (IEMCProxy.INSTANCE.hasValue(stack)) {
 					inv.handleKnowledge(stack);
 				}
 				IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);

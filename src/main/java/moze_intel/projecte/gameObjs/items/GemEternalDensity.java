@@ -7,6 +7,7 @@ import java.util.Locale;
 import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IAlchBagItem;
 import moze_intel.projecte.api.capabilities.item.IAlchChestItem;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.components.GemData;
 import moze_intel.projecte.gameObjs.container.EternalDensityContainer;
 import moze_intel.projecte.gameObjs.container.PEHandContainer;
@@ -15,7 +16,6 @@ import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.ClientKeyHelper;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.ILangEntry;
@@ -75,7 +75,7 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 			return false;
 		}
 		final ItemLike target = getMode(gem).getTarget();
-		final long targetEmc = EMCHelper.getEmcValue(target);
+		final long targetEmc = IEMCProxy.INSTANCE.getValue(target);
 		if (targetEmc == 0) {
 			//Target doesn't have an EMC value set, just exit early
 			return false;
@@ -101,7 +101,7 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 				filtered = true;
 			}
 
-			long emcValue = EMCHelper.getEmcValue(stack);
+			long emcValue = IEMCProxy.INSTANCE.getValue(stack);
 			if (emcValue == 0 || emcValue >= targetEmc || emcValue > emcRoomFor) {
 				//Continue if the item has no EMC, it is more valuable than our target, or to consume it would make our stored emc overflow
 				continue;

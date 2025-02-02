@@ -6,6 +6,7 @@ import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.Constants;
@@ -49,7 +50,7 @@ public class ToolTipEvent {
 		}
 
 		if (ProjectEConfig.client.emcToolTips.get() && (!ProjectEConfig.client.shiftEmcToolTips.get() || Screen.hasShiftDown())) {
-			long value = EMCHelper.getEmcValue(current);
+			long value = IEMCProxy.INSTANCE.getValue(current);
 			if (value > 0) {
 				tooltip.add(EMCHelper.getEmcTextComponent(value, 1));
 				if (current.getCount() > 1) {

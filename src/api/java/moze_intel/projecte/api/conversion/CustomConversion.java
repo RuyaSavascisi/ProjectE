@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntSortedMap;
 import it.unimi.dsi.fastutil.objects.Object2IntSortedMaps;
 import java.util.List;
-import java.util.stream.Collectors;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.nss.NSSTag;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
@@ -58,7 +57,7 @@ public record CustomConversion(int count, NormalizedSimpleStack output, Object2I
 				//Filter out any invalid entries we are skipping over from decoding
 				.filter(conversion -> conversion != INVALID)
 				//Collect to a mutable list
-				.collect(Collectors.toList())
+				.collect(Util.toMutableList())
 		));
 	});
 

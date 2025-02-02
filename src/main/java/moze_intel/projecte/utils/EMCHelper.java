@@ -8,25 +8,21 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.math.BigInteger;
 import java.util.Iterator;
-import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.FuelMapper;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.text.ILangEntry;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
 import net.neoforged.neoforge.items.IItemHandler;
 import org.jetbrains.annotations.NotNull;
@@ -104,7 +100,7 @@ public final class EMCHelper {
 				} else if (!metRequirement) {
 					//TODO - 1.21: Should we be validating we simulate that we will be able to extract the stack and how much of it?
 					if (FuelMapper.isStackFuel(stack)) {
-						long emc = getEmcValue(stack);
+						long emc = IEMCProxy.INSTANCE.getValue(stack);
 						int toRemove = Mth.ceil((double) (minFuel - emcConsumed) / emc);
 						int actualRemoved = Math.min(stack.getCount(), toRemove);
 						if (actualRemoved > 0) {
@@ -140,51 +136,6 @@ public final class EMCHelper {
 			}
 		}
 		return 0;
-	}
-
-	public static boolean doesItemHaveEmc(ItemInfo info) {
-		return getEmcValue(info) > 0;
-	}
-
-	public static boolean doesItemHaveEmc(ItemStack stack) {
-		return getEmcValue(stack) > 0;
-	}
-
-	public static boolean doesItemHaveEmc(Holder<Item> item) {
-		return getEmcValue(item) > 0;
-	}
-
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getEmcValue(Holder<Item> item) {
-		return item.isBound() ? getEmcValue(ItemInfo.fromItem(item)) : 0;
-	}
-
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getEmcValue(ItemLike item) {
-		return item == null ? 0 : getEmcValue(item.asItem().builtInRegistryHolder());
-	}
-
-	/**
-	 * Does not consider stack size
-	 */
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getEmcValue(ItemStack stack) {
-		return stack.isEmpty() ? 0 : getEmcValue(ItemInfo.fromStack(stack));
-	}
-
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getEmcValue(ItemInfo info) {
-		return DataComponentManager.getEmcValue(info);
-	}
-
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getEmcSellValue(ItemStack stack) {
-		return stack.isEmpty() ? 0 : getEmcSellValue(ItemInfo.fromStack(stack));
-	}
-
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getEmcSellValue(ItemInfo info) {
-		return getEmcSellValue(getEmcValue(info));
 	}
 
 	@Range(from = 0, to = Long.MAX_VALUE)
@@ -241,7 +192,7 @@ public final class EMCHelper {
 		} else if (stack.isDamageableItem()) {
 			ItemStack stackCopy = stack.copy();
 			stackCopy.setDamageValue(0);
-			long emc = (long) Math.ceil(getEmcValue(stackCopy) / (double) stack.getMaxDamage());
+			long emc = (long) Math.ceil(IEMCProxy.INSTANCE.getValue(stackCopy) / (double) stack.getMaxDamage());
 			return Math.max(emc, 1);
 		}
 		return 1;

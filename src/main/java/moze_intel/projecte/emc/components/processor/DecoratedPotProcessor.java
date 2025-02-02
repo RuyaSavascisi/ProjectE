@@ -2,8 +2,8 @@ package moze_intel.projecte.emc.components.processor;
 
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.PEConfigTranslations;
-import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -39,7 +39,7 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 	protected long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull PotDecorations decorations) throws ArithmeticException {
 		long totalDecorationEmc = 0;
 		for (Item decoration : decorations.ordered()) {
-			long decorationEmc = EMCHelper.getEmcValue(decoration);
+			long decorationEmc = IEMCProxy.INSTANCE.getValue(decoration);
 			if (decorationEmc == 0) {
 				//At least one sherd doesn't have an EMC value, so we can't calculate the value of the pot as a whole
 				return 0;
@@ -49,7 +49,7 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 		//Calculate base decorated pot (four bricks) emc to subtract from our current values
 		// We do this in case this isn't the first processor that runs on some pot, and another processor has adjusted the emc of it
 		//TODO - 1.21: Re-evaluate all these processors and any that get the emc value of another thing, we likely want to have the result fail if one of the parts didn't have one
-		return Math.addExact(currentEMC - EMCHelper.getEmcValue(Items.DECORATED_POT), totalDecorationEmc);
+		return Math.addExact(currentEMC - IEMCProxy.INSTANCE.getValue(Items.DECORATED_POT), totalDecorationEmc);
 	}
 
 	@Override

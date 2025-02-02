@@ -3,9 +3,9 @@ package moze_intel.projecte.emc.components.processor;
 import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.emc.components.DataComponentManager;
-import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -56,7 +56,7 @@ public class FireworkProcessor extends PersistentComponentProcessor<Fireworks> {
 
 		for (FireworkExplosion explosion : fireworks.explosions()) {
 			//TODO: Should we support people expanding the star ingredient? (FireworkRocketRecipe.STAR_INGREDIENT)
-			long starEmc = EMCHelper.getEmcValue(ItemInfo.fromItem(Items.FIREWORK_STAR, DataComponentPatch.builder()
+			long starEmc = IEMCProxy.INSTANCE.getValue(ItemInfo.fromItem(Items.FIREWORK_STAR, DataComponentPatch.builder()
 					.set(DataComponents.FIREWORK_EXPLOSION, explosion).build()));
 			if (starEmc == 0) {
 				//No emc representation of this star, bail out

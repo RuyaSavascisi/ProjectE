@@ -2,9 +2,9 @@ package moze_intel.projecte.emc;
 
 import java.util.Comparator;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.network.packets.to_client.SyncFuelMapperPKT;
-import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
@@ -21,8 +21,8 @@ public final class FuelMapper {
 		FUEL_MAP = HolderSet.direct(BuiltInRegistries.ITEM.getTag(PETags.Items.COLLECTOR_FUEL)
 				.stream()
 				.flatMap(HolderSet::stream)
-				.filter(EMCHelper::doesItemHaveEmc)
-				.sorted(Comparator.comparingLong(EMCHelper::getEmcValue))
+				.filter(IEMCProxy.INSTANCE::hasValue)
+				.sorted(Comparator.comparingLong(IEMCProxy.INSTANCE::getValue))
 				.toList());
 	}
 

@@ -31,8 +31,7 @@ public interface IEMCProxy {
 	 * @return Whether the item has an emc value
 	 */
 	default boolean hasValue(@NotNull ItemLike itemLike) {
-		Item item = Objects.requireNonNull(itemLike).asItem();
-		return item != Items.AIR && hasValue(ItemInfo.fromItem(item));
+		return getValue(itemLike) > 0;
 	}
 
 	/**
@@ -47,8 +46,7 @@ public interface IEMCProxy {
 	 * @return Whether the item has an emc value
 	 */
 	default boolean hasValue(@NotNull Holder<Item> holder) {
-		Objects.requireNonNull(holder);
-		return !holder.isBound() || holder.value() == Items.AIR && hasValue(ItemInfo.fromItem(holder));
+		return getValue(holder) > 0;
 	}
 
 	/**
@@ -65,7 +63,7 @@ public interface IEMCProxy {
 	 * @return Whether the ItemStack has an emc value
 	 */
 	default boolean hasValue(@NotNull ItemStack stack) {
-		return !Objects.requireNonNull(stack).isEmpty() && hasValue(ItemInfo.fromStack(stack));
+		return getValue(stack) > 0;
 	}
 
 	/**
@@ -80,7 +78,7 @@ public interface IEMCProxy {
 	 * @return Whether the ItemInfo has an emc value
 	 */
 	default boolean hasValue(@NotNull ItemInfo info) {
-		return getValue(Objects.requireNonNull(info)) > 0;
+		return getValue(info) > 0;
 	}
 
 	/**
@@ -126,7 +124,7 @@ public interface IEMCProxy {
 	 * <p>
 	 * This takes into account bonuses such as stored emc in power items and enchantments
 	 *
-	 * @param stack The stack we want to query
+	 * @param stack The stack we want to query. Does not take into account stack size.
 	 *
 	 * @return The stack's EMC value, or 0 if there is none
 	 */
@@ -158,7 +156,7 @@ public interface IEMCProxy {
 	 * <p>
 	 * Can be called on both sides
 	 *
-	 * @param stack The stack we want to query
+	 * @param stack The stack we want to query. Does not take into account stack size.
 	 *
 	 * @return EMC the stack should yield when burned by transmutation, condensers, or relays
 	 */

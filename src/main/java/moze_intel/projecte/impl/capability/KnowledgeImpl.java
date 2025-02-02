@@ -19,6 +19,7 @@ import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.event.PlayerKnowledgeChangeEvent;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
@@ -29,7 +30,6 @@ import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncChan
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncInputsAndLocksPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncPKT;
-import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -281,14 +281,14 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			if (!info.equals(persistentInfo)) {
 				//If the new persistent variant has an EMC value though we add it because that is what they would have learned
 				// had they tried to consume the item now instead of before
-				if (EMCHelper.doesItemHaveEmc(persistentInfo)) {
+				if (IEMCProxy.INSTANCE.hasValue(persistentInfo)) {
 					toAdd.add(persistentInfo);
 				}
 				//If something about the persistence changed and the item we have is no longer directly learnable
 				// we remove it from our knowledge
 				iterator.remove();
 				hasRemoved = true;
-			} else if (!EMCHelper.doesItemHaveEmc(info)) {
+			} else if (!IEMCProxy.INSTANCE.hasValue(info)) {
 				//If the items do match but it just no longer has an EMC value, then we remove it as well
 				iterator.remove();
 				hasRemoved = true;

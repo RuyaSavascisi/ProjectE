@@ -5,10 +5,10 @@ import java.util.List;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.entity.EntityHomingArrow;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
@@ -84,7 +84,7 @@ public class ArchangelSmite extends PEToggleItem implements IPedestalItem {
 
 	private void fireArrow(ItemStack ring, Level level, LivingEntity shooter, float inaccuracy) {
 		EntityHomingArrow arrow = new EntityHomingArrow(level, shooter, 2.0F);
-		if (!(shooter instanceof Player player) || consumeFuel(player, ring, EMCHelper.getEmcValue(Items.ARROW), true)) {
+		if (!(shooter instanceof Player player) || consumeFuel(player, ring, IEMCProxy.INSTANCE.getValue(Items.ARROW), true)) {
 			arrow.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, 3.0F, inaccuracy);
 			level.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (level.random.nextFloat() * 0.4F + 1.2F));
 			level.addFreshEntity(arrow);

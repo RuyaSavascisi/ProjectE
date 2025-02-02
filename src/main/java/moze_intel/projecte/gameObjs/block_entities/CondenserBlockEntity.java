@@ -3,6 +3,7 @@ package moze_intel.projecte.gameObjs.block_entities;
 import com.mojang.serialization.DataResult;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.event.PlayerAttemptCondenserSetEvent;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.container.CondenserContainer;
@@ -10,7 +11,6 @@ import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.TextComponentUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -125,7 +125,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 		}
 		loadIndex = EMCMappingHandler.getLoadIndex();
 		if (lockInfo != null) {
-			long lockEmc = EMCHelper.getEmcValue(lockInfo);
+			long lockEmc = IEMCProxy.INSTANCE.getValue(lockInfo);
 			if (lockEmc > 0) {
 				if (requiredEmc != lockEmc) {
 					requiredEmc = lockEmc;
@@ -146,7 +146,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 			ItemStack stack = inputInventory.getStackInSlot(i);
 			if (!stack.isEmpty() && !isStackEqualToLock(stack)) {
 				inputInventory.extractItem(i, 1, false);
-				forceInsertEmc(EMCHelper.getEmcSellValue(stack), EmcAction.EXECUTE);
+				forceInsertEmc(IEMCProxy.INSTANCE.getSellValue(stack), EmcAction.EXECUTE);
 				break;
 			}
 		}

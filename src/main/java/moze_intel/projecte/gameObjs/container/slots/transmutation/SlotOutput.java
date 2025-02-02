@@ -1,9 +1,9 @@
 package moze_intel.projecte.gameObjs.container.slots.transmutation;
 
 import java.math.BigInteger;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.InventoryContainerSlot;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +27,7 @@ public class SlotOutput extends InventoryContainerSlot {
 	@Override
 	public ItemStack remove(int amount) {
 		ItemStack stack = ItemHelper.size(getItem(), amount);
-		BigInteger emcValue = BigInteger.valueOf(EMCHelper.getEmcValue(stack));
+		BigInteger emcValue = BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(stack));
 		if (amount > 1) {
 			emcValue = emcValue.multiply(BigInteger.valueOf(amount));
 		}
@@ -57,6 +57,6 @@ public class SlotOutput extends InventoryContainerSlot {
 
 	@Override
 	public boolean mayPickup(@NotNull Player player) {
-		return !hasItem() || BigInteger.valueOf(EMCHelper.getEmcValue(getItem())).compareTo(inv.getAvailableEmc()) <= 0;
+		return !hasItem() || BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(getItem())).compareTo(inv.getAvailableEmc()) <= 0;
 	}
 }

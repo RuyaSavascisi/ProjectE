@@ -11,12 +11,12 @@ import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.container.MercurialEyeContainer;
 import moze_intel.projecte.gameObjs.items.MercurialEye.MercurialEyeMode;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.utils.Constants;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
@@ -115,7 +115,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 
 		Level level = player.level();
 		BlockState startingState = level.getBlockState(startingPos);
-		long startingBlockEmc = EMCHelper.getEmcValue(new ItemStack(startingState.getBlock()));
+		long startingBlockEmc = IEMCProxy.INSTANCE.getValue(startingState.getBlock());
 		ItemStack target = inventory.getStackInSlot(1);
 		BlockState newState;
 		long newBlockEmc;
@@ -130,7 +130,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 		if (!target.isEmpty()) {
 			context = new BlockPlaceContext(level, player, hand, target.copy(), hitResult);
 			newState = ItemHelper.stackToState(target, context);
-			newBlockEmc = EMCHelper.getEmcValue(target);
+			newBlockEmc = IEMCProxy.INSTANCE.getValue(target);
 			if (newBlockEmc == 0) {
 				//If the target no longer has an EMC value fail
 				return InteractionResult.FAIL;
@@ -157,7 +157,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 				if (!offsetState.canBeReplaced(context)) {
 					return InteractionResult.FAIL;
 				}
-				long offsetBlockEmc = EMCHelper.getEmcValue(new ItemStack(offsetState.getBlock()));
+				long offsetBlockEmc = IEMCProxy.INSTANCE.getValue(offsetState.getBlock());
 				//Just in case it is not air but is a replaceable block like tall grass, get the proper EMC instead of just using 0
 				if (doBlockPlace(player, offsetState, offsetPos, newState, eye, offsetBlockEmc, newBlockEmc, drops)) {
 					hitTargets++;
@@ -210,7 +210,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 					if (mode == MercurialEyeMode.EXTENSION) {
 						VoxelShape cbBox = startingState.getCollisionShape(level, offsetPos);
 						if (level.isUnobstructed(null, cbBox)) {
-							long offsetBlockEmc = EMCHelper.getEmcValue(offsetState.getBlock());
+							long offsetBlockEmc = IEMCProxy.INSTANCE.getValue(offsetState.getBlock());
 							hit = doBlockPlace(player, offsetState, offsetPos, newState, eye, offsetBlockEmc, newBlockEmc, drops);
 						}
 					} else if (mode == MercurialEyeMode.TRANSMUTATION) {
@@ -301,7 +301,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 				if (adjustedContext.replacingClickedOnBlock()) {
 					BlockState placeState = level.getBlockState(pos);
 					//Only replace replaceable blocks
-					long placeBlockEmc = EMCHelper.getEmcValue(placeState.getBlock());
+					long placeBlockEmc = IEMCProxy.INSTANCE.getValue(placeState.getBlock());
 					//Ensure we are immutable so that changing blocks doesn't act weird
 					if (doBlockPlace(player, placeState, pos.immutable(), newState, eye, placeBlockEmc, newBlockEmc, drops)) {
 						hitTargets++;

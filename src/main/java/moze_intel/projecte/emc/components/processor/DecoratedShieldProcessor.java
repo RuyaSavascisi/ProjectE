@@ -1,13 +1,12 @@
 package moze_intel.projecte.emc.components.processor;
 
-import java.util.Optional;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.PEConfigTranslations;
-import moze_intel.projecte.utils.EMCHelper;
+import moze_intel.projecte.emc.components.DataComponentManager;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -15,7 +14,6 @@ import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.neoforged.neoforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @DataComponentProcessor
 public class DecoratedShieldProcessor implements IDataComponentProcessor {
@@ -43,30 +41,20 @@ public class DecoratedShieldProcessor implements IDataComponentProcessor {
 		return true;
 	}
 
-	@Nullable
-	@SuppressWarnings("OptionalAssignedToNull")
-	private <T> T getOrNull(DataComponentPatch patch, DataComponentType<? extends T> type) {
-		Optional<? extends T> storedComponent = patch.get(type);
-		if (storedComponent == null || storedComponent.isEmpty()) {
-			return null;
-		}
-		return storedComponent.get();
-	}
-
 	@Override
 	public final long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
 		if (info.getItem().is(Tags.Items.TOOLS_SHIELD)) {
 			DataComponentPatch componentsPatch = info.getComponentsPatch();
 			if (!componentsPatch.isEmpty()) {
-				DyeColor baseColor = getOrNull(componentsPatch, DataComponents.BASE_COLOR);
+				DyeColor baseColor = DataComponentManager.getOrNull(componentsPatch, DataComponents.BASE_COLOR);
 				if (baseColor != null) {
 					ItemStack banner = new ItemStack(BannerBlock.byColor(baseColor));
-					BannerPatternLayers patternLayers = getOrNull(componentsPatch, DataComponents.BANNER_PATTERNS);
+					BannerPatternLayers patternLayers = DataComponentManager.getOrNull(componentsPatch, DataComponents.BANNER_PATTERNS);
 					if (patternLayers != null && !patternLayers.equals(BannerPatternLayers.EMPTY)) {
 						//If there is any pattern stored, set it so that we can get the value of the banner when it has that pattern stored
 						banner.set(DataComponents.BANNER_PATTERNS, patternLayers);
 					}
-					long bannerValue = EMCHelper.getEmcValue(banner);
+					long bannerValue = IEMCProxy.INSTANCE.getValue(banner);
 					if (bannerValue == 0) {
 						//No valid value for the attached banner, don't allow destroying the shield
 						return 0;
@@ -83,10 +71,10 @@ public class DecoratedShieldProcessor implements IDataComponentProcessor {
 		if (info.getItem().is(Tags.Items.TOOLS_SHIELD)) {
 			DataComponentPatch componentsPatch = info.getComponentsPatch();
 			if (!componentsPatch.isEmpty()) {
-				DyeColor baseColor = getOrNull(componentsPatch, DataComponents.BASE_COLOR);
+				DyeColor baseColor = DataComponentManager.getOrNull(componentsPatch, DataComponents.BASE_COLOR);
 				if (baseColor != null) {
 					builder.set(DataComponents.BASE_COLOR, baseColor);
-					BannerPatternLayers patternLayers = getOrNull(componentsPatch, DataComponents.BANNER_PATTERNS);
+					BannerPatternLayers patternLayers = DataComponentManager.getOrNull(componentsPatch, DataComponents.BANNER_PATTERNS);
 					if (patternLayers != null && !patternLayers.equals(BannerPatternLayers.EMPTY)) {
 						//If there is any pattern stored, set it so that we can get the value of the banner when it has that pattern stored
 						builder.set(DataComponents.BANNER_PATTERNS, patternLayers);

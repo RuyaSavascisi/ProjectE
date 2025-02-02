@@ -2,12 +2,12 @@ package moze_intel.projecte.gameObjs.block_entities;
 
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.EnumRelayTier;
 import moze_intel.projecte.gameObjs.container.RelayMK1Container;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -131,7 +131,7 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 					relay.forceInsertEmc(emcHolder.extractEmc(stack, simulatedVal, EmcAction.EXECUTE), EmcAction.EXECUTE);
 				}
 			} else {
-				long emcVal = EMCHelper.getEmcSellValue(stack);
+				long emcVal = IEMCProxy.INSTANCE.getSellValue(stack);
 				if (emcVal > 0 && emcVal <= relay.getNeededEmc()) {
 					relay.forceInsertEmc(emcVal, EmcAction.EXECUTE);
 					relay.getBurn().shrink(1);

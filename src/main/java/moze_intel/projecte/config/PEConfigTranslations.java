@@ -184,6 +184,8 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	DCP_FIREWORK("processing.data_component_processor.firework", "Firework Processor", "Calculates EMC value of fireworks.", true),
 	DCP_FIREWORK_STAR("processing.data_component_processor.firework_star", "Firework Star Processor",
 			"Calculates the EMC value of Firework Stars, based on what was required to craft them.", true),
+	DCP_MAP_EXTENSION("processing.data_component_processor.map_extension", "Map Extension Processor",
+			"Increases the EMC value of maps that have had their range extended.", true),
 	DCP_MERCURIAL_EYE("processing.data_component_processor.mercurial_eye", "Mercurial Eye Processor",
 			"Factors in the EMC value of Klein Stars stored in Mercurial eyes.", true),
 	DCP_STORED_EMC("processing.data_component_processor.stored_emc", "Stored EMC Processor",

@@ -9,8 +9,8 @@ import moze_intel.projecte.PEPermissions;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.emc.components.DataComponentManager;
-import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.text.ILangEntry;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
@@ -97,7 +97,7 @@ public class KnowledgeCMD {
 		}
 		ItemStack item = new ItemStack(ItemArgument.getItem(ctx, "item").getItem());
 
-		if (!EMCHelper.doesItemHaveEmc(item)) {
+		if (!IEMCProxy.INSTANCE.hasValue(item)) {
 			source.sendFailure(PELang.COMMAND_KNOWLEDGE_INVALID.translate(item.getDisplayName()));
 			return 0;
 		}
