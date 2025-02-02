@@ -13,9 +13,11 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import org.jetbrains.annotations.NotNull;
 
-@DataComponentProcessor//TODO - 1.21: Figure out if we should remove this
+@DataComponentProcessor//TODO - 1.21: Figure out if we should remove this, also figure out where the base value even comes from
 public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecorations> {
 
+	@DataComponentProcessor.Instance
+	public static final DecoratedPotProcessor INSTANCE = new DecoratedPotProcessor();
 	private static final ResourceKey<Item> DECORATED_POT = BuiltInRegistries.ITEM.getResourceKey(Items.DECORATED_POT).orElseThrow();
 
 	@Override
@@ -40,6 +42,7 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 			decorationEmc = Math.addExact(decorationEmc, EMCHelper.getEmcValue(decoration));
 		}
 		//Calculate base decorated pot (four bricks) emc to subtract from our current values
+		// We do this in case this isn't the first processor that runs on some pot, and another processor has adjusted the emc of it
 		return Math.addExact(currentEMC - EMCHelper.getEmcValue(Items.DECORATED_POT), decorationEmc);
 	}
 

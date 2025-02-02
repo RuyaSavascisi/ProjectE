@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 @DataComponentProcessor(priority = Integer.MAX_VALUE)
 public class DamageProcessor implements IDataComponentProcessor {
 
+	@DataComponentProcessor.Instance
+	public static final DamageProcessor INSTANCE = new DamageProcessor();
+
 	@Override
 	public String getName() {
 		return PEConfigTranslations.DCP_DAMAGE.title();

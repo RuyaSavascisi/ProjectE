@@ -152,6 +152,9 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			+ "This will catch modded extensions of the vanilla recipe classes, and if the VanillaRecipeTypes mapper is disabled, "
 			+ "this mapper will still catch the vanilla recipes.", true),
 
+	MAPPING_CRAFTING_MAPPER_MARK_HANDLED("mapping.mapper.crafting.mark_handled", "Mark Special Recipes Handled",
+			"This mapper does not actually map anything, but instead just marks recipe classes as having been handled, if we either expose a processor for them, "
+			+ "or they are self referencing (for example map cloning recipes).", true),
 	MAPPING_CRAFTING_MAPPER_FIREWORK_STAR("mapping.mapper.crafting.firework_star", "Firework Star Mapper", "Maps the Firework Star custom recipe.", true),
 	MAPPING_CRAFTING_MAPPER_SHULKER_RECOLORING("mapping.mapper.crafting.shulker_recoloring", "Shulker Recoloring Mapper",
 			"Propagates shulker box values to colored variants.", true),
@@ -170,11 +173,13 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			"Edit Processors"),
 
 	DCP_ARMOR_TRIM("processing.data_component_processor.armor_trim", "Armor Trim Processor", "Calculates EMC value of trimmed armor.", true),
+	DCP_BANNERS("processing.data_component_processor.banner", "Banner Processor", "Calculates EMC value of patterned banners.", true),
 	DCP_BUNDLE("processing.data_component_processor.bundle", "Bundle Processor", "Calculates EMC value of items stored in bundles.", true),
 	DCP_CONTAINER("processing.data_component_processor.container", "Container Processor", "Calculates EMC value of items stored in vanilla's container component. For example shulker boxes.", true),
 	DCP_DAMAGE("processing.data_component_processor.damage", "Damage Processor", "Reduces the EMC value the more damaged an item is.", true),
 	DCP_DECORATED_POT("processing.data_component_processor.decorated_pot", "Decorated Pot Processor",
 			"Takes the different sherds into account for each decorated pot.", true),
+	DCP_DECORATED_SHIELD("processing.data_component_processor.decorated_shield", "Decorated Shield Processor", "Calculates EMC value of decorated shield.", true),
 	DCP_ENCHANTMENT("processing.data_component_processor.enchantment", "Enchantment Processor",
 			"Increases the EMC value to take into account any enchantments on an item.", true),
 	DCP_STORED_EMC("processing.data_component_processor.stored_emc", "Stored EMC Processor",

@@ -34,6 +34,7 @@ public class ArmorTrimProcessor extends PersistentComponentProcessor<ArmorTrim> 
 	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull ArmorTrim trim) throws ArithmeticException {
 		Holder<Item> material = trim.material().value().ingredient();
 		Holder<Item> template = trim.pattern().value().templateItem();
+		//TODO - 1.21: Re-evaluate all these processors and any that get the emc value of another thing, we likely want to have the result fail if one of the parts didn't have one
 		return Math.addExact(
 				Math.addExact(currentEMC, EMCHelper.getEmcValue(material)),
 				EMCHelper.getEmcValue(template)

@@ -34,7 +34,7 @@ public record SyncEmcPKT(Object2LongMap<ItemInfo> data) implements IPEPacket {
 	@Override
 	public void handle(IPayloadContext context) {
 		PECore.LOGGER.info("Receiving EMC data from server.");
-		EMCMappingHandler.fromPacket(data);
+		EMCMappingHandler.updateEmcValues(context.player().registryAccess(), data);
 	}
 
 	public static SyncEmcPKT serializeEmcData(RegistryAccess registryAccess) {
