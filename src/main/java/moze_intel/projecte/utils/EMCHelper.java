@@ -56,6 +56,15 @@ public final class EMCHelper {
 		return intMap;
 	}
 
+	public static <K> Object2IntMap<K> intMapOf(final K key, int value, final K key2, int value2, final K key3, int value3, final K key4, int value4) {
+		Object2IntMap<K> intMap = new Object2IntArrayMap<>(3);
+		intMap.put(key, value);
+		intMap.put(key2, value2);
+		intMap.put(key3, value3);
+		intMap.put(key4, value4);
+		return intMap;
+	}
+
 	/**
 	 * Consumes EMC from fuel items or Klein Stars Any extra EMC is discarded !!! To retain remainder EMC use ItemPE.consumeFuel()
 	 *

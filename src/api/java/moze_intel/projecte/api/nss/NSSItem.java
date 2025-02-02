@@ -58,6 +58,7 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 	 */
 	@NotNull
 	public static NSSItem createItem(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
+		//TODO - 1.21: Evaluate trying to get the key from holder instead of looking it up from the registry?
 		return createItem(item.value(), componentsPatch);
 	}
 

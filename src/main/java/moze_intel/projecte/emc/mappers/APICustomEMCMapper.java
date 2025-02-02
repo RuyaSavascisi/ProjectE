@@ -1,10 +1,8 @@
 package moze_intel.projecte.emc.mappers;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -111,7 +109,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 					if (targetMod != null && !data.permissions.containsKey(targetMod)) {
 						//TODO - 1.21: Comment?? String.format("Allow mod '%s' to set and or remove values for mod '%s'. Options: [both, set, remove, none]", modId, modForStack);
 						addDisplayInfo(builder, targetMod);
-						data.permissions.put(targetMod, configBuilder.create(targetMod, Permission.BOTH));
+						data.permissions.put(targetMod, configBuilder.create(targetMod, APICustomEMCMapper.Permission.BOTH));
 					}
 				}
 				builder.pop();//permissions
@@ -163,7 +161,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 
 	private static class DataForMod {
 
-		private final Map<String, Supplier<Permission>> permissions = new HashMap<>();
+		private final Map<String, Supplier<APICustomEMCMapper.Permission>> permissions = new HashMap<>();
 		private final IntSupplier priority;
 
 		public DataForMod(IntSupplier priority) {
@@ -178,7 +176,7 @@ public class APICustomEMCMapper implements IEMCMapper<NormalizedSimpleStack, Lon
 			if (otherMod == null) {
 				return true;
 			}
-			Supplier<Permission> supplier = permissions.get(otherMod);
+			Supplier<APICustomEMCMapper.Permission> supplier = permissions.get(otherMod);
 			return supplier == null || supplier.get().hasPermission(value);
 		}
 	}

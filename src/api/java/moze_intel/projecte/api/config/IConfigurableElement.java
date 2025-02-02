@@ -5,13 +5,17 @@ import moze_intel.projecte.api.mapper.IEMCMapper;
 public interface IConfigurableElement<TYPE> {
 
 	/**
-	 * A unique Name for the {@link IConfigurableElement}. This is used to identify the {@link IConfigurableElement} in the Configuration.
+	 * A unique Name for the {@link IConfigurableElement}. This is used to identify the {@link IConfigurableElement}.
 	 *
 	 * @return A unique Name
 	 */
 	String getName();
 
-	//TODO - 1.21: Docs?
+	/**
+	 * A unique Name for the {@link IConfigurableElement}. This is used to identify the {@link IConfigurableElement} in the Configuration.
+	 *
+	 * @return A unique Name
+	 */
 	default String getConfigPath() {
 		return getName().replace(' ', '-');
 	}
@@ -40,11 +44,8 @@ public interface IConfigurableElement<TYPE> {
 	}
 
 	/**
-	 * Use the config object to generate a useful Configuration for your {@link IEMCMapper}. <br/> The Configuration Object will be a
-	 * {@link com.electronwill.nightconfig.core.file.CommentedFileConfig} representing the top-level mapping.cfg file. Please use properly prefixed config keys and do not
-	 * clobber those not belonging to your mapper
+	 * Use the config builder to declare any useful Config keys for your {@link IEMCMapper}.
 	 */
 	default void addConfigOptions(IConfigBuilder<TYPE> configBuilder) {
-		//TODO - 1.21: Docs, and update the docs for addMappings
 	}
 }

@@ -24,6 +24,7 @@ public class ShulkerRecoloringMapper extends SpecialRecipeMapper<ShulkerBoxColor
 	@Override
 	protected boolean handleRecipe(IMappingCollector<NormalizedSimpleStack, Long> mapper, RegistryAccess registryAccess, INSSFakeGroupManager fakeGroupManager) {
 		//TODO - 1.21: Should we allow any shulker box as the recipe really does instanceof
+		// Even if we do, we likely will want to disallow "coloring" the box to the same color
 		NSSItem nssShulker = NSSItem.createItem(Items.SHULKER_BOX);
 		for (DyeColor color : DyeColor.values()) {
 			mapper.addConversion(1, NSSItem.createItem(ShulkerBoxBlock.getBlockByColor(color)), EMCHelper.intMapOf(

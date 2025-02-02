@@ -64,6 +64,7 @@ public class DataComponentManager {
 					emcValue = processor.recalculateEMC(info, emcValue);
 				} catch (ArithmeticException e) {
 					//Return the last successfully calculated EMC value
+					//TODO - 1.21: Given this likely means it overflowed, we probably want to instead return zero so that they don't get a loss of emc
 					return emcValue;
 				}
 				if (emcValue <= 0) {

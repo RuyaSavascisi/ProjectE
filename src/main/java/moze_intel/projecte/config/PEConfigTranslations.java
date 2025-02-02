@@ -159,6 +159,8 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			"Add conversions for all lingering potions to arrow recipes.", true),
 	MAPPING_CRAFTING_MAPPER_DECORATED_POT("mapping.mapper.crafting.decorated_pot", "Decorated Pot Mapper",
 			"Adds conversions for all the different decorated pot combinations.", true),
+	MAPPING_CRAFTING_MAPPER_SUSPICIOUS_STEW("mapping.mapper.crafting.suspicious_stew", "Suspicious Stew Mapper",
+			"Adds conversions for all the different types of suspicious stews.", true),
 
 	MAPPING_MAPPER_ENABLED("mapping.mapper.enabled", "Enabled", "Determines whether this EMC Mapper is enabled."),
 	MAPPING_RECIPE_TYPE_MAPPER_ENABLED("mapping.mapper.recipe_type.enabled", "Enabled", "Determines whether this Recipe Type Mapper is enabled."),
