@@ -1,9 +1,11 @@
 package moze_intel.projecte.api.components;
 
+import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.config.IConfigurableElement;
 import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Class used for processing what Data Components modifies the EMC value, and what Data Components are needed/should be saved when transmuting an item.
@@ -61,5 +63,9 @@ public interface IDataComponentProcessor extends IConfigurableElement<IDataCompo
 	 * @param info The {@link ItemInfo} to get the persistent components from.
 	 */
 	default void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
+	}
+
+	//TODO - 1.21: Docs
+	default void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
 	}
 }

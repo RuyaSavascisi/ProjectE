@@ -37,13 +37,19 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 
 	@Override
 	protected long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull PotDecorations decorations) throws ArithmeticException {
-		long decorationEmc = 0;
+		long totalDecorationEmc = 0;
 		for (Item decoration : decorations.ordered()) {
-			decorationEmc = Math.addExact(decorationEmc, EMCHelper.getEmcValue(decoration));
+			long decorationEmc = EMCHelper.getEmcValue(decoration);
+			if (decorationEmc == 0) {
+				//At least one sherd doesn't have an EMC value, so we can't calculate the value of the pot as a whole
+				return 0;
+			}
+			totalDecorationEmc = Math.addExact(totalDecorationEmc, decorationEmc);
 		}
 		//Calculate base decorated pot (four bricks) emc to subtract from our current values
 		// We do this in case this isn't the first processor that runs on some pot, and another processor has adjusted the emc of it
-		return Math.addExact(currentEMC - EMCHelper.getEmcValue(Items.DECORATED_POT), decorationEmc);
+		//TODO - 1.21: Re-evaluate all these processors and any that get the emc value of another thing, we likely want to have the result fail if one of the parts didn't have one
+		return Math.addExact(currentEMC - EMCHelper.getEmcValue(Items.DECORATED_POT), totalDecorationEmc);
 	}
 
 	@Override

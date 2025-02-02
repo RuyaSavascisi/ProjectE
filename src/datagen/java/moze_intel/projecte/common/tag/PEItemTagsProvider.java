@@ -7,6 +7,7 @@ import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEItems;
+import moze_intel.projecte.utils.Constants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
@@ -121,19 +122,11 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				Items.COMMAND_BLOCK_MINECART,
 				Items.BUDDING_AMETHYST, Items.SMALL_AMETHYST_BUD, Items.MEDIUM_AMETHYST_BUD, Items.LARGE_AMETHYST_BUD,
 				//Blocks that have no emc because it is less than one:
-				Items.STONE_SLAB,
-				Items.COBBLESTONE_SLAB,
-				Items.SMOOTH_STONE_SLAB,
-				Items.STONE_BRICK_SLAB,
-				Items.END_STONE_BRICK_SLAB,
-				Items.GLASS_PANE,
-				Items.CYAN_STAINED_GLASS_PANE,
-				Items.GREEN_STAINED_GLASS_PANE,
-				Items.LIME_STAINED_GLASS_PANE,
-				Items.MAGENTA_STAINED_GLASS_PANE,
+				Items.STONE_SLAB, Items.COBBLESTONE_SLAB, Items.SMOOTH_STONE_SLAB, Items.STONE_BRICK_SLAB, Items.END_STONE_BRICK_SLAB,
+				Items.GLASS_PANE, Items.CYAN_STAINED_GLASS_PANE, Items.GREEN_STAINED_GLASS_PANE, Items.LIME_STAINED_GLASS_PANE, Items.MAGENTA_STAINED_GLASS_PANE,
 				Items.PINK_STAINED_GLASS_PANE
 		).addTag(Tags.Items.CLUSTERS);
-		//TODO - 1.21: Skip any other expected things? Should we just put them in a tag?
+		//TODO - 1.21: Skip any other expected things?
 		for (Item item : BuiltInRegistries.ITEM) {
 			if (item instanceof SpawnEggItem || item instanceof MobBucketItem) {
 				ignoreMissingEMC.add(item);
@@ -148,7 +141,7 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 
 	private void addBags() {
 		IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item> alchemicalBags = tag(PETags.Items.ALCHEMICAL_BAGS);
-		for (DyeColor color : DyeColor.values()) {
+		for (DyeColor color : Constants.COLORS) {
 			AlchemicalBag bag = PEItems.getBag(color);
 			alchemicalBags.add(bag);
 			tag(color.getDyedTag()).add(bag);

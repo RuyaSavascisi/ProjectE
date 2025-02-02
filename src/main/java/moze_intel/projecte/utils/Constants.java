@@ -6,6 +6,7 @@ import java.util.function.IntBinaryOperator;
 import moze_intel.projecte.api.ProjectEAPI;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public final class Constants {
@@ -41,4 +42,8 @@ public final class Constants {
 	 * @apiNote DO NOT MODIFY THE BACKING ARRAY
 	 */
 	public static final Direction[] DIRECTIONS = Direction.values();
+	/**
+	 * @apiNote DO NOT MODIFY THE BACKING ARRAY
+	 */
+	public static final DyeColor[] COLORS = DyeColor.values();
 }

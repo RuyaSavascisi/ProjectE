@@ -6,6 +6,7 @@ import moze_intel.projecte.gameObjs.registration.INamedEntry;
 import moze_intel.projecte.gameObjs.registration.impl.BlockRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEItems;
+import moze_intel.projecte.utils.Constants;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.models.ItemModelGenerators;
 import net.minecraft.data.models.ItemModelGenerators.TrimModelData;
@@ -56,7 +57,7 @@ public class PEItemModelProvider extends ItemModelProvider {
 	}
 
 	private void generateAlchemicalBags() {
-		for (DyeColor color : DyeColor.values()) {
+		for (DyeColor color : Constants.COLORS) {
 			generated(PEItems.getBagReference(color), modLoc("item/alchemy_bags/" + color));
 		}
 	}

@@ -16,6 +16,7 @@ import moze_intel.projecte.gameObjs.registration.impl.ItemRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
+import moze_intel.projecte.utils.Constants;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.Criterion;
@@ -977,7 +978,7 @@ public class PERecipeProvider extends RecipeProvider {
 	private static void addBagRecipes(RecipeOutput recipeOutput) {
 		Criterion<InventoryChangeTrigger.TriggerInstance> hasChest = has(PEBlocks.ALCHEMICAL_CHEST);
 		Criterion<InventoryChangeTrigger.TriggerInstance> hasBag = has(PETags.Items.ALCHEMICAL_BAGS);
-		for (DyeColor color : DyeColor.values()) {
+		for (DyeColor color : Constants.COLORS) {
 			ItemRegistryObject<AlchemicalBag> bag = PEItems.getBagReference(color);
 			//Crafting recipe
 			ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, bag)

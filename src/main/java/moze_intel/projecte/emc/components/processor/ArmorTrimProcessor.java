@@ -33,17 +33,31 @@ public class ArmorTrimProcessor extends PersistentComponentProcessor<ArmorTrim> 
 	@Override
 	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull ArmorTrim trim) throws ArithmeticException {
 		Holder<Item> material = trim.material().value().ingredient();
+		long materialEmc = EMCHelper.getEmcValue(material);
+		if (materialEmc == 0) {
+			//The material for the trim doesn't have an EMC value, so there is no valid EMC value for the applied trim as a whole
+			return 0;
+		}
 		Holder<Item> template = trim.pattern().value().templateItem();
-		//TODO - 1.21: Re-evaluate all these processors and any that get the emc value of another thing, we likely want to have the result fail if one of the parts didn't have one
+		long templateEmc = EMCHelper.getEmcValue(template);
+		if (templateEmc == 0) {
+			//The template for the trim doesn't have an EMC value, and given the template is consumed: there is no valid EMC value for the applied trim as a whole
+			return 0;
+		}
 		return Math.addExact(
-				Math.addExact(currentEMC, EMCHelper.getEmcValue(material)),
-				EMCHelper.getEmcValue(template)
+				Math.addExact(currentEMC, materialEmc),
+				templateEmc
 		);
 	}
 
 	@Override
 	protected boolean validItem(@NotNull ItemInfo info) {
 		return info.getItem().is(ItemTags.TRIMMABLE_ARMOR);
+	}
+
+	@Override
+	protected boolean shouldPersist(@NotNull ItemInfo info, @NotNull ArmorTrim component) {
+		return true;
 	}
 
 	@Override

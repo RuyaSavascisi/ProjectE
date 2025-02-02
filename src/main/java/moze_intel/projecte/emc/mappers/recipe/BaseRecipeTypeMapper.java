@@ -47,6 +47,10 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 	public boolean handleRecipe(IMappingCollector<NormalizedSimpleStack, Long> mapper, RecipeHolder<?> recipeHolder, RegistryAccess registryAccess,
 			INSSFakeGroupManager fakeGroupManager) {
 		Recipe<?> recipe = recipeHolder.value();
+		if (recipe.isSpecial()) {
+			//TODO - 1.21: Figure this out
+			return false;
+		}
 		ItemStack recipeOutput = recipe.getResultItem(registryAccess);
 		if (recipeOutput.isEmpty()) {
 			//If there is no output (for example a special recipe), don't mark it that we handled it

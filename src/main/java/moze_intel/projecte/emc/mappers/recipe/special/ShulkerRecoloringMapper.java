@@ -6,6 +6,7 @@ import moze_intel.projecte.api.mapper.recipe.RecipeTypeMapper;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.config.PEConfigTranslations;
+import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.item.DyeColor;
@@ -26,7 +27,7 @@ public class ShulkerRecoloringMapper extends SpecialRecipeMapper<ShulkerBoxColor
 		//TODO - 1.21: Should we allow any shulker box as the recipe really does instanceof
 		// Even if we do, we likely will want to disallow "coloring" the box to the same color
 		NSSItem nssShulker = NSSItem.createItem(Items.SHULKER_BOX);
-		for (DyeColor color : DyeColor.values()) {
+		for (DyeColor color : Constants.COLORS) {
 			mapper.addConversion(1, NSSItem.createItem(ShulkerBoxBlock.getBlockByColor(color)), EMCHelper.intMapOf(
 					nssShulker, 1,
 					NSSItem.createTag(color.getTag()), 1

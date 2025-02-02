@@ -75,6 +75,12 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.conversion(Items.ENCHANTED_GOLDEN_APPLE).ingredient(Items.APPLE).ingredient(Tags.Items.STORAGE_BLOCKS_GOLD, 8).end()
 				.conversion(Items.STRIPPED_BAMBOO_BLOCK).ingredient(Items.BAMBOO_BLOCK).end()
 				.conversion(Items.GLOBE_BANNER_PATTERN).ingredient(Tags.Items.GEMS_EMERALD, 3).end()
+				//Basic default firework/firework star calculations
+				//Note: We don't use tags here as the recipes themselves don't use tags
+				// A star with no color and default shape would line up to just being gunpowder
+				.conversion(Items.FIREWORK_STAR).ingredient(Items.GUNPOWDER).end()
+				// A rocket with no explosion and default flight duration would just be a piece of paper and gunpowder
+				.conversion(Items.FIREWORK_ROCKET).ingredient(Items.PAPER).ingredient(Items.GUNPOWDER).end()
 				//Note: suspicious blocks only can be gotten by them falling for over thirty seconds (for example bubble column)
 				// and don't keep their loot if placed by a player, so we can just set them as the same as the normal block they
 				// turn into after brushing

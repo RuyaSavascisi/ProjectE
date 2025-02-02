@@ -155,7 +155,6 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	MAPPING_CRAFTING_MAPPER_MARK_HANDLED("mapping.mapper.crafting.mark_handled", "Mark Special Recipes Handled",
 			"This mapper does not actually map anything, but instead just marks recipe classes as having been handled, if we either expose a processor for them, "
 			+ "or they are self referencing (for example map cloning recipes).", true),
-	MAPPING_CRAFTING_MAPPER_FIREWORK_STAR("mapping.mapper.crafting.firework_star", "Firework Star Mapper", "Maps the Firework Star custom recipe.", true),
 	MAPPING_CRAFTING_MAPPER_SHULKER_RECOLORING("mapping.mapper.crafting.shulker_recoloring", "Shulker Recoloring Mapper",
 			"Propagates shulker box values to colored variants.", true),
 	MAPPING_CRAFTING_MAPPER_TIPPED_ARROW("mapping.mapper.crafting.tipped_arrow", "Tipped Arrow Mapper",
@@ -182,6 +181,9 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	DCP_DECORATED_SHIELD("processing.data_component_processor.decorated_shield", "Decorated Shield Processor", "Calculates EMC value of decorated shield.", true),
 	DCP_ENCHANTMENT("processing.data_component_processor.enchantment", "Enchantment Processor",
 			"Increases the EMC value to take into account any enchantments on an item.", true),
+	DCP_FIREWORK("processing.data_component_processor.firework", "Firework Processor", "Calculates EMC value of fireworks.", true),
+	DCP_FIREWORK_STAR("processing.data_component_processor.firework_star", "Firework Star Processor",
+			"Calculates the EMC value of Firework Stars, based on what was required to craft them.", true),
 	DCP_STORED_EMC("processing.data_component_processor.stored_emc", "Stored EMC Processor",
 			"Increases the EMC value of the item to take into account any EMC the item has stored.", true),
 	DCP_WRITABLE_BOOK("processing.data_component_processor.writable_book", "Writable Book Processor",

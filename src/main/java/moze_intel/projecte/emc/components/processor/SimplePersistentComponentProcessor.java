@@ -15,9 +15,7 @@ public abstract class SimplePersistentComponentProcessor<TYPE> implements IDataC
 		return true;
 	}
 
-	protected boolean shouldPersist(@NotNull ItemInfo info, @NotNull TYPE component) {
-		return true;
-	}
+	protected abstract boolean shouldPersist(@NotNull ItemInfo info, @NotNull TYPE component);
 
 	@Override
 	public final boolean hasPersistentComponents() {

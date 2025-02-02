@@ -184,6 +184,7 @@ public final class EMCMappingHandler {
 
 	public static void clearEmcMap() {
 		emc = null;
+		DataComponentManager.updateCachedValues(null);
 	}
 
 	/**
@@ -199,6 +200,7 @@ public final class EMCMappingHandler {
 	@ApiStatus.Internal
 	public static int updateEmcValues(Object2LongMap<ItemInfo> data) {
 		emc = data;
+		DataComponentManager.updateCachedValues(emc::getLong);
 		return emc.size();
 	}
 

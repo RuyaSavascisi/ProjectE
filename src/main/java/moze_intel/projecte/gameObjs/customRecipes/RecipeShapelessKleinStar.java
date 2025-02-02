@@ -47,10 +47,4 @@ public class RecipeShapelessKleinStar extends WrappedShapelessRecipe {
 		}
 		return result;
 	}
-
-	@Override
-	public boolean isSpecial() {
-		//Allow the klein recipes to show up in the recipe book and in JEI
-		return false;
-	}
 }

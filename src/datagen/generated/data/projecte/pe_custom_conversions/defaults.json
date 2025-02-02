@@ -552,6 +552,34 @@
           "ingredients": [
             {
               "type": "projecte:item",
+              "id": "minecraft:gunpowder"
+            }
+          ],
+          "output": {
+            "type": "projecte:item",
+            "id": "minecraft:firework_star"
+          }
+        },
+        {
+          "ingredients": [
+            {
+              "type": "projecte:item",
+              "id": "minecraft:paper"
+            },
+            {
+              "type": "projecte:item",
+              "id": "minecraft:gunpowder"
+            }
+          ],
+          "output": {
+            "type": "projecte:item",
+            "id": "minecraft:firework_rocket"
+          }
+        },
+        {
+          "ingredients": [
+            {
+              "type": "projecte:item",
               "id": "minecraft:gravel"
             }
           ],
