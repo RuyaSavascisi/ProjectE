@@ -19,6 +19,8 @@ import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.PlayerHelper;
+import moze_intel.projecte.utils.text.SearchQueryParser;
+import moze_intel.projecte.utils.text.SearchQueryParser.ISearchQuery;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -42,7 +44,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	private static final int FUEL_START = MAX_MATTER_DISPLAY;
 	public int learnFlag = 0;
 	public int unlearnFlag = 0;
-	public String filter = "";
+	public ISearchQuery filter = ISearchQuery.INVALID;
 	private int searchPage = 0;
 	private boolean hasNextPage;
 
@@ -309,11 +311,12 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			//Note: We can just check the tag, as we know it has an emc value
 			if (info.getItem().is(PETags.Items.COLLECTOR_FUEL)) {
 				if (fuelCounter < MAX_FUEL_DISPLAY) {
-					if (fuelPageCounter == desiredFuelPage) {
-						outputs.setStackInSlot(FUEL_START + fuelCounter++, info.createStack());
-					} else if (doesItemMatchFilter(info)) {
-						//Increment the page counter if the item would be in our filter
-						fuelPageCounter++;
+					if (doesItemMatchFilter(info)) {
+						if (fuelPageCounter == desiredFuelPage) {
+							outputs.setStackInSlot(FUEL_START + fuelCounter++, info.createStack());
+						} else {
+							fuelPageCounter++;
+						}
 					}
 				} else {
 					hasNextPage = true;
@@ -322,11 +325,13 @@ public class TransmutationInventory extends CombinedInvWrapper {
 					}
 				}
 			} else if (matterCounter < MAX_MATTER_DISPLAY) {
-				if (matterPageCounter == desiredMatterPage) {
-					outputs.setStackInSlot(matterCounter++, info.createStack());
-				} else if (doesItemMatchFilter(info)) {
-					//Increment the page counter if the item would be in our filter
-					matterPageCounter++;
+				if (doesItemMatchFilter(info)) {
+					if (matterPageCounter == desiredMatterPage) {
+						outputs.setStackInSlot(matterCounter++, info.createStack());
+					} else {
+						//Increment the page counter if the item would be in our filter
+						matterPageCounter++;
+					}
 				}
 			} else {
 				hasNextPage = true;
@@ -341,10 +346,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on client only
 	 */
 	private boolean doesItemMatchFilter(ItemInfo info) {
-		if (filter.isEmpty()) {
-			return true;
-		}
-		return info.createStack().getHoverName().getString().toLowerCase(Locale.ROOT).contains(filter);
+		return filter.isInvalid() || filter.test(player.level(), player, info.createStack());
 	}
 
 	/**
@@ -538,15 +540,15 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	}
 
 	public void updateFilter(String text) {
-		String search = text.toLowerCase(Locale.ROOT);
-		if (!filter.equals(search)) {
-			filter = search;
+		String search = text.trim().toLowerCase(Locale.ROOT);
+		ISearchQuery query = SearchQueryParser.parse(search);
+		if (!filter.equals(query)) {
+			filter = query;
 			resetSearchPage();
 			updateClientTargets();
 		}
 	}
 
-	//TODO - 1.21: Disable the buttons when these are false?
 	public boolean hasPreviousPage() {
 		return searchPage > 0;
 	}

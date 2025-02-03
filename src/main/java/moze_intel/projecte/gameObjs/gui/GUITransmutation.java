@@ -7,6 +7,7 @@ import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.TransmutationEMCFormatter;
 import moze_intel.projecte.utils.text.PELang;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -21,6 +22,7 @@ public class GUITransmutation extends PEContainerScreen<TransmutationContainer> 
 	private static final ResourceLocation texture = PECore.rl("textures/gui/transmute.png");
 	private final TransmutationInventory inv;
 	private EditBox textBoxFilter;
+	private Button previous, next;
 
 	public GUITransmutation(TransmutationContainer container, Inventory invPlayer, Component title) {
 		super(container, invPlayer, title);
@@ -35,19 +37,41 @@ public class GUITransmutation extends PEContainerScreen<TransmutationContainer> 
 	public void init() {
 		super.init();
 
-		this.textBoxFilter = addWidget(new EditBox(this.font, leftPos + 88, topPos + 8, 45, 10, Component.empty()));
-		this.textBoxFilter.setValue(inv.filter);
+		this.textBoxFilter = addWidget(new EditBox(this.font, leftPos + 83, topPos + 8, 55, 10, Component.empty()));
 		this.textBoxFilter.setResponder(inv::updateFilter);
 
 		//Note: We don't have to change the filter when changing pages as the filter should already be set
-		addRenderableWidget(Button.builder(Component.literal("<"), b -> inv.previousPage())
+		previous = addRenderableWidget(Button.builder(Component.literal("<"), b -> inv.previousPage())
 				.pos(leftPos + 125, topPos + 100)
 				.size(14, 14)
 				.build());
-		addRenderableWidget(Button.builder(Component.literal(">"), b -> inv.nextPage())
+		next = addRenderableWidget(Button.builder(Component.literal(">"), b -> inv.nextPage())
 				.pos(leftPos + 193, topPos + 100)
 				.size(14, 14)
 				.build());
+		updateButtons();
+	}
+
+	@Override
+	public void resize(@NotNull Minecraft minecraft, int width, int height) {
+		String filter = this.textBoxFilter.getValue();
+		init(minecraft, width, height);
+		this.textBoxFilter.setValue(filter);
+	}
+
+	@Override
+	protected void containerTick() {
+		super.containerTick();
+		updateButtons();
+	}
+
+	private void updateButtons() {
+		if (previous != null) {
+			previous.active = inv.hasPreviousPage();
+		}
+		if (next != null) {
+			next.active = inv.hasNextPage();
+		}
 	}
 
 	@Override
