@@ -6,6 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -20,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 
+	private static final ResourceKey<Item> DEFAULT_KEY = ResourceKey.create(Registries.ITEM, BuiltInRegistries.ITEM.getDefaultKey());
 	public static final MapCodec<NSSItem> CODEC = createCodec(BuiltInRegistries.ITEM, false, NSSItem::new);
 
 	private NSSItem(@NotNull ResourceLocation resourceLocation, boolean isTag, @NotNull DataComponentPatch componentsPatch) {
@@ -34,7 +36,7 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 		if (stack.isEmpty()) {
 			throw new IllegalArgumentException("Can't make NSSItem with empty stack");
 		}
-		return createItem(stack.getItem(), stack.getComponentsPatch());
+		return createItem(stack.getItemHolder(), stack.getComponentsPatch());
 	}
 
 	/**
@@ -57,9 +59,23 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 	 * Helper method to create an {@link NSSItem} representing an item from a {@link Holder} and an optional {@link DataComponentPatch}
 	 */
 	@NotNull
-	public static NSSItem createItem(@NotNull Holder<Item> item, @NotNull DataComponentPatch componentsPatch) {
-		//TODO - 1.21: Evaluate trying to get the key from holder instead of looking it up from the registry?
-		return createItem(item.value(), componentsPatch);
+	public static NSSItem createItem(@NotNull Holder<Item> itemHolder, @NotNull DataComponentPatch componentsPatch) {
+		ResourceKey<Item> key = itemHolder.getKey();
+		if (key == null) {
+			if (!itemHolder.isBound()) {
+				throw new IllegalArgumentException("Can't make an NSSItem with an unbound direct holder");
+			}
+			Optional<ResourceKey<Item>> registryKey = BuiltInRegistries.ITEM.getResourceKey(itemHolder.value());
+			if (registryKey.isEmpty()) {
+				throw new IllegalArgumentException("Can't make an NSSItem with an unregistered item");
+			}
+			key = registryKey.get();
+		}
+		if (key == DEFAULT_KEY) {
+			throw new IllegalArgumentException("Can't make NSSItem with empty stack");
+		}
+		//This should never be null, or it would have crashed on being registered
+		return createItem(key.location(), componentsPatch);
 	}
 
 	/**

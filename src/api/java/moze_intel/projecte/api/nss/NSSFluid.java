@@ -6,6 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 
+	private static final ResourceKey<Fluid> DEFAULT_KEY = ResourceKey.create(Registries.FLUID, BuiltInRegistries.FLUID.getDefaultKey());
 	public static final MapCodec<NSSFluid> CODEC = createCodec(BuiltInRegistries.FLUID, false, NSSFluid::new);
 
 
@@ -32,7 +34,7 @@ public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 	@NotNull
 	public static NSSFluid createFluid(@NotNull FluidStack stack) {
 		//Don't bother checking if it is empty as getFluid returns EMPTY which will then fail anyway for being empty
-		return createFluid(stack.getFluid(), stack.getComponentsPatch());
+		return createFluid(stack.getFluidHolder(), stack.getComponentsPatch());
 	}
 
 	/**
@@ -71,8 +73,23 @@ public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 	 * Helper method to create an {@link NSSFluid} representing a fluid from a {@link Holder} and an optional {@link DataComponentPatch}
 	 */
 	@NotNull
-	public static NSSFluid createFluid(@NotNull Holder<Fluid> fluid, @NotNull DataComponentPatch componentsPatch) {
-		return createFluid(fluid.value(), componentsPatch);
+	public static NSSFluid createFluid(@NotNull Holder<Fluid> fluidHolder, @NotNull DataComponentPatch componentsPatch) {
+		ResourceKey<Fluid> key = fluidHolder.getKey();
+		if (key == null) {
+			if (!fluidHolder.isBound()) {
+				throw new IllegalArgumentException("Can't make an NSSFluid with an unbound direct holder");
+			}
+			Optional<ResourceKey<Fluid>> registryKey = BuiltInRegistries.FLUID.getResourceKey(fluidHolder.value());
+			if (registryKey.isEmpty()) {
+				throw new IllegalArgumentException("Can't make an NSSFluid with an unregistered fluid");
+			}
+			key = registryKey.get();
+		}
+		if (key == DEFAULT_KEY) {
+			throw new IllegalArgumentException("Can't make NSSFluid with empty stack");
+		}
+		//This should never be null, or it would have crashed on being registered
+		return createFluid(key.location(), componentsPatch);
 	}
 
 	/**
