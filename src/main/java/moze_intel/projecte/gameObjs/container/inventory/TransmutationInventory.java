@@ -17,6 +17,7 @@ import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.api.event.PlayerAttemptLearnEvent;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.PETags;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.text.SearchQueryParser;
@@ -47,6 +48,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	public ISearchQuery filter = ISearchQuery.INVALID;
 	private int searchPage = 0;
 	private boolean hasNextPage;
+	private long lastAvailableEmc;
 
 	public TransmutationInventory(Player player) {
 		super((IItemHandlerModifiable) Objects.requireNonNull(player.getCapability(PECapabilities.KNOWLEDGE_CAPABILITY)).getInputAndLocks(),
@@ -56,13 +58,18 @@ public class TransmutationInventory extends CombinedInvWrapper {
 		this.inputLocks = itemHandler[0];
 		this.learning = itemHandler[1];
 		this.outputs = itemHandler[2];
-		if (!isServer()) {
-			updateClientTargets();
+		if (isClient()) {
+			//Update all targets so that we display the items to the player
+			updateClientTargets(false);
 		}
 	}
 
 	public boolean isServer() {
-		return !player.level().isClientSide;
+		return !isClient();
+	}
+
+	public boolean isClient() {
+		return player.level().isClientSide;
 	}
 
 	/**
@@ -92,10 +99,52 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	/**
 	 * @apiNote Call on client only
 	 */
-	public void itemLearned() {
+	public void itemLearned(ItemInfo learnedItem) {
 		learnFlag = 300;
 		unlearnFlag = 0;
-		updateClientTargets();
+		if (isServer()) {
+			return;
+		}
+		long learnedItemEmc = IEMCProxy.INSTANCE.getValue(learnedItem);
+		if (learnedItemEmc == 0 || learnedItem.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
+			//The learned item has no EMC. As the most likely case that would happen is if it was a tome of knowledge
+			// we want to just update the client targets to be safe
+			// Note: We also reset the search page, as while the page we are on should still exist, it is likely now meaningless
+			resetSearchPage();
+			updateClientTargets(false);
+		} else if (doesItemMatchFilter(learnedItem)) {
+			//Ensure the item matches the filter we currently are displaying, as if it doesn't then we don't have to update the display
+			boolean learnedFuel = learnedItem.getItem().is(PETags.Items.COLLECTOR_FUEL);
+			//Check if our newly learned item is on a later page than the one we currently are on. We don't have to update it,
+			// but we do update the fact that we have a next page, in case we previously were on the last page
+			if (learnedFuel) {
+				long lastFuelEmc = IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(outputs.getSlots() - 1));
+				if (learnedItemEmc < lastFuelEmc) {
+					hasNextPage = true;
+					return;
+				}
+			} else if (learnedItemEmc < IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(MAX_MATTER_DISPLAY - 1))) {
+				hasNextPage = true;
+				return;
+			}
+			final long availableEmc = getAvailableEmcAsLong();
+			//Ensure the learned item is in the emc range that we are even trying to display. If it requires more emc than we have available,
+			// we can't possibly have it end up in the targets after an update
+			if (learnedItemEmc <= availableEmc) {
+				ItemStack lockStack = inputLocks.getStackInSlot(LOCK_INDEX);
+				if (!lockStack.isEmpty()) {
+					ItemInfo lockInfo = IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(lockStack));
+					long lockEmc = IEMCProxy.INSTANCE.getValue(lockInfo);
+					if (lockEmc != 0 && lockEmc < availableEmc && learnedItemEmc > lockEmc) {
+						//If we have a lock stack, and that lock stack limits the emc to an even lower level than the available emc,
+						// and the learned item has an emc value that is above the emc value that the lock is limiting it to:
+						// it doesn't get displayed because of the lock, so we can skip updating the displayed items
+						return;
+					}
+				}
+				updateClientTargets(availableEmc);
+			}
+		}
 	}
 
 	/**
@@ -122,34 +171,35 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	/**
 	 * @apiNote Call on client only
 	 */
-	public void itemUnlearned(ItemInfo removedItem) {
+	public void itemUnlearned(ItemInfo unlearnedItem) {
 		unlearnFlag = 300;
 		learnFlag = 0;
 		if (isServer()) {
 			return;
 		}
-		long removedItemEmc = IEMCProxy.INSTANCE.getValue(removedItem);
-		if (removedItemEmc == 0) {
+		long unlearnedItemEmc = IEMCProxy.INSTANCE.getValue(unlearnedItem);
+		if (unlearnedItemEmc == 0 || unlearnedItem.getItem().is(PEItems.TOME_OF_KNOWLEDGE.getKey())) {
 			//The removed item has no EMC. As the most likely case that would happen is if it was a tome of knowledge
 			// we want to just update the client targets to be safe
 			// Note: We also reset the search page so that we don't accidentally end up on a page that no longer exists
 			resetSearchPage();
-			updateClientTargets();
-			return;
-		}
-		if (removedItem.getItem().is(PETags.Items.COLLECTOR_FUEL)) {
-			maybeUpdateClientTargets(removedItem, removedItemEmc, FUEL_START, outputs.getSlots());
-		} else {
-			maybeUpdateClientTargets(removedItem, removedItemEmc, 0, MAX_MATTER_DISPLAY);
+			updateClientTargets(false);
+		} else if (doesItemMatchFilter(unlearnedItem)) {
+			//Ensure the item matches the filter we currently are displaying, as if it doesn't then we don't have to update the display
+			if (unlearnedItem.getItem().is(PETags.Items.COLLECTOR_FUEL)) {
+				maybeUpdateClientTargets(unlearnedItem, unlearnedItemEmc, FUEL_START, outputs.getSlots());
+			} else {
+				maybeUpdateClientTargets(unlearnedItem, unlearnedItemEmc, 0, MAX_MATTER_DISPLAY);
+			}
 		}
 	}
 
 	/**
 	 * @apiNote Call on client only
 	 */
-	private void maybeUpdateClientTargets(ItemInfo removedItem, long removedItemEmc, int slot, int slots) {
-		long availableEmc = getAvailableEmcAsLong();
-		if (removedItemEmc <= availableEmc) {
+	private void maybeUpdateClientTargets(ItemInfo unlearnedItem, long unlearnedItemEmc, int slot, int slots) {
+		final long availableEmc = getAvailableEmcAsLong();
+		if (unlearnedItemEmc <= availableEmc) {
 			//Validate that the item has a chance of being displayed. If it costs more than the emc we have available, there is no chance it is being displayed
 			int firstNonLockSlot = slot;
 			ItemStack lockStack = inputLocks.getStackInSlot(LOCK_INDEX);
@@ -167,7 +217,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 				ItemStack stack = outputs.getStackInSlot(slot);
 				if (stack.isEmpty()) {//We know later slots will also be empty
 					break;
-				} else if (stack.is(removedItem.getItem()) && stack.getComponentsPatch().equals(removedItem.getComponentsPatch())) {
+				} else if (stack.is(unlearnedItem.getItem()) && stack.getComponentsPatch().equals(unlearnedItem.getComponentsPatch())) {
 					//If the item was in our list of displayed stacks, then we definitely need to update the targets
 					if (hasPreviousPage()) {
 						if (!lockStack.isEmpty() && slot == firstNonLockSlot - 1) {
@@ -189,7 +239,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			if (lockStack.isEmpty()) {
 				//Just use the max emc value that we have being displayed
 				long maxDisplayedEmc = getMaxDisplayedEmc();
-				if (removedItemEmc >= maxDisplayedEmc) {//If the removed item was potentially on an earlier page, update the targets
+				if (unlearnedItemEmc >= maxDisplayedEmc) {//If the removed item was potentially on an earlier page, update the targets
 					if (hasPreviousPage()) {
 						//Subtract one from the current slot as we break out after doing a slot++
 						// and this will let us know the last slot that had an item in it
@@ -201,7 +251,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 					}
 					updateClientTargets(availableEmc);
 				}
-			} else if (lockEmc > 0 && removedItemEmc == lockEmc) {
+			} else if (lockEmc > 0 && unlearnedItemEmc == lockEmc) {
 				//If the item was potentially on an earlier page, we need to update our targets
 				// We only need to check exact equals rather than <=, as if the value was smaller than the lock
 				// and not on our current page, then it would be on a later page
@@ -225,6 +275,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	public void checkForUpdates() {
 		long availableEmc = getAvailableEmcAsLong();
 		if (getMaxDisplayedEmc() > availableEmc) {
+			//Available EMC is lower than what we are displaying, we need to update the targets
 			updateClientTargets(availableEmc);
 		}
 	}
@@ -238,9 +289,16 @@ public class TransmutationInventory extends CombinedInvWrapper {
 		return Math.max(matterEmc, fuelEmc);
 	}
 
-	public void updateClientTargets() {
-		if (!isServer()) {
-			updateClientTargets(getAvailableEmcAsLong());
+	public void updateClientTargets(boolean checkForEmcChange) {
+		if (isClient()) {
+			long availableEmc = getAvailableEmcAsLong();
+			if (!checkForEmcChange) {
+				updateClientTargets(availableEmc);
+			} else if (lastAvailableEmc != availableEmc) {
+				//If the amount of emc we have available has changed, we want to recheck to see if any of the targets have shifted
+				//TODO: Can we do any other checks for emc value changes to further optimize if we are updating the targets?
+				updateClientTargets(availableEmc);
+			}
 		}
 	}
 
@@ -248,6 +306,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on client only
 	 */
 	private void updateClientTargets(long availableEMC) {
+		lastAvailableEmc = availableEMC;
 		for (int i = 0, slots = outputs.getSlots(); i < slots; i++) {
 			outputs.setStackInSlot(i, ItemStack.EMPTY);
 		}
@@ -545,7 +604,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 		if (!filter.equals(query)) {
 			filter = query;
 			resetSearchPage();
-			updateClientTargets();
+			updateClientTargets(false);
 		}
 	}
 
@@ -564,14 +623,16 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	public void previousPage() {
 		if (hasPreviousPage()) {
 			searchPage--;
-			updateClientTargets();
+			//TODO: Can we optimize updating the targets based on what are currently displaying? Probably not in a way that is worth it
+			updateClientTargets(false);
 		}
 	}
 
 	public void nextPage() {
 		if (hasNextPage()) {
 			searchPage++;
-			updateClientTargets();
+			//TODO: Can we optimize updating the targets based on what are currently displaying? Probably not in a way that is worth it
+			updateClientTargets(false);
 		}
 	}
 }

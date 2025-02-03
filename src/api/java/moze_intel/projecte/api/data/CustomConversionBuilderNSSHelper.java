@@ -59,7 +59,8 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 * @param emc   Value
 	 *
 	 * @apiNote Either this method or {@link #before(NormalizedSimpleStack, long)} using
-	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSItem#createItem(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder before(ItemStack stack, long emc) {
 		return before(NSSItem.createItem(stack), emc);
@@ -91,7 +92,7 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 * @param stack Stack to set as "free" in conversions.
 	 *
 	 * @apiNote Either this method or {@link #before(NormalizedSimpleStack)} using {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)}
-	 * should be used if data component specifics are needed.
+	 * or {@link NSSItem#createItem(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder before(ItemStack stack) {
 		return before(NSSItem.createItem(stack));
@@ -122,7 +123,8 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 * @param emc   Value
 	 *
 	 * @apiNote Either this method or {@link #after(NormalizedSimpleStack, long)} using
-	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSItem#createItem(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder after(ItemStack stack, long emc) {
 		return after(NSSItem.createItem(stack), emc);
@@ -153,8 +155,8 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 *
 	 * @param stack Stack to set as "free" in conversions.
 	 *
-	 * @apiNote Either this method or {@link #after(NormalizedSimpleStack)} using {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)}
-	 * should be used if data component specifics are needed.
+	 * @apiNote Either this method or {@link #after(NormalizedSimpleStack)} using {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSItem#createItem(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder after(ItemStack stack) {
 		return after(NSSItem.createItem(stack));
@@ -185,7 +187,8 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 * @param emc   Value
 	 *
 	 * @apiNote Either this method or {@link #before(NormalizedSimpleStack, long)} using
-	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSFluid#createFluid(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder before(FluidStack stack, long emc) {
 		return before(NSSFluid.createFluid(stack), emc);
@@ -218,8 +221,8 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 *
 	 * @param stack Stack to set as "free" in conversions.
 	 *
-	 * @apiNote Either this method or {@link #before(NormalizedSimpleStack)} using {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)}
-	 * should be used if data component specifics are needed.
+	 * @apiNote Either this method or {@link #before(NormalizedSimpleStack)} using {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSFluid#createFluid(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder before(FluidStack stack) {
 		return before(NSSFluid.createFluid(stack));
@@ -252,7 +255,8 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 * @param emc   Value
 	 *
 	 * @apiNote Either this method or {@link #after(NormalizedSimpleStack, long)} using
-	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSFluid#createFluid(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder after(FluidStack stack, long emc) {
 		return after(NSSFluid.createFluid(stack), emc);
@@ -285,8 +289,8 @@ interface CustomConversionBuilderNSSHelper extends CustomConversionNSSHelper<Con
 	 *
 	 * @param stack Stack to set as "free" in conversions.
 	 *
-	 * @apiNote Either this method or {@link #before(NormalizedSimpleStack)} using {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)}
-	 * should be used if data component specifics are needed.
+	 * @apiNote Either this method or {@link #before(NormalizedSimpleStack)} using {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSFluid#createFluid(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default CustomConversionBuilder after(FluidStack stack) {
 		return after(NSSFluid.createFluid(stack));

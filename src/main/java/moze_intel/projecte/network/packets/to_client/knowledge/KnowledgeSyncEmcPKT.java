@@ -34,7 +34,7 @@ public record KnowledgeSyncEmcPKT(BigInteger emc) implements IPEPacket {
 		if (knowledge != null) {
 			knowledge.setEmc(emc);
 			if (player.containerMenu instanceof TransmutationContainer container) {
-				container.transmutationInventory.updateClientTargets();
+				container.transmutationInventory.updateClientTargets(true);
 			}
 		}
 		PECore.debugLog("** RECEIVED TRANSMUTATION EMC DATA CLIENTSIDE **");

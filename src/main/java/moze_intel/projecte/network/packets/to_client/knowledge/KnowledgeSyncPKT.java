@@ -35,7 +35,7 @@ public record KnowledgeSyncPKT(KnowledgeAttachment data) implements IPEPacket {
 		if (player != null) {
 			player.setData(PEAttachmentTypes.KNOWLEDGE, data);
 			if (player.containerMenu instanceof TransmutationContainer container) {
-				container.transmutationInventory.updateClientTargets();
+				container.transmutationInventory.updateClientTargets(false);
 			}
 		}
 		PECore.debugLog("** RECEIVED TRANSMUTATION DATA CLIENTSIDE **");

@@ -45,7 +45,8 @@ interface ConversionBuilderNSSHelper<PARENT> {
 	 * @param input Stack used in the conversion.
 	 *
 	 * @apiNote Either this method or {@link #ingredient(NormalizedSimpleStack, int)} using
-	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSItem#createItem(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default ConversionBuilder<PARENT> ingredient(ItemStack input) {
 		return ingredient(NSSItem.createItem(input), input.getCount());
@@ -95,7 +96,8 @@ interface ConversionBuilderNSSHelper<PARENT> {
 	 * @param input Stack used in the conversion.
 	 *
 	 * @apiNote Either this method or {@link #ingredient(NormalizedSimpleStack, int)} using
-	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSFluid#createFluid(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default ConversionBuilder<PARENT> ingredient(FluidStack input) {
 		return ingredient(NSSFluid.createFluid(input), input.getAmount());

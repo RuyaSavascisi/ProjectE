@@ -36,7 +36,7 @@ public record KnowledgeSyncChangePKT(ItemInfo change, boolean learned) implement
 		if (knowledge != null) {
 			if (learned) {
 				if (!knowledge.hasKnowledge(change) && knowledge.addKnowledge(change) && player.containerMenu instanceof TransmutationContainer container) {
-					container.transmutationInventory.itemLearned();
+					container.transmutationInventory.itemLearned(change);
 				}
 			} else if (knowledge.hasKnowledge(change) && knowledge.removeKnowledge(change) && player.containerMenu instanceof TransmutationContainer container) {
 				container.transmutationInventory.itemUnlearned(change);

@@ -47,7 +47,8 @@ interface CustomConversionNSSHelper<BUILDER extends ConversionBuilder<?>> {
 	 * @param output Stack produced by the conversion.
 	 *
 	 * @apiNote Either this method or {@link #conversion(NormalizedSimpleStack, int)} using
-	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSItem#createItem(ItemLike, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSItem#createItem(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default BUILDER conversion(ItemStack output) {
 		return conversion(NSSItem.createItem(output), output.getCount());
@@ -97,7 +98,8 @@ interface CustomConversionNSSHelper<BUILDER extends ConversionBuilder<?>> {
 	 * @param output Stack produced by the conversion.
 	 *
 	 * @apiNote Either this method or {@link #conversion(NormalizedSimpleStack, int)} using
-	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
+	 * {@link NSSFluid#createFluid(Fluid, net.minecraft.core.component.DataComponentPatch)} or
+	 * {@link NSSFluid#createFluid(net.minecraft.core.Holder, net.minecraft.core.component.DataComponentPatch)} should be used if data component specifics are needed.
 	 */
 	default BUILDER conversion(FluidStack output) {
 		return conversion(NSSFluid.createFluid(output), output.getAmount());

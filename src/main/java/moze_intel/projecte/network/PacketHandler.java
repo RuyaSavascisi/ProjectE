@@ -77,7 +77,7 @@ public final class PacketHandler {
 			if (knowledge != null) {
 				knowledge.clearKnowledge();
 				if (player.containerMenu instanceof TransmutationContainer container) {
-					container.transmutationInventory.updateClientTargets();
+					container.transmutationInventory.updateClientTargets(false);
 				}
 			}
 		});
@@ -93,7 +93,7 @@ public final class PacketHandler {
 		registrar.play(UpdateCondenserLockPKT.TYPE, UpdateCondenserLockPKT.STREAM_CODEC);
 		updateTransmutationTargets = registrar.playInstanced(PECore.rl("update_transmutation_targets"), (ignored, context) -> {
 			if (context.player().containerMenu instanceof TransmutationContainer container) {
-				container.transmutationInventory.updateClientTargets();
+				container.transmutationInventory.updateClientTargets(false);
 			}
 		});
 		registrar.play(UpdateWindowLongPKT.TYPE, UpdateWindowLongPKT.STREAM_CODEC);

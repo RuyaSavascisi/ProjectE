@@ -43,7 +43,9 @@ public record KnowledgeSyncInputsAndLocksPKT(Int2ObjectMap<ItemStack> stacksToSy
 				//Update targets in case total available EMC is now different
 				TransmutationInventory transmutationInventory = container.transmutationInventory;
 				if (updateTargets == TargetUpdateType.ALL) {
-					transmutationInventory.updateClientTargets();
+					//TODO: Re-evaluate when the update type is all, and see if we can optimize this to not have to process?
+					// Also figure out the need for the difference between this and the check for updates
+					transmutationInventory.updateClientTargets(false);
 				} else {//If needed
 					transmutationInventory.checkForUpdates();
 				}
