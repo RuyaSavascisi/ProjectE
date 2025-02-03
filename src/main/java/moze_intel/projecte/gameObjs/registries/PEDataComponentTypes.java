@@ -1,5 +1,6 @@
 package moze_intel.projecte.gameObjs.registries;
 
+import com.mojang.serialization.DataResult;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.components.GemData;
 import moze_intel.projecte.gameObjs.items.DiviningRod.DiviningMode;
@@ -25,8 +26,8 @@ public class PEDataComponentTypes {
 	public static final DataComponentTypeDeferredRegister DATA_COMPONENT_TYPES = new DataComponentTypeDeferredRegister(PECore.MODID);
 
 	public static final PEDeferredHolder<DataComponentType<?>, DataComponentType<ItemContainerContents>> EYE_INVENTORY = DATA_COMPONENT_TYPES.simple("eye_inventory",
-			//TODO - 1.21: Do we want to validate this has a size of two or at least a max size of two?
-			builder -> builder.persistent(ItemContainerContents.CODEC)
+			builder -> builder.persistent(ItemContainerContents.CODEC
+							.validate(contents -> contents.getSlots() > 2 ? DataResult.error(() -> "The eye cannot have more than two items stored") : DataResult.success(contents)))
 					.networkSynchronized(ItemContainerContents.STREAM_CODEC)
 					.cacheEncoding()
 	);

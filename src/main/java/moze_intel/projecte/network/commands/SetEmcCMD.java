@@ -39,7 +39,6 @@ public class SetEmcCMD {
 								}))
 						.then(Commands.argument("tag", ResourceOrTagKeyArgument.resourceOrTagKey(Registries.ITEM))
 								.executes(ctx -> {
-									//TODO - 1.21: Re-evaluate this vs the ItemArgument way
 									Either<ResourceKey<Item>, TagKey<Item>> result = ResourceOrTagKeyArgument.getResourceOrTagKey(ctx, "tag", Registries.ITEM, ERROR_INVALID_ITEM).unwrap();
 									return setEmc(ctx, result.map(NSSItem::createItem, NSSItem::createTag), LongArgumentType.getLong(ctx, "emc"));
 								}))
