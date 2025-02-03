@@ -32,7 +32,7 @@ public class TickEvents {
 			Set<DyeColor> colorsChanged = EnumSet.noneOf(DyeColor.class);
 			for (DyeColor color : getBagColorsPresent(player)) {
 				IItemHandler inv = provider.getBag(color);
-				for (int i = 0; i < inv.getSlots(); i++) {
+				for (int i = 0, slots = inv.getSlots(); i < slots; i++) {
 					ItemStack current = inv.getStackInSlot(i);
 					if (!current.isEmpty()) {
 						IAlchBagItem alchBagItem = current.getCapability(PECapabilities.ALCH_BAG_ITEM_CAPABILITY);

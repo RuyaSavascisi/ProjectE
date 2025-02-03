@@ -8,18 +8,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.api.components.IDataComponentProcessor;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.recipe.IRecipeTypeMapper;
 import moze_intel.projecte.api.mapper.recipe.RecipeTypeMapper;
-import moze_intel.projecte.api.components.IDataComponentProcessor;
-import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.ModFileScanData;
@@ -51,7 +50,7 @@ public class AnnotationHelper {
 				}
 			}
 		}
-		dataComponentProcessors.sort(Collections.reverseOrder(Comparator.comparingInt(priorities::getInt)));
+		dataComponentProcessors.sort(Comparator.comparingInt(priorities::getInt).reversed());
 		return dataComponentProcessors;
 	}
 
@@ -73,7 +72,7 @@ public class AnnotationHelper {
 				}
 			}
 		}
-		recipeTypeMappers.sort(Collections.reverseOrder(Comparator.comparingInt(priorities::getInt)));
+		recipeTypeMappers.sort(Comparator.comparingInt(priorities::getInt).reversed());
 		return recipeTypeMappers;
 	}
 
@@ -101,7 +100,7 @@ public class AnnotationHelper {
 				}
 			}
 		}
-		emcMappers.sort(Collections.reverseOrder(Comparator.comparingInt(priorities::getInt)));
+		emcMappers.sort(Comparator.comparingInt(priorities::getInt).reversed());
 		return emcMappers;
 	}
 

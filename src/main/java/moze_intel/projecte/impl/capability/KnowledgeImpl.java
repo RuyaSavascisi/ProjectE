@@ -21,7 +21,6 @@ import moze_intel.projecte.api.codec.IPECodecHelper;
 import moze_intel.projecte.api.event.PlayerKnowledgeChangeEvent;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.emc.EMCMappingHandler;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.impl.codec.PECodecHelper;
@@ -107,7 +106,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			// then we don't have an extended state
 			return null;
 		}
-		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
+		ItemInfo cleanedInfo = IEMCProxy.INSTANCE.getPersistentInfo(info);
 		if (cleanedInfo.hasModifiedComponents() && !EMCMappingHandler.hasEmcValue(cleanedInfo)) {
 			//If we still have custom components after unimportant parts being stripped, and it doesn't
 			// directly have an EMC value, then we know it has some persistent information
@@ -125,7 +124,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			ItemInfo persistentInfo = getIfPersistent(info);
 			return persistentInfo == null || attachment.knowledge.contains(persistentInfo);
 		}
-		return attachment.knowledge.contains(DataComponentManager.getPersistentInfo(info));
+		return attachment.knowledge.contains(IEMCProxy.INSTANCE.getPersistentInfo(info));
 	}
 
 	@Override
@@ -152,7 +151,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			fireChangedEvent();
 			return true;
 		}
-		return tryAdd(attachment, DataComponentManager.getPersistentInfo(info));
+		return tryAdd(attachment, IEMCProxy.INSTANCE.getPersistentInfo(info));
 	}
 
 	private boolean tryAdd(@NotNull KnowledgeAttachment attachment, @NotNull ItemInfo cleanedInfo) {
@@ -181,7 +180,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 			ItemInfo persistentInfo = getIfPersistent(info);
 			return persistentInfo != null && tryRemove(attachment, persistentInfo);
 		}
-		return tryRemove(attachment, DataComponentManager.getPersistentInfo(info));
+		return tryRemove(attachment, IEMCProxy.INSTANCE.getPersistentInfo(info));
 	}
 
 	private boolean tryRemove(@NotNull KnowledgeAttachment attachment, @NotNull ItemInfo cleanedInfo) {
@@ -277,7 +276,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 		boolean hasRemoved = false;
 		for (Iterator<ItemInfo> iterator = attachment.knowledge.iterator(); iterator.hasNext(); ) {
 			ItemInfo info = iterator.next();
-			ItemInfo persistentInfo = DataComponentManager.getPersistentInfo(info);
+			ItemInfo persistentInfo = IEMCProxy.INSTANCE.getPersistentInfo(info);
 			if (!info.equals(persistentInfo)) {
 				//If the new persistent variant has an EMC value though we add it because that is what they would have learned
 				// had they tried to consume the item now instead of before

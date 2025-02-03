@@ -146,7 +146,7 @@ public final class PlayerHelper {
 	}
 
 	public static void updateScore(ServerPlayer player, ObjectiveCriteria objective, BigInteger value) {
-		updateScore(player, objective, value.compareTo(Constants.MAX_INTEGER) > 0 ? Integer.MAX_VALUE : value.intValueExact());
+		updateScore(player, objective, value.compareTo(Constants.MAX_INTEGER) >= 0 ? Integer.MAX_VALUE : value.intValue());
 	}
 
 	public static void updateScore(ServerPlayer player, ObjectiveCriteria objective, int value) {

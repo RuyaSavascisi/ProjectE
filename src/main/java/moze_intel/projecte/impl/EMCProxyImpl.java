@@ -3,10 +3,8 @@ package moze_intel.projecte.impl;
 import java.util.Objects;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.proxy.IEMCProxy;
-import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.utils.EMCHelper;
-import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 

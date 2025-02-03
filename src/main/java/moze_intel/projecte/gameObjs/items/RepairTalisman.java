@@ -122,7 +122,7 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 			return false;
 		}
 		boolean hasAction = false;
-		for (int i = 0; i < inv.getSlots(); i++) {
+		for (int i = 0, slots = inv.getSlots(); i < slots; i++) {
 			ItemStack invStack = inv.getStackInSlot(i);
 			if (canRepairStack.test(invStack, data)) {
 				invStack.setDamageValue(invStack.getDamageValue() - 1);

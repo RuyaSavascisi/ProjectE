@@ -24,7 +24,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities.ItemHandler;
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
@@ -126,30 +125,40 @@ public class TransmutationContainer extends PEHandContainer {
 				//Note: We can just set the size here as newStack is a copy stack used for modifications
 				stack.setCount(stack.getMaxStackSize());
 				//Check how much we can fit of the stack
-				int stackSize = stack.getCount() - ItemHelper.simulateFit(player.getInventory().items, stack);
-				if (stackSize > 0) {
+				int itemsRoomFor = stack.getCount() - ItemHelper.simulateFit(player.getInventory().items, stack);
+				if (itemsRoomFor == 1) {
+					long availableEMC = transmutationInventory.getAvailableEmcAsLong();
+					if (itemEmc > availableEMC) {
+						//We need more EMC than we have available, but we were only trying to get a single item.
+						// This means we can't actually produce any of the item
+						return ItemStack.EMPTY;
+					}
+					if (transmutationInventory.isServer()) {
+						transmutationInventory.removeEmc(BigInteger.valueOf(itemEmc));
+					}
+					stack.setCount(1);
+					ItemHandlerHelper.insertItemStacked(player.getCapability(ItemHandler.ENTITY), stack, false);
+				} else if (itemsRoomFor > 1) {
 					BigInteger availableEMC = transmutationInventory.getAvailableEmc();
 					BigInteger emc = BigInteger.valueOf(itemEmc);
-					BigInteger totalEmc = emc.multiply(BigInteger.valueOf(stackSize));
+					BigInteger totalEmc = emc.multiply(BigInteger.valueOf(itemsRoomFor));
 					if (totalEmc.compareTo(availableEMC) > 0) {
 						//We need more EMC than we have available, so we have to calculate how much we actually can produce
 						//Note: We first multiply then compare, as the larger the numbers are the less efficient division becomes
 						BigInteger numOperations = availableEMC.divide(emc);
-						//Note: Uses intValueExact as we already compared to a multiplication of an int times the number we divided by,
-						// so it should fit into an int
-						stackSize = numOperations.intValueExact();
+						//Note: As we already compared to a multiplication of an int times the number we divided by, so it should fit into an int
+						itemsRoomFor = numOperations.intValue();
 						totalEmc = emc.multiply(numOperations);
-						if (stackSize <= 0) {
+						if (itemsRoomFor <= 0) {
 							return ItemStack.EMPTY;
 						}
 					}
-					//Set the stack size to what we found the max value is we have room for (capped at the stack's own max size)
-					stack.setCount(stackSize);
 					if (transmutationInventory.isServer()) {
 						transmutationInventory.removeEmc(totalEmc);
 					}
-					IItemHandler inv = player.getCapability(ItemHandler.ENTITY);
-					ItemHandlerHelper.insertItemStacked(inv, stack, false);
+					//Set the stack size to what we found the max value is we have room for (capped at the stack's own max size)
+					stack.setCount(itemsRoomFor);
+					ItemHandlerHelper.insertItemStacked(player.getCapability(ItemHandler.ENTITY), stack, false);
 				}
 			}
 		} else if (slotIndex > 26) {

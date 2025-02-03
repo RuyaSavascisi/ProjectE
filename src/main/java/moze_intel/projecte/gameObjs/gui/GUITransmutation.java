@@ -1,7 +1,6 @@
 package moze_intel.projecte.gameObjs.gui;
 
 import java.math.BigInteger;
-import java.util.Locale;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
@@ -38,24 +37,15 @@ public class GUITransmutation extends PEContainerScreen<TransmutationContainer> 
 
 		this.textBoxFilter = addWidget(new EditBox(this.font, leftPos + 88, topPos + 8, 45, 10, Component.empty()));
 		this.textBoxFilter.setValue(inv.filter);
-		this.textBoxFilter.setResponder(this::updateFilter);
+		this.textBoxFilter.setResponder(inv::updateFilter);
 
-		addRenderableWidget(Button.builder(Component.literal("<"), b -> {
-					if (inv.searchpage != 0) {
-						inv.searchpage--;
-					}
-					inv.filter = textBoxFilter.getValue().toLowerCase(Locale.ROOT);
-					inv.updateClientTargets();
-				}).pos(leftPos + 125, topPos + 100)
+		//Note: We don't have to change the filter when changing pages as the filter should already be set
+		addRenderableWidget(Button.builder(Component.literal("<"), b -> inv.previousPage())
+				.pos(leftPos + 125, topPos + 100)
 				.size(14, 14)
 				.build());
-		addRenderableWidget(Button.builder(Component.literal(">"), b -> {
-					if (inv.getKnowledgeSize() > 12) {
-						inv.searchpage++;
-					}
-					inv.filter = textBoxFilter.getValue().toLowerCase(Locale.ROOT);
-					inv.updateClientTargets();
-				}).pos(leftPos + 193, topPos + 100)
+		addRenderableWidget(Button.builder(Component.literal(">"), b -> inv.nextPage())
+				.pos(leftPos + 193, topPos + 100)
 				.size(14, 14)
 				.build());
 	}
@@ -70,9 +60,8 @@ public class GUITransmutation extends PEContainerScreen<TransmutationContainer> 
 	protected void renderLabels(@NotNull GuiGraphics graphics, int x, int y) {
 		graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
 		//Don't render inventory as we don't have space
-		BigInteger emcAmount = inv.getAvailableEmc();
 		graphics.drawString(font, PELang.EMC_TOOLTIP.translate(""), 6, this.imageHeight - 104, 0x404040, false);
-		Component emc = TransmutationEMCFormatter.formatEMC(emcAmount);
+		Component emc = TransmutationEMCFormatter.formatEMC(inv.getAvailableEmc());
 		graphics.drawString(font, emc, 6, this.imageHeight - 94, 0x404040, false);
 
 		if (inv.learnFlag > 0) {
@@ -116,15 +105,6 @@ public class GUITransmutation extends PEContainerScreen<TransmutationContainer> 
 			return textBoxFilter.keyPressed(keyCode, scanCode, modifiers);
 		}
 		return super.keyPressed(keyCode, scanCode, modifiers);
-	}
-
-	private void updateFilter(String text) {
-		String search = text.toLowerCase(Locale.ROOT);
-		if (!inv.filter.equals(search)) {
-			inv.filter = search;
-			inv.searchpage = 0;
-			inv.updateClientTargets();
-		}
 	}
 
 	@Override

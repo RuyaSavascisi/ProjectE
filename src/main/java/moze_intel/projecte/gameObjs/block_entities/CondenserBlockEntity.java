@@ -5,7 +5,6 @@ import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.event.PlayerAttemptCondenserSetEvent;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.emc.EMCMappingHandler;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.gameObjs.container.CondenserContainer;
 import moze_intel.projecte.gameObjs.container.slots.SlotPredicates;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
@@ -142,7 +141,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 	}
 
 	protected void condense() {
-		for (int i = 0; i < inputInventory.getSlots(); i++) {
+		for (int i = 0, slots = inputInventory.getSlots(); i < slots; i++) {
 			ItemStack stack = inputInventory.getStackInSlot(i);
 			if (!stack.isEmpty() && !isStackEqualToLock(stack)) {
 				inputInventory.extractItem(i, 1, false);
@@ -164,7 +163,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 	}
 
 	protected boolean hasSpace() {
-		for (int i = 0; i < outputInventory.getSlots(); i++) {
+		for (int i = 0, slots = outputInventory.getSlots(); i < slots; i++) {
 			ItemStack stack = outputInventory.getStackInSlot(i);
 			if (stack.isEmpty() || (isStackEqualToLock(stack) && stack.getCount() < stack.getMaxStackSize())) {
 				return true;
@@ -182,7 +181,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 			return false;
 		}
 		//Compare our lock to the persistent item that the stack would have
-		return lockInfo.equals(DataComponentManager.getPersistentInfo(ItemInfo.fromStack(stack)));
+		return lockInfo.equals(IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(stack)));
 	}
 
 	public void setLockInfoFromPacket(@Nullable ItemInfo lockInfo) {
@@ -197,7 +196,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 			ItemStack stack = player.containerMenu.getCarried();
 			if (!stack.isEmpty()) {
 				ItemInfo sourceInfo = ItemInfo.fromStack(stack);
-				ItemInfo reducedInfo = DataComponentManager.getPersistentInfo(sourceInfo);
+				ItemInfo reducedInfo = IEMCProxy.INSTANCE.getPersistentInfo(sourceInfo);
 				if (!NeoForge.EVENT_BUS.post(new PlayerAttemptCondenserSetEvent(player, sourceInfo, reducedInfo)).isCanceled()) {
 					lockInfo = reducedInfo;
 					checkLockAndUpdate(true);

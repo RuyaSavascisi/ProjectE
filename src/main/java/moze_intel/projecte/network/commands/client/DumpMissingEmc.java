@@ -69,7 +69,6 @@ public class DumpMissingEmc {
 		// minecraft:ominous_bottle {minecraft:ominous_bottle_amplifier=>2}
 		// minecraft:ominous_bottle {minecraft:ominous_bottle_amplifier=>3}
 		// minecraft:ominous_bottle {minecraft:ominous_bottle_amplifier=>4}
-		// minecraft:firework_star
 	}
 
 	private static int execute(CommandContext<CommandSourceStack> ctx, boolean skipExpectedMissing) {

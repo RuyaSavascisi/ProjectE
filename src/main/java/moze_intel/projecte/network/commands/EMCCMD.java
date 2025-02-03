@@ -86,7 +86,7 @@ public class EMCCMD {
 
 		try {
 			value = new BigInteger(val);
-			if (value.compareTo(BigInteger.ZERO) < 0) {
+			if (value.signum() == -1) {//value < 0
 				switch (action) {
 					case ADD, REMOVE -> {
 						action = action == ActionType.ADD ? ActionType.REMOVE : ActionType.ADD;
@@ -111,7 +111,7 @@ public class EMCCMD {
 			}
 			case REMOVE -> {
 				newEMC = newEMC.subtract(value);
-				if (newEMC.compareTo(BigInteger.ZERO) < 0) {
+				if (newEMC.signum() == -1) {//newEMC < 0
 					source.sendFailure(PELang.COMMAND_EMC_NEGATIVE.translate(formatEMC(value), player.getDisplayName()));
 					return 0;
 				}

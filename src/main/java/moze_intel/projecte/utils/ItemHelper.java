@@ -53,9 +53,10 @@ public final class ItemHelper {
 	}
 
 	public static IItemHandlerModifiable immutableCopy(IItemHandler toCopy) {
-		final List<ItemStack> list = new ArrayList<>(toCopy.getSlots());
-		for (int i = 0, slots = toCopy.getSlots(); i < slots; i++) {
-			list.add(toCopy.getStackInSlot(i));
+		int slots = toCopy.getSlots();
+		final List<ItemStack> list = new ArrayList<>(slots);
+		for (int i = 0; i < slots; i++) {
+			list.add(toCopy.getStackInSlot(i).copy());
 		}
 		return new IItemHandlerModifiable() {
 			@Override

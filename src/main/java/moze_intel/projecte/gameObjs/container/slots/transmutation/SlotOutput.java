@@ -26,18 +26,26 @@ public class SlotOutput extends InventoryContainerSlot {
 	@NotNull
 	@Override
 	public ItemStack remove(int amount) {
-		ItemStack stack = ItemHelper.size(getItem(), amount);
-		BigInteger emcValue = BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(stack));
-		if (amount > 1) {
-			emcValue = emcValue.multiply(BigInteger.valueOf(amount));
+		if (amount == 0) {
+			return ItemStack.EMPTY;
 		}
-		if (emcValue.compareTo(inv.getAvailableEmc()) > 0) {
+		ItemStack stack = ItemHelper.size(getItem(), amount);
+		long emcValue = IEMCProxy.INSTANCE.getValue(stack);
+		BigInteger bigEmcValue = BigInteger.valueOf(emcValue);
+		if (amount > 1) {
+			bigEmcValue = bigEmcValue.multiply(BigInteger.valueOf(amount));
+			if (bigEmcValue.compareTo(inv.getAvailableEmc()) > 0) {
+				//Requesting more emc than available
+				//Container expects stacksize=0-Itemstack for 'nothing'
+				return ItemStack.EMPTY;
+			}
+		} else if (emcValue > inv.getAvailableEmcAsLong()) {
 			//Requesting more emc than available
 			//Container expects stacksize=0-Itemstack for 'nothing'
 			return ItemStack.EMPTY;
 		}
 		if (inv.isServer()) {
-			inv.removeEmc(emcValue);
+			inv.removeEmc(bigEmcValue);
 		}
 		return stack;
 	}
@@ -57,6 +65,6 @@ public class SlotOutput extends InventoryContainerSlot {
 
 	@Override
 	public boolean mayPickup(@NotNull Player player) {
-		return !hasItem() || BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(getItem())).compareTo(inv.getAvailableEmc()) <= 0;
+		return !hasItem() || IEMCProxy.INSTANCE.getValue(getItem()) <= inv.getAvailableEmcAsLong();
 	}
 }

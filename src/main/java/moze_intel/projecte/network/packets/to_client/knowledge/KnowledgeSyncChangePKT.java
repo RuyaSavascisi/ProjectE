@@ -39,7 +39,7 @@ public record KnowledgeSyncChangePKT(ItemInfo change, boolean learned) implement
 					container.transmutationInventory.itemLearned();
 				}
 			} else if (knowledge.hasKnowledge(change) && knowledge.removeKnowledge(change) && player.containerMenu instanceof TransmutationContainer container) {
-				container.transmutationInventory.itemUnlearned();
+				container.transmutationInventory.itemUnlearned(change);
 			}
 		}
 		PECore.debugLog("** RECEIVED TRANSMUTATION KNOWLEDGE CHANGE DATA CLIENTSIDE **");

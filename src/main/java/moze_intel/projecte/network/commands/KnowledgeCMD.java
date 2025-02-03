@@ -10,7 +10,6 @@ import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.proxy.IEMCProxy;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.utils.text.ILangEntry;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
@@ -95,7 +94,8 @@ public class KnowledgeCMD {
 			source.sendFailure(PELang.COMMAND_PROVIDER_FAIL.translate(player.getDisplayName()));
 			return 0;
 		}
-		ItemStack item = new ItemStack(ItemArgument.getItem(ctx, "item").getItem());
+		//TODO - 1.21: Figure out about this and persistent info
+		ItemStack item = ItemArgument.getItem(ctx, "item").createItemStack(1, false);
 
 		if (!IEMCProxy.INSTANCE.hasValue(item)) {
 			source.sendFailure(PELang.COMMAND_KNOWLEDGE_INVALID.translate(item.getDisplayName()));
@@ -125,7 +125,7 @@ public class KnowledgeCMD {
 				return failure(source, PELang.COMMAND_KNOWLEDGE_TEST_FAIL, player, item);
 			}
 		}
-		provider.syncKnowledgeChange(player, DataComponentManager.getPersistentInfo(ItemInfo.fromStack(item)), action == ActionType.LEARN);
+		provider.syncKnowledgeChange(player, IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(item)), action == ActionType.LEARN);
 
 		return Command.SINGLE_SUCCESS;
 	}

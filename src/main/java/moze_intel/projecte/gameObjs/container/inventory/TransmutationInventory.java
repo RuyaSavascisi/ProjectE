@@ -3,13 +3,11 @@ package moze_intel.projecte.gameObjs.container.inventory;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.math.BigInteger;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import moze_intel.projecte.PECore;
+import java.util.function.Predicate;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.IKnowledgeProvider.TargetUpdateType;
@@ -18,11 +16,9 @@ import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
 import moze_intel.projecte.api.capabilities.item.IItemEmcHolder;
 import moze_intel.projecte.api.event.PlayerAttemptLearnEvent;
 import moze_intel.projecte.api.proxy.IEMCProxy;
-import moze_intel.projecte.emc.FuelMapper;
-import moze_intel.projecte.emc.components.DataComponentManager;
+import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.PlayerHelper;
-import net.minecraft.Util;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -39,13 +35,16 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	private final IItemHandlerModifiable learning;
 	public final IItemHandlerModifiable outputs;
 
+	private static final int MAX_MATTER_DISPLAY = 12;
+	private static final int MAX_FUEL_DISPLAY = 4;
+
 	private static final int LOCK_INDEX = 8;
-	private static final int FUEL_START = 12;
+	private static final int FUEL_START = MAX_MATTER_DISPLAY;
 	public int learnFlag = 0;
 	public int unlearnFlag = 0;
 	public String filter = "";
-	public int searchpage = 0;
-	private List<ItemInfo> knowledge = Collections.emptyList();
+	private int searchPage = 0;
+	private boolean hasNextPage;
 
 	public TransmutationInventory(Player player) {
 		super((IItemHandlerModifiable) Objects.requireNonNull(player.getCapability(PECapabilities.KNOWLEDGE_CAPABILITY)).getInputAndLocks(),
@@ -78,7 +77,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	public void handleKnowledge(ItemInfo info) {
-		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
+		ItemInfo cleanedInfo = IEMCProxy.INSTANCE.getPersistentInfo(info);
 		//Pass both stacks to the Attempt Learn Event in case a mod cares about the data component/damage difference when comparing
 		if (!provider.hasKnowledge(cleanedInfo) && !NeoForge.EVENT_BUS.post(new PlayerAttemptLearnEvent(player, info, cleanedInfo)).isCanceled()) {
 			if (provider.addKnowledge(cleanedInfo)) {
@@ -111,7 +110,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	public void handleUnlearn(ItemInfo info) {
-		ItemInfo cleanedInfo = DataComponentManager.getPersistentInfo(info);
+		ItemInfo cleanedInfo = IEMCProxy.INSTANCE.getPersistentInfo(info);
 		if (provider.hasKnowledge(cleanedInfo) && provider.removeKnowledge(cleanedInfo)) {
 			//Only sync the knowledge changed if the provider successfully removed it
 			provider.syncKnowledgeChange((ServerPlayer) player, cleanedInfo, false);
@@ -121,96 +120,219 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	/**
 	 * @apiNote Call on client only
 	 */
-	public void itemUnlearned() {
+	public void itemUnlearned(ItemInfo removedItem) {
 		unlearnFlag = 300;
 		learnFlag = 0;
-		updateClientTargets();
+		if (isServer()) {
+			return;
+		}
+		long removedItemEmc = IEMCProxy.INSTANCE.getValue(removedItem);
+		if (removedItemEmc == 0) {
+			//The removed item has no EMC. As the most likely case that would happen is if it was a tome of knowledge
+			// we want to just update the client targets to be safe
+			// Note: We also reset the search page so that we don't accidentally end up on a page that no longer exists
+			resetSearchPage();
+			updateClientTargets();
+			return;
+		}
+		if (removedItem.getItem().is(PETags.Items.COLLECTOR_FUEL)) {
+			maybeUpdateClientTargets(removedItem, removedItemEmc, FUEL_START, outputs.getSlots());
+		} else {
+			maybeUpdateClientTargets(removedItem, removedItemEmc, 0, MAX_MATTER_DISPLAY);
+		}
+	}
+
+	/**
+	 * @apiNote Call on client only
+	 */
+	private void maybeUpdateClientTargets(ItemInfo removedItem, long removedItemEmc, int slot, int slots) {
+		long availableEmc = getAvailableEmcAsLong();
+		if (removedItemEmc <= availableEmc) {
+			//Validate that the item has a chance of being displayed. If it costs more than the emc we have available, there is no chance it is being displayed
+			int firstNonLockSlot = slot;
+			ItemStack lockStack = inputLocks.getStackInSlot(LOCK_INDEX);
+			long lockEmc = 0;
+			if (!lockStack.isEmpty()) {
+				ItemInfo lockInfo = IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(lockStack));
+				lockEmc = IEMCProxy.INSTANCE.getValue(lockInfo);
+				if (lockEmc > availableEmc) {//We don't have enough emc to display the lock stack, so it isn't in the gui
+					lockStack = ItemStack.EMPTY;
+				} else {
+					firstNonLockSlot++;
+				}
+			}
+			for (; slot < slots; slot++) {
+				ItemStack stack = outputs.getStackInSlot(slot);
+				if (stack.isEmpty()) {//We know later slots will also be empty
+					break;
+				} else if (stack.is(removedItem.getItem()) && stack.getComponentsPatch().equals(removedItem.getComponentsPatch())) {
+					//If the item was in our list of displayed stacks, then we definitely need to update the targets
+					if (hasPreviousPage()) {
+						if (!lockStack.isEmpty() && slot == firstNonLockSlot - 1) {
+							//We are removing the lock, just reset the search page
+							resetSearchPage();
+						} else if (slot == firstNonLockSlot && slot + 1 < slots) {
+							//We are removing the item in the first slot index that isn't the lock
+							ItemStack next = outputs.getStackInSlot(slot + 1);
+							if (next.isEmpty()) {
+								// if the next slot is empty, that means there are no more of this type, and we should go to the previous page
+								searchPage--;
+							}
+						}
+					}
+					updateClientTargets(availableEmc);
+					return;
+				}
+			}
+			if (lockStack.isEmpty()) {
+				//Just use the max emc value that we have being displayed
+				long maxDisplayedEmc = getMaxDisplayedEmc();
+				if (removedItemEmc >= maxDisplayedEmc) {//If the removed item was potentially on an earlier page, update the targets
+					if (hasPreviousPage()) {
+						//Subtract one from the current slot as we break out after doing a slot++
+						// and this will let us know the last slot that had an item in it
+						if (slot - 1 == firstNonLockSlot) {
+							//If it was the first slot that didn't have a lock in it (our initial slot), we need to lower our search page,
+							// as this one will no longer have anything on it
+							searchPage--;
+						}
+					}
+					updateClientTargets(availableEmc);
+				}
+			} else if (lockEmc > 0 && removedItemEmc == lockEmc) {
+				//If the item was potentially on an earlier page, we need to update our targets
+				// We only need to check exact equals rather than <=, as if the value was smaller than the lock
+				// and not on our current page, then it would be on a later page
+				if (hasPreviousPage()) {
+					//Subtract one from the current slot as we break out after doing a slot++
+					// and this will let us know the last slot that had an item in it
+					if (slot - 1 == firstNonLockSlot) {
+						//If it was the first slot that didn't have a lock in it, we need to lower our search page,
+						// as this one will no longer have anything on it
+						searchPage--;
+					}
+				}
+				updateClientTargets(availableEmc);
+			}
+		}
 	}
 
 	/**
 	 * @apiNote Call on client only
 	 */
 	public void checkForUpdates() {
-		long matterEmc = IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(0));
-		long fuelEmc = IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(FUEL_START));
-		if (BigInteger.valueOf(Math.max(matterEmc, fuelEmc)).compareTo(getAvailableEmc()) > 0) {
-			updateClientTargets();
+		long availableEmc = getAvailableEmcAsLong();
+		if (getMaxDisplayedEmc() > availableEmc) {
+			updateClientTargets(availableEmc);
 		}
 	}
 
+	/**
+	 * @apiNote Call on client only
+	 */
+	private long getMaxDisplayedEmc() {
+		long matterEmc = IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(0));
+		long fuelEmc = IEMCProxy.INSTANCE.getValue(outputs.getStackInSlot(FUEL_START));
+		return Math.max(matterEmc, fuelEmc);
+	}
+
 	public void updateClientTargets() {
-		if (isServer()) {
-			return;
+		if (!isServer()) {
+			updateClientTargets(getAvailableEmcAsLong());
 		}
-		knowledge = provider.getKnowledge().stream()
-				.filter(IEMCProxy.INSTANCE::hasValue)
-				.sorted(Collections.reverseOrder(Comparator.comparingLong(IEMCProxy.INSTANCE::getValue)))
-				.collect(Util.toMutableList());
-		for (int i = 0; i < outputs.getSlots(); i++) {
+	}
+
+	/**
+	 * @apiNote Call on client only
+	 */
+	private void updateClientTargets(long availableEMC) {
+		for (int i = 0, slots = outputs.getSlots(); i < slots; i++) {
 			outputs.setStackInSlot(i, ItemStack.EMPTY);
 		}
-
-		int pagecounter = 0;
-		int desiredPage = searchpage * 12;
-		ItemInfo lockInfo = null;
-		BigInteger availableEMC = getAvailableEmc();
-		if (!inputLocks.getStackInSlot(LOCK_INDEX).isEmpty()) {
-			lockInfo = DataComponentManager.getPersistentInfo(ItemInfo.fromStack(inputLocks.getStackInSlot(LOCK_INDEX)));
-			//Note: We look up using only the persistent information here, instead of all the data as
-			// we cannot replicate the extra data anyways since it cannot be learned. So we need to make
-			// sure that we only go off of the data that can be matched
-			long reqEmc = IEMCProxy.INSTANCE.getValue(lockInfo);
-			if (availableEMC.compareTo(BigInteger.valueOf(reqEmc)) < 0) {
-				return;
-			}
-
-			Iterator<ItemInfo> iter = knowledge.iterator();
-			while (iter.hasNext()) {
-				ItemInfo info = iter.next();
-				if (IEMCProxy.INSTANCE.getValue(info) > reqEmc || info.equals(lockInfo) || !doesItemMatchFilter(info)) {
-					iter.remove();
-				} else if (pagecounter < desiredPage) {
-					pagecounter++;
-					iter.remove();
-				}
-			}
-		} else {
-			Iterator<ItemInfo> iter = knowledge.iterator();
-			while (iter.hasNext()) {
-				ItemInfo info = iter.next();
-				if (availableEMC.compareTo(BigInteger.valueOf(IEMCProxy.INSTANCE.getValue(info))) < 0 || !doesItemMatchFilter(info)) {
-					iter.remove();
-				} else if (pagecounter < desiredPage) {
-					pagecounter++;
-					iter.remove();
-				}
-			}
+		record EmcData(ItemInfo info, long emc) {
 		}
-
+		Predicate<EmcData> filterPredicate;
+		ItemStack lockStack = inputLocks.getStackInSlot(LOCK_INDEX);
 		int matterCounter = 0;
 		int fuelCounter = 0;
-
-		if (lockInfo != null && provider.hasKnowledge(lockInfo)) {
-			ItemStack lockStack = lockInfo.createStack();
-			if (FuelMapper.isStackFuel(lockStack)) {
-				outputs.setStackInSlot(FUEL_START, lockStack);
-				fuelCounter++;
+		if (lockStack.isEmpty()) {
+			filterPredicate = data -> data.emc() > 0 && data.emc() <= availableEMC;
+		} else {
+			ItemInfo lockInfo = IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(lockStack));
+			//Note: We look up using only the persistent information here, instead of all the data as
+			// we cannot replicate the extra data anyway since it cannot be learned. So we need to make
+			// sure that we only go off of the data that can be matched
+			long reqEmc = IEMCProxy.INSTANCE.getValue(lockInfo);
+			if (availableEMC < reqEmc || reqEmc == 0) {
+				//If we have less emc available than the item we are filtering by (or somehow our lock has no emc), just do the normal filtering as if we didn't have a lock
+				filterPredicate = data -> data.emc() > 0 && data.emc() <= availableEMC;
+			} else if (provider.hasKnowledge(lockInfo)) {
+				//Note: We can just check the tag, as we know it has an emc value
+				if (lockInfo.getItem().is(PETags.Items.COLLECTOR_FUEL)) {
+					outputs.setStackInSlot(FUEL_START + fuelCounter++, lockInfo.createStack());
+				} else {
+					outputs.setStackInSlot(matterCounter++, lockInfo.createStack());
+				}
+				//Otherwise, we need to filter based on the lower value emc target the user is filtering by,
+				// and exclude the lock item itself as we have already manually included that ourselves at the start
+				filterPredicate = data -> {
+					long emc = data.emc();
+					if (emc > 0) {
+						if (emc < reqEmc) {
+							return true;
+						} else if (emc == reqEmc) {
+							return !data.info().equals(lockInfo);
+						}
+					}
+					return false;
+				};
 			} else {
-				outputs.setStackInSlot(0, lockStack);
-				matterCounter++;
+				//Otherwise, we need to filter based on the lower value emc target the user is filtering by
+				filterPredicate = data -> data.emc() > 0 && data.emc() <= reqEmc;
 			}
 		}
 
+		List<ItemInfo> knowledge = provider.getKnowledge().stream()
+				.map(info -> new EmcData(info, IEMCProxy.INSTANCE.getValue(info)))
+				.filter(filterPredicate)
+				.sorted(Comparator.comparingLong(EmcData::emc).reversed())
+				.map(EmcData::info)
+				.toList();
+
+		int fuelPageCounter = 0;
+		int matterPageCounter = 0;
+		//Take into account if the lock is being displayed at the top of each page for how many fuel/matter fits on a singular page
+		int desiredFuelPage = searchPage * (MAX_FUEL_DISPLAY - fuelCounter);
+		int desiredMatterPage = searchPage * (MAX_MATTER_DISPLAY - matterCounter);
+		hasNextPage = false;
 		for (ItemInfo info : knowledge) {
-			ItemStack stack = info.createStack();
-			if (FuelMapper.isStackFuel(stack)) {
-				if (fuelCounter < 4) {
-					outputs.setStackInSlot(FUEL_START + fuelCounter, stack);
-					fuelCounter++;
+			//Note: We can just check the tag, as we know it has an emc value
+			if (info.getItem().is(PETags.Items.COLLECTOR_FUEL)) {
+				if (fuelCounter < MAX_FUEL_DISPLAY) {
+					if (fuelPageCounter == desiredFuelPage) {
+						outputs.setStackInSlot(FUEL_START + fuelCounter++, info.createStack());
+					} else if (doesItemMatchFilter(info)) {
+						//Increment the page counter if the item would be in our filter
+						fuelPageCounter++;
+					}
+				} else {
+					hasNextPage = true;
+					if (matterCounter == MAX_MATTER_DISPLAY) {//We have all the fuel and matter that we need to display
+						break;
+					}
 				}
-			} else if (matterCounter < 12) {
-				outputs.setStackInSlot(matterCounter, stack);
-				matterCounter++;
+			} else if (matterCounter < MAX_MATTER_DISPLAY) {
+				if (matterPageCounter == desiredMatterPage) {
+					outputs.setStackInSlot(matterCounter++, info.createStack());
+				} else if (doesItemMatchFilter(info)) {
+					//Increment the page counter if the item would be in our filter
+					matterPageCounter++;
+				}
+			} else {
+				hasNextPage = true;
+				if (fuelCounter == MAX_FUEL_DISPLAY) {//We have all the fuel and matter that we need to display
+					break;
+				}
 			}
 		}
 	}
@@ -222,13 +344,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 		if (filter.isEmpty()) {
 			return true;
 		}
-		try {
-			return info.createStack().getHoverName().getString().toLowerCase(Locale.ROOT).contains(filter);
-		} catch (Exception e) {
-			PECore.LOGGER.error("Failed to check filter", e);
-			//From old code... Not sure if intended to not remove items that crash on getDisplayName
-			return true;
-		}
+		return info.createStack().getHoverName().getString().toLowerCase(Locale.ROOT).contains(filter);
 	}
 
 	/**
@@ -236,7 +352,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 */
 	public void writeIntoOutputSlot(int slot, ItemStack item) {
 		long emcValue = IEMCProxy.INSTANCE.getValue(item);
-		if (emcValue > 0 && BigInteger.valueOf(emcValue).compareTo(getAvailableEmc()) <= 0 && provider.hasKnowledge(item)) {
+		if (emcValue > 0 && emcValue <= getAvailableEmcAsLong() && provider.hasKnowledge(item)) {
 			outputs.setStackInSlot(slot, item);
 		} else {
 			outputs.setStackInSlot(slot, ItemStack.EMPTY);
@@ -247,18 +363,17 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	public void addEmc(BigInteger value) {
-		int compareToZero = value.compareTo(BigInteger.ZERO);
-		if (compareToZero == 0) {
-			//Optimization to not look at the items if nothing will happen anyways
+		if (value.signum() == 0) {//value == 0
+			//Optimization to not look at the items if nothing will happen anyway
 			return;
-		} else if (compareToZero < 0) {
+		} else if (value.signum() == -1) {//value < 0
 			//Make sure it is using the correct method so that it handles the klein stars properly
 			removeEmc(value.negate());
 			return;
 		}
 		IntList inputLocksChanged = new IntArrayList();
 		//Start by trying to add it to the EMC items on the left
-		for (int slotIndex = 0; slotIndex < inputLocks.getSlots(); slotIndex++) {
+		for (int slotIndex = 0, slots = inputLocks.getSlots(); slotIndex < slots; slotIndex++) {
 			if (slotIndex == LOCK_INDEX) {
 				continue;
 			}
@@ -271,7 +386,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 					if (actualInserted > 0) {
 						inputLocksChanged.add(slotIndex);
 						value = value.subtract(BigInteger.valueOf(actualInserted));
-						if (value.compareTo(BigInteger.ZERO) == 0) {
+						if (value.signum() == 0) {//value == 0
 							//If we fit it all then sync the changes to the client and exit
 							syncChangedSlots(inputLocksChanged, TargetUpdateType.ALL);
 							return;
@@ -290,11 +405,10 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	public void removeEmc(BigInteger value) {
-		int compareToZero = value.compareTo(BigInteger.ZERO);
-		if (compareToZero == 0) {
-			//Optimization to not look at the items if nothing will happen anyways
+		if (value.signum() == 0) {//value == 0
+			//Optimization to not look at the items if nothing will happen anyway
 			return;
-		} else if (compareToZero < 0) {
+		} else if (value.signum() == -1) {//value < 0
 			//Make sure it is using the correct method so that it handles the klein stars properly
 			addEmc(value.negate());
 			return;
@@ -309,7 +423,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 			IntList inputLocksChanged = new IntArrayList();
 			BigInteger toRemove = value.subtract(currentEmc);
 			value = currentEmc;
-			for (int slotIndex = 0; slotIndex < inputLocks.getSlots(); slotIndex++) {
+			for (int slotIndex = 0, slots = inputLocks.getSlots(); slotIndex < slots; slotIndex++) {
 				if (slotIndex == LOCK_INDEX) {
 					continue;
 				}
@@ -322,11 +436,11 @@ public class TransmutationInventory extends CombinedInvWrapper {
 						if (actualExtracted > 0) {
 							inputLocksChanged.add(slotIndex);
 							toRemove = toRemove.subtract(BigInteger.valueOf(actualExtracted));
-							if (toRemove.compareTo(BigInteger.ZERO) == 0) {
+							if (toRemove.signum() == 0) {//toRemove == 0
 								//The EMC that is being removed that the provider does not contain is satisfied by this IItemEMC
 								//Remove it and then stop checking other input slots as we were able to provide all that was needed
 								syncChangedSlots(inputLocksChanged, TargetUpdateType.IF_NEEDED);
-								if (currentEmc.compareTo(BigInteger.ZERO) > 0) {
+								if (currentEmc.signum() == 1) {//currentEmc > 0
 									updateEmcAndSync(BigInteger.ZERO);
 								}
 								return;
@@ -352,7 +466,7 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	 * @apiNote Call on server only
 	 */
 	private void updateEmcAndSync(BigInteger emc) {
-		if (emc.compareTo(BigInteger.ZERO) < 0) {
+		if (emc.signum() == -1) {//emc < 0
 			//Clamp the emc, should never be less than zero but just in case make sure to fix it
 			emc = BigInteger.ZERO;
 		}
@@ -375,28 +489,87 @@ public class TransmutationInventory extends CombinedInvWrapper {
 	}
 
 	/**
-	 * @return EMC available from the Provider + any klein stars in the input slots.
+	 * @return EMC available from the Provider + any klein stars in the input slots clamped to max long.
 	 */
-	public BigInteger getAvailableEmc() {
-		BigInteger emc = provider.getEmc();
-		for (int i = 0; i < inputLocks.getSlots(); i++) {
+	public long getAvailableEmcAsLong() {
+		long emc = MathUtils.clampToLong(provider.getEmc());
+		if (emc == Long.MAX_VALUE || inputLocks.getSlots() == 0) {
+			//If we already are at max or somehow don't have any slots
+			return emc;
+		}
+		long emcToMax = Long.MAX_VALUE - emc;
+		for (int i = 0, slots = inputLocks.getSlots(); i < slots; i++) {
 			if (i == LOCK_INDEX) {
 				//Skip it even though this technically could add to available EMC.
 				//This is because this case can only happen if the provider is already at max EMC
 				continue;
 			}
 			ItemStack stack = inputLocks.getStackInSlot(i);
-			if (!stack.isEmpty()) {
-				IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-				if (emcHolder != null) {
-					emc = emc.add(BigInteger.valueOf(emcHolder.getStoredEmc(stack)));
+			IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+			if (emcHolder != null) {
+				long storedEmc = emcHolder.getStoredEmc(stack);
+				if (storedEmc >= emcToMax) {
+					return Long.MAX_VALUE;
 				}
+				emcToMax -= storedEmc;
+			}
+		}
+		return Long.MAX_VALUE - emcToMax;
+	}
+
+	/**
+	 * @return EMC available from the Provider + any klein stars in the input slots.
+	 */
+	public BigInteger getAvailableEmc() {
+		BigInteger emc = provider.getEmc();
+		for (int i = 0, slots = inputLocks.getSlots(); i < slots; i++) {
+			if (i == LOCK_INDEX) {
+				//Skip it even though this technically could add to available EMC.
+				//This is because this case can only happen if the provider is already at max EMC
+				continue;
+			}
+			ItemStack stack = inputLocks.getStackInSlot(i);
+			IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+			if (emcHolder != null) {
+				emc = emc.add(BigInteger.valueOf(emcHolder.getStoredEmc(stack)));
 			}
 		}
 		return emc;
 	}
 
-	public int getKnowledgeSize() {
-		return knowledge.size();
+	public void updateFilter(String text) {
+		String search = text.toLowerCase(Locale.ROOT);
+		if (!filter.equals(search)) {
+			filter = search;
+			resetSearchPage();
+			updateClientTargets();
+		}
+	}
+
+	//TODO - 1.21: Disable the buttons when these are false?
+	public boolean hasPreviousPage() {
+		return searchPage > 0;
+	}
+
+	public boolean hasNextPage() {
+		return hasNextPage;
+	}
+
+	private void resetSearchPage() {
+		searchPage = 0;
+	}
+
+	public void previousPage() {
+		if (hasPreviousPage()) {
+			searchPage--;
+			updateClientTargets();
+		}
+	}
+
+	public void nextPage() {
+		if (hasNextPage()) {
+			searchPage++;
+			updateClientTargets();
+		}
 	}
 }

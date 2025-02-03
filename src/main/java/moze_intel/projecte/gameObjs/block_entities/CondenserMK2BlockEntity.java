@@ -58,7 +58,7 @@ public class CondenserMK2BlockEntity extends CondenserBlockEntity {
 			forceExtractEmc(requiredEmc, EmcAction.EXECUTE);
 		}
 		if (this.hasSpace()) {
-			for (int i = 0; i < getInput().getSlots(); i++) {
+			for (int i = 0, slots = getInput().getSlots(); i < slots; i++) {
 				ItemStack stack = getInput().getStackInSlot(i);
 				if (!stack.isEmpty()) {
 					forceInsertEmc(IEMCProxy.INSTANCE.getSellValue(stack) * stack.getCount(), EmcAction.EXECUTE);
