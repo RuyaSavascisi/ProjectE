@@ -1,5 +1,6 @@
 package moze_intel.projecte.emc.components.processor;
 
+import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.api.proxy.IEMCProxy;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @DataComponentProcessor//TODO - 1.21: Figure out if we should remove this, also figure out where the base value even comes from
 public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecorations> {
@@ -19,6 +21,8 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 	@DataComponentProcessor.Instance
 	public static final DecoratedPotProcessor INSTANCE = new DecoratedPotProcessor();
 	private static final ResourceKey<Item> DECORATED_POT = BuiltInRegistries.ITEM.getResourceKey(Items.DECORATED_POT).orElseThrow();
+
+	private long undecoratedEmc;
 
 	@Override
 	public String getName() {
@@ -46,10 +50,19 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 			}
 			totalDecorationEmc = Math.addExact(totalDecorationEmc, decorationEmc);
 		}
-		//Calculate base decorated pot (four bricks) emc to subtract from our current values
-		// We do this in case this isn't the first processor that runs on some pot, and another processor has adjusted the emc of it
-		//TODO - 1.21: Re-evaluate all these processors and any that get the emc value of another thing, we likely want to have the result fail if one of the parts didn't have one
-		return Math.addExact(currentEMC - IEMCProxy.INSTANCE.getValue(Items.DECORATED_POT), totalDecorationEmc);
+		//Subtract the undecorated emc value from our current value. We do this in case this isn't the first processor that runs on some pot,
+		// and another processor has adjusted the emc of it
+		return Math.addExact(currentEMC - undecoratedEmc, totalDecorationEmc);
+	}
+
+	@Override
+	public void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
+		if (emcLookup == null) {
+			undecoratedEmc = 0;
+			return;
+		}
+		//Calculate base decorated pot (four bricks) emc
+		undecoratedEmc = emcLookup.applyAsLong(ItemInfo.fromItem(Items.DECORATED_POT));
 	}
 
 	@Override

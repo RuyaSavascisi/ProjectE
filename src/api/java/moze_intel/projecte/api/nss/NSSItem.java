@@ -12,7 +12,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,7 +71,7 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 			key = registryKey.get();
 		}
 		if (key == DEFAULT_KEY) {
-			throw new IllegalArgumentException("Can't make NSSItem with empty stack");
+			throw new IllegalArgumentException("Can't make NSSItem with an empty stack");
 		}
 		//This should never be null, or it would have crashed on being registered
 		return createItem(key.location(), componentsPatch);
@@ -83,16 +82,7 @@ public final class NSSItem extends AbstractDataComponentHolderNSSTag<Item> {
 	 */
 	@NotNull
 	public static NSSItem createItem(@NotNull ItemLike itemProvider, @NotNull DataComponentPatch componentsPatch) {
-		Item item = itemProvider.asItem();
-		if (item == Items.AIR) {
-			throw new IllegalArgumentException("Can't make NSSItem with empty stack");
-		}
-		Optional<ResourceKey<Item>> registryKey = BuiltInRegistries.ITEM.getResourceKey(item);
-		if (registryKey.isEmpty()) {
-			throw new IllegalArgumentException("Can't make an NSSItem with an unregistered item");
-		}
-		//This should never be null, or it would have crashed on being registered
-		return createItem(registryKey.get().location(), componentsPatch);
+		return createItem(itemProvider.asItem().builtInRegistryHolder(), componentsPatch);
 	}
 
 	/**

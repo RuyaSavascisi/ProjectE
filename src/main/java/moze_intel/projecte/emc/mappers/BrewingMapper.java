@@ -41,8 +41,11 @@ public class BrewingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 	public void addMappings(IMappingCollector<NormalizedSimpleStack, Long> mapper, ReloadableServerResources serverResources,
 			RegistryAccess registryAccess, ResourceManager resourceManager) {
 		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-		//TODO - 1.21: Figure this out? At the very least add a warning that gets logged
-		PotionBrewing potionBrewing = server == null ? PotionBrewing.EMPTY : server.potionBrewing();
+		if (server == null) {
+			PECore.LOGGER.error("Failed to get server and potion data when trying to map potions");
+			return;
+		}
+		PotionBrewing potionBrewing = server.potionBrewing();
 		Set<ItemInfo> allReagents = mapAllReagents(potionBrewing);
 		Set<ItemInfo> allInputs = mapAllInputs(potionBrewing);
 

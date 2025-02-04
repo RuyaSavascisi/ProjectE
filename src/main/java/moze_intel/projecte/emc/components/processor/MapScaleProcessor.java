@@ -1,9 +1,9 @@
 package moze_intel.projecte.emc.components.processor;
 
+import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
-import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
@@ -25,6 +25,8 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 	@DataComponentProcessor.Instance
 	public static final MapScaleProcessor INSTANCE = new MapScaleProcessor();
 
+	private long paperEmc, lockEmc;
+
 	@Override
 	public String getName() {
 		return PEConfigTranslations.DCP_MAP_EXTENSION.title();
@@ -42,6 +44,9 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 
 	@Override
 	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
+		if (!(info.getItem().value() instanceof MapItem)) {//Not a map, skip trying to do anything
+			return currentEMC;
+		}
 		ItemStack fakeStack = info.createStack();
 		MapPostProcessing postProcessing = fakeStack.get(DataComponents.MAP_POST_PROCESSING);
 		Level level = tryGetLevel();
@@ -58,16 +63,12 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 			}
 		}
 		if (locked) {
-			//TODO - 1.21: Re-evaluate this, as the reason glass panes don't have an emc value is because it is less than zero
-			// so realistically they should be considered free
-			/*long glassPaneEmc = IEMCProxy.INSTANCE.getValue(Items.GLASS_PANE);
-			if (glassPaneEmc == 0) {//Glass panes can't be transmuted, so this item shouldn't have an emc value
+			if (lockEmc == 0) {//Glass panes can't be transmuted, so this item shouldn't have an emc value
 				return 0;
 			}
-			currentEMC = Math.addExact(currentEMC, glassPaneEmc);*/
+			currentEMC = Math.addExact(currentEMC, lockEmc);
 		}
 		if (scale > 0) {
-			long paperEmc = IEMCProxy.INSTANCE.getValue(Items.PAPER);
 			if (paperEmc == 0) {//Paper can't be transmuted, so this item shouldn't have an emc value
 				return 0;
 			}
@@ -76,6 +77,19 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 			currentEMC = Math.addExact(currentEMC, Math.multiplyExact(paperEmc, scale));
 		}
 		return currentEMC;
+	}
+
+	@Override
+	public void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
+		if (emcLookup == null) {
+			lockEmc = paperEmc = 0;
+			return;
+		}
+		//Calculate base decorated pot (four bricks) emc
+		paperEmc = emcLookup.applyAsLong(ItemInfo.fromItem(Items.PAPER));
+		//TODO - 1.21: Re-evaluate this, as the reason glass panes don't have an emc value is because it is less than zero
+		// so realistically they should be considered free
+		lockEmc = emcLookup.applyAsLong(ItemInfo.fromItem(Items.GLASS_PANE));
 	}
 
 	@Nullable
@@ -91,7 +105,7 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 		return null;
 	}
 
-	private static class ClientLevelHelper {
+	private static class ClientLevelHelper {//TODO - 1.21: Make sure this doesn't crash on a dedicated server
 
 		@Nullable
 		public static Level getLevel() {

@@ -11,7 +11,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,15 +49,7 @@ public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 	 */
 	@NotNull
 	public static NSSFluid createFluid(@NotNull Fluid fluid, @NotNull DataComponentPatch componentsPatch) {
-		if (fluid == Fluids.EMPTY) {
-			throw new IllegalArgumentException("Can't make NSSFluid with an empty fluid");
-		}
-		Optional<ResourceKey<Fluid>> registryKey = BuiltInRegistries.FLUID.getResourceKey(fluid);
-		if (registryKey.isEmpty()) {
-			throw new IllegalArgumentException("Can't make an NSSFluid with an unregistered fluid");
-		}
-		//This should never be null, or it would have crashed on being registered
-		return createFluid(registryKey.get().location(), componentsPatch);
+		return createFluid(fluid.builtInRegistryHolder(), componentsPatch);
 	}
 
 	/**
@@ -86,7 +77,7 @@ public final class NSSFluid extends AbstractDataComponentHolderNSSTag<Fluid> {
 			key = registryKey.get();
 		}
 		if (key == DEFAULT_KEY) {
-			throw new IllegalArgumentException("Can't make NSSFluid with empty stack");
+			throw new IllegalArgumentException("Can't make NSSFluid with an empty stack");
 		}
 		//This should never be null, or it would have crashed on being registered
 		return createFluid(key.location(), componentsPatch);

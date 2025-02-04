@@ -123,7 +123,6 @@ public class FireworkStarProcessor extends PersistentComponentProcessor<Firework
 
 	@Override
 	public void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
-		//TODO - 1.21: Look at what other processors could do with overriding this method to cache things and give more accurate values
 		if (emcLookup == null) {
 			shapeEmcLookup = Object2LongMaps.emptyMap();
 			trailEmc = twinkleEmc = 0;

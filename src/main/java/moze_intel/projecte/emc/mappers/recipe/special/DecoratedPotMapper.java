@@ -50,6 +50,8 @@ public class DecoratedPotMapper extends SpecialRecipeMapper<DecoratedPotRecipe> 
 		// With this mapper, making use of dummy groups after performance improvements to the mapping system
 		// Registered 333226 EMC values. (took 2197 ms)
 		// Registered 333226 EMC values. (took 1444 ms)
+		// With this mapper, all the performance improvements AND looking up keys for NSS from holders instead of registry where available
+		// Registered 333235 EMC values. (took 2023 ms)
 		// Without this mapper:
 		// Registered 1450 EMC values. (took 239 ms)
 		// Without this mapper, after the performance improvements
