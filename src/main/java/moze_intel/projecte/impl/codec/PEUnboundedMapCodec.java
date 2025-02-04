@@ -13,12 +13,25 @@ import com.mojang.serialization.RecordBuilder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.codec.MapProcessor;
 
-public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<VALUE> valueCodec, MapProcessor<KEY, VALUE> processor, boolean lenientKey)
-		implements Codec<Map<KEY, VALUE>> {
+/**
+ * Based semi loosely off off:
+ * <li>
+ *     <ul><a href="https://gist.github.com/thiakil/7cadeb2a8e50aabc5056bc6574af0d90">Thiakil's Map as List Codec</a></ul>
+ *     <ul>{@link com.mojang.serialization.codecs.ListCodec} for how to handle decoder state and handing of lists</ul>
+ *     <ul>{@link com.mojang.serialization.codecs.UnboundedMapCodec} and the base implementation in {@link com.mojang.serialization.codecs.BaseMapCodec}</ul>
+ *     <ul>{@link net.neoforged.neoforge.common.LenientUnboundedMapCodec} for making parts lenient (though we only optionally make keys lenient here)</ul>
+ * </li>
+ */
+public record PEUnboundedMapCodec<KEY, VALUE, MAP extends Map<KEY, VALUE>>(
+		MapCodec<KEY> keyCodec, MapCodec<VALUE> valueCodec, MapProcessor<KEY, VALUE> processor, boolean lenientKey,
+		Supplier<? extends MAP> elementReaderCreator, UnaryOperator<MAP> makeImmutable
+) implements Codec<MAP> {
 
 	//TODO - 1.21: Do we want a check like this?
 	/*public PEUnboundedMapCodec {
@@ -27,8 +40,16 @@ public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<V
 		}
 	}*/
 
+	public static <KEY, VALUE> PEUnboundedMapCodec<KEY, VALUE, Map<KEY, VALUE>> create(MapCodec<KEY> keyCodec, MapCodec<VALUE> valueCodec,
+			MapProcessor<KEY, VALUE> processor, boolean lenientKey) {
+		//Note: We use a LinkedHashMap instead of an Object2ObjectArrayMap like BaseMapCodec uses, as some of our maps may have a large number of values,
+		// and the performance of array maps degrades for a large number of values
+		//Note: ImmutableMap::copyOf maintains the order of the map that is being copied
+		return new PEUnboundedMapCodec<>(keyCodec, valueCodec, processor, lenientKey, LinkedHashMap::new, ImmutableMap::copyOf);
+	}
+
 	@Override
-	public <T> DataResult<T> encode(final Map<KEY, VALUE> input, final DynamicOps<T> ops, final T prefix) {
+	public <T> DataResult<T> encode(final MAP input, final DynamicOps<T> ops, final T prefix) {
 		final ListBuilder<T> builder = ops.listBuilder();
 		for (final Map.Entry<KEY, VALUE> entry : input.entrySet()) {
 			RecordBuilder<T> encoded = keyCodec().encode(entry.getKey(), ops, ops.mapBuilder());
@@ -39,7 +60,7 @@ public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<V
 	}
 
 	@Override
-	public <T> DataResult<Pair<Map<KEY, VALUE>, T>> decode(final DynamicOps<T> ops, final T input) {
+	public <T> DataResult<Pair<MAP, T>> decode(final DynamicOps<T> ops, final T input) {
 		return ops.getList(input).setLifecycle(Lifecycle.stable()).flatMap(stream -> {
 			final DecoderState<T> decoder = new DecoderState<>(ops);
 			stream.accept(decoder::accept);
@@ -60,8 +81,7 @@ public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<V
 		private static final DataResult<Unit> INITIAL_RESULT = DataResult.success(Unit.INSTANCE, Lifecycle.stable());
 
 		private final DynamicOps<T> ops;
-		//TODO - 1.21: Should this be a Object2ObjectArrayMap like Vanilla's BaseMapCodec uses? Performance might be worse (at least compared to fast utils linked hash map)
-		private final Map<KEY, VALUE> elements = new LinkedHashMap<>();
+		private final MAP elements = elementReaderCreator.get();
 		private final Stream.Builder<T> failed = Stream.builder();
 		private DataResult<Unit> result = INITIAL_RESULT;
 
@@ -70,15 +90,11 @@ public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<V
 		}
 
 		private void accept(final T input) {
-			//TODO - 1.21: Re-evaluate comments, clean up actual references,
-			// and then refer to https://gist.github.com/thiakil/7cadeb2a8e50aabc5056bc6574af0d90 as one of the references
-			//Based on BaseMapCodec#decode and LenientUnboundedMapCodec
 			DataResult<KEY> keyResult = keyCodec().decoder().parse(ops, input);
-			//TODO - 1.21: Test that we implemented behavior for lenientKey properly
 			if (lenientKey() && keyResult.isError()) {
 				//Skip this key as it is invalid (potentially representing something unloaded)
 				// Note: We log the error to help diagnose any issues
-				//TODO - 1.21: Do we want to try and allow partial deserialization for example if it just has invalid components? (probably not)
+				//TODO: Do we want to try and allow partial deserialization for example if it just has invalid components? (probably not)
 				PECore.LOGGER.error("Unable to deserialize key: {}", keyResult.error().orElseThrow().message());
 				return;
 			}
@@ -88,7 +104,6 @@ public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<V
 			Optional<Map.Entry<KEY, VALUE>> resultOrPartial = entryResult.resultOrPartial();
 			if (resultOrPartial.isPresent()) {
 				Map.Entry<KEY, VALUE> entry = resultOrPartial.get();
-				//TODO - 1.21: Error if the key already has a corresponding value (See if what we do below is correct, and add tests for it)
 				VALUE existing = processor().addElement(elements, entry.getKey(), entry.getValue());
 				if (existing != null) {
 					failed.add(input);
@@ -96,14 +111,13 @@ public record PEUnboundedMapCodec<KEY, VALUE>(MapCodec<KEY> keyCodec, MapCodec<V
 					return;
 				}
 			}
-			//TODO - 1.21: Do we want to include what the input was in the entry that failed? Might improve readability of the error message
 			entryResult.ifError(error -> failed.add(input));
 			result = result.apply2stable((result, element) -> result, entryResult);
 		}
 
-		public DataResult<Map<KEY, VALUE>> build() {
+		public DataResult<MAP> build() {
 			final T errors = ops.createList(failed.build());
-			final Map<KEY, VALUE> immutableElements = ImmutableMap.copyOf(elements);
+			final MAP immutableElements = makeImmutable.apply(elements);
 			return result.map(ignored -> immutableElements)
 					.setPartial(immutableElements)
 					.mapError(e -> e + " missed input: " + errors);

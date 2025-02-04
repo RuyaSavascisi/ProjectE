@@ -2,6 +2,7 @@ package moze_intel.projecte.api.config;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.TranslatableEnum;
@@ -18,6 +19,10 @@ public interface IConfigBuilder<OBJ> {
 	IntSupplier create(String path, int defaultValue);
 
 	IntSupplier create(String path, int defaultValue, int minValue, int maxValue);
+
+	LongSupplier create(String path, long defaultValue);
+
+	LongSupplier create(String path, long defaultValue, long minValue, long maxValue);
 
 	//Note: Ensure that we provide a nice translated name for any enum value based configs we have
 	<T extends Enum<T> & TranslatableEnum> Supplier<T> create(String path, T defaultValue);

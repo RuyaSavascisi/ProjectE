@@ -65,7 +65,12 @@ public interface IDataComponentProcessor extends IConfigurableElement<IDataCompo
 	default void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
 	}
 
-	//TODO - 1.21: Docs
+	/**
+	 * Called when EMC values are updated to allow for processors to cache intermediary values or minimums of ingredients so that they don't have to recalculate them
+	 * every time the processor runs.
+	 *
+	 * @param emcLookup Function to look up the emc value of an item, null if the cache should be cleared as data is being unloaded.
+	 */
 	default void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
 	}
 }

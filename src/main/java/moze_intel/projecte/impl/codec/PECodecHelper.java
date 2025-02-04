@@ -134,12 +134,12 @@ public class PECodecHelper implements IPECodecHelper {
 
 	@Override
 	public <K, V> Codec<Map<K, V>> lenientKeyUnboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec, MapProcessor<K, V> processor) {
-		return new PEUnboundedMapCodec<>(keyCodec, elementCodec, processor, true);
+		return PEUnboundedMapCodec.create(keyCodec, elementCodec, processor, true);
 	}
 
 	@Override
 	public <K, V> Codec<Map<K, V>> unboundedMap(MapCodec<K> keyCodec, MapCodec<V> elementCodec, MapProcessor<K, V> processor) {
-		return new PEUnboundedMapCodec<>(keyCodec, elementCodec, processor, false);
+		return PEUnboundedMapCodec.create(keyCodec, elementCodec, processor, false);
 	}
 
 	@Override

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import moze_intel.projecte.PECore;
@@ -81,10 +80,9 @@ public final class EMCMappingHandler {
 
 		boolean usePregenerated = MappingConfig.usePregenerated();
 		Path pregeneratedEmcFile = ProjectEConfig.CONFIG_DIR.resolve("pregenerated_emc.json");
-		Optional<Map<ItemInfo, Long>> readPregeneratedValues = PregeneratedEMC.read(registryAccess, pregeneratedEmcFile, usePregenerated);
+		Optional<Object2LongMap<ItemInfo>> readPregeneratedValues = PregeneratedEMC.read(registryAccess, pregeneratedEmcFile, usePregenerated);
 		if (readPregeneratedValues.isPresent()) {
-			//TODO - 1.21: Can we get rid of the extra copy?
-			int values = updateEmcValues(new Object2LongOpenHashMap<>(readPregeneratedValues.get()));
+			int values = updateEmcValues(readPregeneratedValues.get());
 			PECore.LOGGER.info("Loaded {} values from pregenerated EMC File", values);
 		} else {
 			SimpleGraphMapper.setLogFoundExploits(MappingConfig.logExploits());

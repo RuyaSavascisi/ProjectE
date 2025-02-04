@@ -1,8 +1,11 @@
 package moze_intel.projecte.emc.components.processor;
 
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import java.util.function.LongSupplier;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.api.components.IDataComponentProcessor;
+import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
@@ -19,7 +22,9 @@ import org.jetbrains.annotations.NotNull;
 public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEnchantments> {
 
 	private static final ResourceKey<Item> ENCHANTED_BOOK = BuiltInRegistries.ITEM.getResourceKey(Items.ENCHANTED_BOOK).orElseThrow();
-	private static final long ENCH_EMC_BONUS = 5_000;
+	private static final long DEFAULT_ENCHANT_EMC_BONUS = 5_000;
+
+	private LongSupplier enchantmentEmcBonus = () -> DEFAULT_ENCHANT_EMC_BONUS;
 
 	@Override
 	public String getName() {
@@ -49,11 +54,18 @@ public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEncha
 	}
 
 	@Override
+	public void addConfigOptions(IConfigBuilder<IDataComponentProcessor> configBuilder) {
+		PEConfigTranslations.DCP_ENCHANTMENT_EMC_BONUS.applyToBuilder(configBuilder.builder());
+		enchantmentEmcBonus = configBuilder.create("enchantment_emc_bonus", DEFAULT_ENCHANT_EMC_BONUS, 0, Long.MAX_VALUE);
+	}
+
+	@Override
 	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull ItemEnchantments enchantments) throws ArithmeticException {
-		for (Map.Entry<Holder<Enchantment>, Integer> entry : enchantments.entrySet()) {
+		long emcBonus = enchantmentEmcBonus.getAsLong();
+		for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
 			int rarityWeight = entry.getKey().value().definition().weight();
 			if (rarityWeight > 0) {
-				currentEMC = Math.addExact(currentEMC, Math.multiplyExact(ENCH_EMC_BONUS / rarityWeight, entry.getValue()));
+				currentEMC = Math.addExact(currentEMC, Math.multiplyExact(emcBonus / rarityWeight, entry.getIntValue()));
 			}
 		}
 		return currentEMC;

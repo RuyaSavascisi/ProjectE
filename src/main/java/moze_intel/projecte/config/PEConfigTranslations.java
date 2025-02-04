@@ -181,6 +181,9 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	DCP_DECORATED_SHIELD("processing.data_component_processor.decorated_shield", "Decorated Shield Processor", "Calculates EMC value of decorated shield.", true),
 	DCP_ENCHANTMENT("processing.data_component_processor.enchantment", "Enchantment Processor",
 			"Increases the EMC value to take into account any enchantments on an item.", true),
+	DCP_ENCHANTMENT_EMC_BONUS("processing.data_component_processor.enchantment.emc_bonus", "Enchantment EMC Bonus",
+			"The amount (scaled by rarity) to increase EMC value by for enchantments."),
+
 	DCP_FIREWORK("processing.data_component_processor.firework", "Firework Processor", "Calculates EMC value of fireworks.", true),
 	DCP_FIREWORK_STAR("processing.data_component_processor.firework_star", "Firework Star Processor",
 			"Calculates the EMC value of Firework Stars, based on what was required to craft them.", true),

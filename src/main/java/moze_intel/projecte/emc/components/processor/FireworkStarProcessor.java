@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongMaps;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2LongMap;
+import it.unimi.dsi.fastutil.objects.Reference2LongMaps;
+import it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap;
 import java.util.Map;
 import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
@@ -40,7 +40,7 @@ public class FireworkStarProcessor extends PersistentComponentProcessor<Firework
 	});
 
 	@NotNull
-	private Object2LongMap<FireworkExplosion.Shape> shapeEmcLookup = Object2LongMaps.emptyMap();
+	private Reference2LongMap<FireworkExplosion.Shape> shapeEmcLookup = Reference2LongMaps.emptyMap();
 	//Lookup min emc value for these ingredients, so that if any mods expand on them with ATs, we can make use of it
 	private long trailEmc, twinkleEmc;
 
@@ -124,16 +124,19 @@ public class FireworkStarProcessor extends PersistentComponentProcessor<Firework
 	@Override
 	public void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
 		if (emcLookup == null) {
-			shapeEmcLookup = Object2LongMaps.emptyMap();
+			shapeEmcLookup = Reference2LongMaps.emptyMap();
 			trailEmc = twinkleEmc = 0;
 			return;
 		}
-		//TODO - 1.21: Do we want this to be an enum map instead? Also should we specify a default size if not
-		shapeEmcLookup = new Object2LongOpenHashMap<>();
+		//Note: We subtract one from the length, as SMALL_BALL does not require any, and won't be processed or stored
+		shapeEmcLookup = new Reference2LongOpenHashMap<>(FireworkExplosion.Shape.values().length - 1);
 		for (Map.Entry<Item, FireworkExplosion.Shape> entry : FireworkStarRecipe.SHAPE_BY_ITEM.entrySet()) {
-			long emc = emcLookup.applyAsLong(ItemInfo.fromItem(entry.getKey()));
-			if (emc > 0) {
-				shapeEmcLookup.mergeLong(entry.getValue(), emc, Math::min);
+			FireworkExplosion.Shape shape = entry.getValue();
+			if (shape != FireworkExplosion.Shape.SMALL_BALL) {
+				long emc = emcLookup.applyAsLong(ItemInfo.fromItem(entry.getKey()));
+				if (emc > 0) {
+					shapeEmcLookup.mergeLong(shape, emc, Math::min);
+				}
 			}
 		}
 		trailEmc = DataComponentManager.getMinEmcFor(emcLookup, FireworkStarRecipe.TRAIL_INGREDIENT);

@@ -9,7 +9,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BundleContents;
 import org.jetbrains.annotations.NotNull;
 
-//TODO - 1.21: Only enable this processor if bundles are enabled?
+//TODO: Is there some way to only enable this processor when FeatureFlags.BUNDLE is enabled? It doesn't seem worth figuring out currently as
+// vanilla doesn't even have BundleItem return false for isEnabled(FeatureFlagSet) and instead just doesn't add them to the creative menu
 @DataComponentProcessor
 public class BundleProcessor extends SimpleContainerProcessor<BundleContents> {
 

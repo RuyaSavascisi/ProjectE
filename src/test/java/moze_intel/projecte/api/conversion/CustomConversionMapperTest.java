@@ -452,6 +452,24 @@ class CustomConversionMapperTest {
 											"amount": 3
 										}
 									]
+								},
+								{
+									"output": {
+										"type": "projecte:item",
+										"id": "diamond"
+									},
+									"ingredients": [
+										{
+											"type": "projecte:item",
+											"id": "granite",
+											"amount": 2
+										},
+										{
+											"type": "projecte:item",
+											"id": "minecraft:INVALID|stone",
+											"amount": 1
+										}
+									]
 								}
 							]
 						}

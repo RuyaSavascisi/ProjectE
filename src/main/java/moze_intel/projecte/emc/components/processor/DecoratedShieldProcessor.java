@@ -56,7 +56,7 @@ public class DecoratedShieldProcessor implements IDataComponentProcessor {
 					}
 					long bannerValue = IEMCProxy.INSTANCE.getValue(banner);
 					if (bannerValue == 0) {
-						//No valid value for the attached banner, don't allow destroying the shield
+						//No valid value for the attached banner, don't allow the shield to be converted to emc
 						return 0;
 					}
 					return Math.addExact(currentEMC, bannerValue);

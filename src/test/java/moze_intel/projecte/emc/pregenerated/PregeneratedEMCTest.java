@@ -1,7 +1,7 @@
 package moze_intel.projecte.emc.pregenerated;
 
 import com.google.gson.JsonParseException;
-import java.util.Map;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.impl.codec.CodecTestHelper;
 import net.minecraft.core.HolderLookup;
@@ -17,21 +17,21 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @DisplayName("Test Pregenerated EMC Serialization")
 class PregeneratedEMCTest {
 
-	private static Map<ItemInfo, Long> parseJson(HolderLookup.Provider registryAccess, String json) {
+	private static Object2LongMap<ItemInfo> parseJson(HolderLookup.Provider registryAccess, String json) {
 		return CodecTestHelper.parseJson(registryAccess, PregeneratedEMC.CODEC, "pregnerated emc test", json);
 	}
 
 	@Test
 	@DisplayName("Test empty pregen file")
 	void testEmptyPregenFile(MinecraftServer server) {
-		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), "[]");
+		Object2LongMap<ItemInfo> pregenerated = parseJson(server.registryAccess(), "[]");
 		Assertions.assertEquals(0, pregenerated.size());
 	}
 
 	@Test
 	@DisplayName("Test a simple pregen file")
 	void testSimplePregenFile(MinecraftServer server) {
-		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
+		Object2LongMap<ItemInfo> pregenerated = parseJson(server.registryAccess(), """
 				[
 					{
 						"item": "minecraft:dirt",
@@ -39,13 +39,29 @@ class PregeneratedEMCTest {
 					}
 				]""");
 		Assertions.assertEquals(1, pregenerated.size());
-		Assertions.assertEquals(1, pregenerated.get(ItemInfo.fromItem(Items.DIRT)));
+		Assertions.assertEquals(1, pregenerated.getLong(ItemInfo.fromItem(Items.DIRT)));
+	}
+
+	@Test
+	@DisplayName("Test pregen file with duplicate entries")
+	void testPregenFileWithDuplicates(MinecraftServer server) {
+		Assertions.assertThrows(JsonParseException.class, () -> parseJson(server.registryAccess(), """
+				[
+					{
+						"item": "minecraft:dirt",
+						"emc": 1
+					},
+					{
+						"item": "minecraft:dirt",
+						"emc": 2
+					}
+				]"""));
 	}
 
 	@Test
 	@DisplayName("Test pregen file with long values")
 	void testPregenFileLongValues(MinecraftServer server) {
-		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
+		Object2LongMap<ItemInfo> pregenerated = parseJson(server.registryAccess(), """
 				[
 					{
 						"item": "minecraft:dirt",
@@ -54,13 +70,13 @@ class PregeneratedEMCTest {
 				]""");
 		Assertions.assertEquals(1, pregenerated.size());
 		//Max int + 1
-		Assertions.assertEquals(2_147_483_648L, pregenerated.get(ItemInfo.fromItem(Items.DIRT)));
+		Assertions.assertEquals(2_147_483_648L, pregenerated.getLong(ItemInfo.fromItem(Items.DIRT)));
 	}
 
 	@Test
 	@DisplayName("Test pregen file with keys that contains data components")
 	void testPregenFileWithDC(MinecraftServer server) {
-		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
+		Object2LongMap<ItemInfo> pregenerated = parseJson(server.registryAccess(), """
 				[
 					{
 						"item": "minecraft:dirt",
@@ -73,14 +89,14 @@ class PregeneratedEMCTest {
 					}
 				]""");
 		Assertions.assertEquals(1, pregenerated.size());
-		Assertions.assertEquals(1, pregenerated.get(ItemInfo.fromItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
+		Assertions.assertEquals(1, pregenerated.getLong(ItemInfo.fromItem(Items.DIRT, CodecTestHelper.MY_TAG_PATCH)));
 	}
 
 	@Test
 	@DisplayName("Test pregen file with keys that contain an empty data component")
 	void testPregenFileWithEmptyDC(MinecraftServer server) {
 		//Empty data components are ignored and are treated as if they aren't there
-		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
+		Object2LongMap<ItemInfo> pregenerated = parseJson(server.registryAccess(), """
 				[
 					{
 						"item": "minecraft:dirt",
@@ -89,7 +105,7 @@ class PregeneratedEMCTest {
 					}
 				]""");
 		Assertions.assertEquals(1, pregenerated.size());
-		Assertions.assertEquals(1, pregenerated.get(ItemInfo.fromItem(Items.DIRT)));
+		Assertions.assertEquals(1, pregenerated.getLong(ItemInfo.fromItem(Items.DIRT)));
 	}
 
 	@Test
@@ -115,7 +131,7 @@ class PregeneratedEMCTest {
 	@DisplayName("Test pregen file with invalid keys")
 	void testPregenFileInvalidKeys(MinecraftServer server) {
 		//Test to ensure we skip over any invalid keys rather than throwing an exception and failing to deserialize anything
-		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
+		Object2LongMap<ItemInfo> pregenerated = parseJson(server.registryAccess(), """
 				[
 					{
 						"item": "minecraft:dirt",
@@ -146,8 +162,8 @@ class PregeneratedEMCTest {
 					}
 				]""");
 		Assertions.assertEquals(2, pregenerated.size());
-		Assertions.assertEquals(1, pregenerated.get(ItemInfo.fromItem(Items.DIRT)));
-		Assertions.assertEquals(3, pregenerated.get(ItemInfo.fromItem(Items.STONE)));
+		Assertions.assertEquals(1, pregenerated.getLong(ItemInfo.fromItem(Items.DIRT)));
+		Assertions.assertEquals(3, pregenerated.getLong(ItemInfo.fromItem(Items.STONE)));
 	}
 
 	@Test
@@ -169,7 +185,7 @@ class PregeneratedEMCTest {
 	@DisplayName("Test pregen file with missing final value, and an invalid key")
 	void testPregenFileMissingValueInvalidKey(MinecraftServer server) {
 		//Test to ensure we don't fail to load other data if our last entry is missing a value rather than throwing an exception and failing to deserialize anything
-		Map<ItemInfo, Long> pregenerated = parseJson(server.registryAccess(), """
+		Object2LongMap<ItemInfo> pregenerated = parseJson(server.registryAccess(), """
 				[
 					{
 						"item": "minecraft:dirt",
@@ -180,6 +196,6 @@ class PregeneratedEMCTest {
 					}
 				]""");
 		Assertions.assertEquals(1, pregenerated.size());
-		Assertions.assertEquals(1, pregenerated.get(ItemInfo.fromItem(Items.DIRT)));
+		Assertions.assertEquals(1, pregenerated.getLong(ItemInfo.fromItem(Items.DIRT)));
 	}
 }

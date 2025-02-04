@@ -2,11 +2,13 @@ package moze_intel.projecte.config;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.config.value.CachedBooleanValue;
 import moze_intel.projecte.config.value.CachedEnumValue;
 import moze_intel.projecte.config.value.CachedIntValue;
+import moze_intel.projecte.config.value.CachedLongValue;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.TranslatableEnum;
 
@@ -25,6 +27,16 @@ public record ConfigBuilder<OBJ>(IPEConfig config, ModConfigSpec.Builder builder
 	@Override
 	public IntSupplier create(String path, int defaultValue, int minValue, int maxValue) {
 		return CachedIntValue.wrap(config, builder.defineInRange(path, defaultValue, minValue, maxValue));
+	}
+
+	@Override
+	public LongSupplier create(String path, long defaultValue) {
+		return CachedLongValue.wrap(config, builder.define(path, defaultValue));
+	}
+
+	@Override
+	public LongSupplier create(String path, long defaultValue, long minValue, long maxValue) {
+		return CachedLongValue.wrap(config, builder.defineInRange(path, defaultValue, minValue, maxValue));
 	}
 
 	@Override

@@ -37,9 +37,12 @@ public interface IMappingCollector<T, V extends Comparable<V>> {
 	 * @param outnumber   How many items are produced
 	 * @param output      What is produced
 	 * @param ingredients What is consumed
+	 *
+	 * @implNote This method internally combines the iterable into an {@link Object2IntMap}, merging any duplicates. If you are creating a list just to pass to this
+	 * method and run into any performance issues, it is recommended to just directly pass in an {@link Object2IntMap} via
+	 * {@link #addConversion(int, Object, Object2IntMap)} instead.
 	 */
 	void addConversion(int outnumber, T output, Iterable<T> ingredients);
-	//TODO - 1.21: Do we want to deprecate or at least add a warning for this as converting from iterable to obj2intmap has some performance overhead?
 
 	/**
 	 * Set a fixed {@code value} for {@code something} before the calculation happens.
@@ -80,12 +83,16 @@ public interface IMappingCollector<T, V extends Comparable<V>> {
 	 * @param outnumber   How many items are produced
 	 * @param something   The thing that should get the Value.
 	 * @param ingredients What is consumed
+	 *
+	 * @implNote This method internally combines the iterable into an {@link Object2IntMap}, merging any duplicates. If you are creating a list just to pass to this
+	 * method and run into any performance issues, it is recommended to just directly pass in an {@link Object2IntMap} via
+	 * {@link #setValueFromConversion(int, Object, Object2IntMap)} instead.
 	 */
 	void setValueFromConversion(int outnumber, T something, Iterable<T> ingredients);
 
 	/**
-	 * Set a fixed {@code value} for {@code outnumber} items of {@code something} produced by consuming the ingredients, that are specified in the {@code
-	 * ingredientsWithAmount} Map.
+	 * Set a fixed {@code value} for {@code outnumber} items of {@code something} produced by consuming the ingredients, that are specified in the
+	 * {@code ingredientsWithAmount} Map.
 	 *
 	 * @param outnumber             How many items are produced
 	 * @param something             The thing that should get the Value.

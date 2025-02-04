@@ -1,7 +1,7 @@
 package moze_intel.projecte.emc;
 
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import moze_intel.projecte.api.ProjectEAPI;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
@@ -66,7 +66,7 @@ class GraphMapperTest {
 		mappingCollector.setValueBefore("a1", 1L);
 		//2 Recipes for c4
 		mappingCollector.addConversion(1, "c4", List.of("a1", "a1", "a1", "a1"));
-		mappingCollector.addConversion(1, "c4", new LinkedList<>());
+		mappingCollector.addConversion(1, "c4", Collections.emptyList());
 		mappingCollector.addConversion(1, "b2", List.of("a1", "a1"));
 
 		Object2LongMap<String> values = valueGenerator.generateValues();

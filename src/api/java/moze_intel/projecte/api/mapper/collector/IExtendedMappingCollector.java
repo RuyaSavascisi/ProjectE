@@ -44,6 +44,10 @@ public interface IExtendedMappingCollector<T, V extends Comparable<V>, A extends
 	 * @param output                  What is produced
 	 * @param ingredients             What is consumed
 	 * @param arithmeticForConversion The {@link IValueArithmetic} to use for calculating the conversion.
+	 *
+	 * @implNote This method internally combines the iterable into an {@link Object2IntMap}, merging any duplicates. If you are creating a list just to pass to this
+	 * method and run into any performance issues, it is recommended to just directly pass in an {@link Object2IntMap} via
+	 * {@link #addConversion(int, Object, Object2IntMap, IValueArithmetic)} instead.
 	 */
 	void addConversion(int outnumber, T output, Iterable<T> ingredients, A arithmeticForConversion);
 

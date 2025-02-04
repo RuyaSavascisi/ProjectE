@@ -218,6 +218,8 @@
   "configuration.projecte.processing.data_component_processor.decorated_shield.tooltip": "Calculates EMC value of decorated shield.",
   "configuration.projecte.processing.data_component_processor.enchantment": "Enchantment Processor",
   "configuration.projecte.processing.data_component_processor.enchantment.button": "Edit Enchantment Processor",
+  "configuration.projecte.processing.data_component_processor.enchantment.emc_bonus": "Enchantment EMC Bonus",
+  "configuration.projecte.processing.data_component_processor.enchantment.emc_bonus.tooltip": "The amount (scaled by rarity) to increase EMC value by for enchantments.",
   "configuration.projecte.processing.data_component_processor.enchantment.tooltip": "Increases the EMC value to take into account any enchantments on an item.",
   "configuration.projecte.processing.data_component_processor.firework": "Firework Processor",
   "configuration.projecte.processing.data_component_processor.firework.button": "Edit Firework Processor",

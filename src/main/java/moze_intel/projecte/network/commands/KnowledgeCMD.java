@@ -18,6 +18,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -94,44 +95,53 @@ public class KnowledgeCMD {
 			source.sendFailure(PELang.COMMAND_PROVIDER_FAIL.translate(player.getDisplayName()));
 			return 0;
 		}
-		//TODO - 1.21: Figure out about this and persistent info
 		ItemStack item = ItemArgument.getItem(ctx, "item").createItemStack(1, false);
+		Component displayName = item.getDisplayName();
+		if (item.isEmpty()) {
+			source.sendFailure(PELang.COMMAND_KNOWLEDGE_INVALID.translate(displayName));
+			return 0;
+		}
+		ItemInfo itemInfo = IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(item));
 
-		if (!IEMCProxy.INSTANCE.hasValue(item)) {
-			source.sendFailure(PELang.COMMAND_KNOWLEDGE_INVALID.translate(item.getDisplayName()));
+		if (!IEMCProxy.INSTANCE.hasValue(itemInfo)) {
+			source.sendFailure(PELang.COMMAND_KNOWLEDGE_INVALID.translate(displayName));
 			return 0;
 		}
 
 		switch (action) {
 			case LEARN -> {
-				if (provider.hasKnowledge(item)) {
-					return failure(source, PELang.COMMAND_KNOWLEDGE_LEARN_FAIL, player, item);
+				if (provider.hasKnowledge(itemInfo)) {
+					return failure(source, PELang.COMMAND_KNOWLEDGE_LEARN_FAIL, player, displayName);
 				}
-				provider.addKnowledge(item);
-				source.sendSuccess(() -> PELang.COMMAND_KNOWLEDGE_LEARN_SUCCESS.translateColored(ChatFormatting.GREEN, player.getDisplayName(), item.getDisplayName()), true);
+				provider.addKnowledge(itemInfo);
+				success(source, PELang.COMMAND_KNOWLEDGE_LEARN_SUCCESS, player, displayName);
 			}
 			case UNLEARN -> {
-				if (!provider.hasKnowledge(item)) {
-					return failure(source, PELang.COMMAND_KNOWLEDGE_UNLEARN_FAIL, player, item);
+				if (!provider.hasKnowledge(itemInfo)) {
+					return failure(source, PELang.COMMAND_KNOWLEDGE_UNLEARN_FAIL, player, displayName);
 				}
-				provider.removeKnowledge(item);
-				source.sendSuccess(() -> PELang.COMMAND_KNOWLEDGE_UNLEARN_SUCCESS.translateColored(ChatFormatting.GREEN, player.getDisplayName(), item.getDisplayName()), true);
+				provider.removeKnowledge(itemInfo);
+				success(source, PELang.COMMAND_KNOWLEDGE_UNLEARN_SUCCESS, player, displayName);
 			}
 			case TEST -> {
-				if (provider.hasKnowledge(item)) {
-					source.sendSuccess(() -> PELang.COMMAND_KNOWLEDGE_TEST_SUCCESS.translateColored(ChatFormatting.GREEN, player.getDisplayName(), item.getDisplayName()), true);
+				if (provider.hasKnowledge(itemInfo)) {
+					success(source, PELang.COMMAND_KNOWLEDGE_TEST_SUCCESS, player, displayName);
 					return Command.SINGLE_SUCCESS;
 				}
-				return failure(source, PELang.COMMAND_KNOWLEDGE_TEST_FAIL, player, item);
+				return failure(source, PELang.COMMAND_KNOWLEDGE_TEST_FAIL, player, displayName);
 			}
 		}
-		provider.syncKnowledgeChange(player, IEMCProxy.INSTANCE.getPersistentInfo(ItemInfo.fromStack(item)), action == ActionType.LEARN);
+		provider.syncKnowledgeChange(player, itemInfo, action == ActionType.LEARN);
 
 		return Command.SINGLE_SUCCESS;
 	}
 
-	private static int failure(CommandSourceStack source, ILangEntry failureMessage, Player player, ItemStack item) {
-		source.sendFailure(failureMessage.translate(player.getDisplayName(), item.getDisplayName()));
+	private static void success(CommandSourceStack source, ILangEntry successMessage, Player player, Component item) {
+		source.sendSuccess(() -> successMessage.translateColored(ChatFormatting.GREEN, player.getDisplayName(), item), true);
+	}
+
+	private static int failure(CommandSourceStack source, ILangEntry failureMessage, Player player, Component item) {
+		source.sendFailure(failureMessage.translate(player.getDisplayName(), item));
 		return 0;
 	}
 }

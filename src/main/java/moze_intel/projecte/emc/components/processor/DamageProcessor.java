@@ -31,15 +31,20 @@ public class DamageProcessor implements IDataComponentProcessor {
 	@Override
 	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
 		ItemStack fakeStack = info.createStack();
-		int maxDamage = fakeStack.getMaxDamage();
-		if (maxDamage > 0) {
-			int damage = fakeStack.getDamageValue();
-			//This may happen if mods implement their custom damage values incorrectly,
+		if (fakeStack.isDamaged()) {
+			int maxDamage = fakeStack.getMaxDamage();
+			//If mods implement their custom damage values incorrectly damage may be greater than max damage,
 			// in which case we just ignore the damage data rather than making the item have no emc
-			if (damage <= maxDamage) {
-				//maxDmg + 1 because vanilla lets you use the tool one more time
-				// when item damage == max damage (shows as Durability: 0 / max)
-				currentEMC = Math.multiplyExact(currentEMC, Math.addExact(maxDamage - damage, 1)) / maxDamage;
+			int remainingDurability = maxDamage - fakeStack.getDamageValue();
+			if (remainingDurability == 0) {
+				//Note: Shouldn't happen anymore as vanilla properly destroys tools when they get used at Durability: 1/ max
+				// if we do have this case for some reason, return that it isn't worth any emc anymore
+				return 0;
+			} else if (remainingDurability == 1) {
+				//Skip the multiplication
+				currentEMC /= maxDamage;
+			} else if (remainingDurability > 1) {
+				currentEMC = Math.multiplyExact(currentEMC, remainingDurability) / maxDamage;
 			}
 		}
 		return currentEMC;

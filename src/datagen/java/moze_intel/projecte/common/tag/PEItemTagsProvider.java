@@ -126,7 +126,6 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				Items.GLASS_PANE, Items.CYAN_STAINED_GLASS_PANE, Items.GREEN_STAINED_GLASS_PANE, Items.LIME_STAINED_GLASS_PANE, Items.MAGENTA_STAINED_GLASS_PANE,
 				Items.PINK_STAINED_GLASS_PANE
 		).addTag(Tags.Items.CLUSTERS);
-		//TODO - 1.21: Skip any other expected things?
 		for (Item item : BuiltInRegistries.ITEM) {
 			if (item instanceof SpawnEggItem || item instanceof MobBucketItem) {
 				ignoreMissingEMC.add(item);
