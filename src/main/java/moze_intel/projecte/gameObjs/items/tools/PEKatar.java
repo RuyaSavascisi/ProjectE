@@ -127,13 +127,6 @@ public class PEKatar extends PETool implements IItemMode<KatarMode>, IExtraFunct
 		return true;
 	}
 
-	//TODO - 1.21: Re-implement? Replace with LeftClickBlock event listener?
-	//@Override
-	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
-		//Shear the block instead of breaking it if it supports shearing (and has drops to give) instead of actually breaking it normally
-		return ToolHelper.shearBlock(stack, pos, player).consumesAction();
-	}
-
 	@NotNull
 	@Override
 	public InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {

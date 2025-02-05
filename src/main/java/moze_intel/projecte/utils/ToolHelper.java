@@ -32,7 +32,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
@@ -423,29 +422,6 @@ public class ToolHelper {
 			level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.CHARGE.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 			PlayerHelper.swingItem(player, hand);
 		}
-	}
-
-	/**
-	 * Called when tools that act as shears start breaking a block. Free operation.
-	 */
-	public static InteractionResult shearBlock(ItemStack stack, BlockPos pos, Player player) {
-		Level level = player.level();
-		Block block = level.getBlockState(pos).getBlock();
-		if (block instanceof IShearable target) {
-			if (target.isShearable(player, stack, level, pos) && (level.isClientSide || PlayerHelper.hasBreakPermission((ServerPlayer) player, pos))) {
-				List<ItemStack> drops = target.onSheared(player, stack, level, pos);
-				if (!drops.isEmpty()) {
-					if (!level.isClientSide) {
-						WorldHelper.createLootDrop(drops, level, pos);
-						player.awardStat(Stats.BLOCK_MINED.get(block), 1);
-						level.gameEvent(player, GameEvent.SHEAR, pos);
-					}
-					//NOTE: We only mark it as a success if we actually got drops otherwise we let it continue breaking the block
-					return InteractionResult.SUCCESS;
-				}
-			}
-		}
-		return InteractionResult.PASS;
 	}
 
 	/**

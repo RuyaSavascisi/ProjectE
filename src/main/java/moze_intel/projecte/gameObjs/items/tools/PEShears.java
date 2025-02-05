@@ -9,7 +9,6 @@ import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.ToolHelper;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.BlockTags;
@@ -107,13 +106,6 @@ public class PEShears extends ShearsItem implements IItemCharge, IBarHelper {
 	@Override
 	public InteractionResultHolder<ItemStack> use(@NotNull Level level, @NotNull Player player, @NotNull InteractionHand hand) {
 		return ItemHelper.actionResultFromType(ToolHelper.shearEntityAOE(player, hand, 0), player.getItemInHand(hand));
-	}
-
-	//TODO - 1.21: Re-implement? Replace with LeftClickBlock event listener?
-	//@Override
-	public boolean onBlockStartBreak(ItemStack stack, BlockPos pos, Player player) {
-		//Shear the block instead of breaking it if it supports shearing (and has drops to give) instead of actually breaking it normally
-		return ToolHelper.shearBlock(stack, pos, player).consumesAction();
 	}
 
 	@NotNull
