@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Unit;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.ListBuilder;
 import com.mojang.serialization.MapCodec;
@@ -13,14 +14,16 @@ import com.mojang.serialization.RecordBuilder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.codec.MapProcessor;
 
 /**
- * Based semi loosely off off:
+ * Based semi loosely off of:
  * <li>
  *     <ul><a href="https://gist.github.com/thiakil/7cadeb2a8e50aabc5056bc6574af0d90">Thiakil's Map as List Codec</a></ul>
  *     <ul>{@link com.mojang.serialization.codecs.ListCodec} for how to handle decoder state and handing of lists</ul>
@@ -33,12 +36,24 @@ public record PEUnboundedMapCodec<KEY, VALUE, MAP extends Map<KEY, VALUE>>(
 		Supplier<? extends MAP> elementReaderCreator, UnaryOperator<MAP> makeImmutable
 ) implements Codec<MAP> {
 
-	//TODO - 1.21: Do we want a check like this?
-	/*public PEUnboundedMapCodec {
-		if (keyCodec.keys(JsonOps.INSTANCE).containsAny(valueCodec.keys(JsonOps.INSTANCE))) {
-			throw
+	private static <T> void validateCodecKeys(DynamicOps<T> ops, MapCodec<?> keyCodec, MapCodec<?> valueCodec) {
+		Set<T> keyCodecKeys = keyCodec.keys(ops).collect(Collectors.toSet());
+		if (!keyCodecKeys.isEmpty()) {
+			String overlappingKeys = valueCodec.keys(ops)
+					.filter(keyCodecKeys::contains)
+					.map(ops::getStringValue)
+					.filter(DataResult::isSuccess)
+					.map(DataResult::getOrThrow)
+					.collect(Collectors.joining(", "));
+			if (!overlappingKeys.isEmpty()) {
+				throw new IllegalArgumentException("Keys and Values for unbounded maps cannot have overlapping keys: " + overlappingKeys);
+			}
 		}
-	}*/
+	}
+
+	public PEUnboundedMapCodec {
+		validateCodecKeys(JsonOps.INSTANCE, keyCodec, valueCodec);
+	}
 
 	public static <KEY, VALUE> PEUnboundedMapCodec<KEY, VALUE, Map<KEY, VALUE>> create(MapCodec<KEY> keyCodec, MapCodec<VALUE> valueCodec,
 			MapProcessor<KEY, VALUE> processor, boolean lenientKey) {

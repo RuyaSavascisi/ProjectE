@@ -41,7 +41,12 @@ public abstract class PETool extends DiggerItem implements IItemCharge, IBarHelp
 	}
 
 	@Override
-	public boolean isPrimaryItemFor(@NotNull ItemStack stack, @NotNull Holder<Enchantment> enchantment) {//TODO - 1.21: Do we need to override supportsEnchantment as well?
+	public boolean isPrimaryItemFor(@NotNull ItemStack stack, @NotNull Holder<Enchantment> enchantment) {
+		return false;
+	}
+
+	@Override
+	public boolean supportsEnchantment(@NotNull ItemStack stack, @NotNull Holder<Enchantment> enchantment) {
 		return false;
 	}
 

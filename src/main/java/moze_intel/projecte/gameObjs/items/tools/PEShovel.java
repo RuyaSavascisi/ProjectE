@@ -52,6 +52,11 @@ public class PEShovel extends ShovelItem implements IItemCharge, IBarHelper {
 	}
 
 	@Override
+	public boolean supportsEnchantment(@NotNull ItemStack stack, @NotNull Holder<Enchantment> enchantment) {
+		return false;
+	}
+
+	@Override
 	public <T extends LivingEntity> int damageItem(@NotNull ItemStack stack, int amount, T entity, @NotNull Consumer<Item> onBroken) {
 		return 0;
 	}

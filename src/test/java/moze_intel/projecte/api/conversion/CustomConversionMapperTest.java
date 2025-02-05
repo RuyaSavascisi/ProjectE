@@ -174,24 +174,24 @@ class CustomConversionMapperTest {
 							{
 								"type": "projecte:item",
 								"id": "minecraft:stone",
-								"value": 1
+								"emc_value": 1
 							},
 							{
 								"type": "projecte:item",
 								"id": "granite",
-								"value": 2
+								"emc_value": 2
 							},
 							{
 								"type": "projecte:item",
 								"id": "diorite",
-								"value": "free"
+								"emc_value": "free"
 							}
 						],
 						"after": [
 							{
 								"type": "projecte:item",
 								"id": "andesite",
-								"value": 3
+								"emc_value": 3
 							}
 						]
 					}
@@ -213,19 +213,19 @@ class CustomConversionMapperTest {
 							{
 								"type": "projecte:item",
 								"id": "INVALID|stone",
-								"value": 1
+								"emc_value": 1
 							},
 							{
 								"type": "projecte:item",
 								"id": "granite",
-								"value": 2
+								"emc_value": 2
 							}
 						],
 						"after": [
 							{
 								"type": "projecte:item",
 								"id": "INVALID|andesite",
-								"value": 3
+								"emc_value": 3
 							}
 						]
 					}

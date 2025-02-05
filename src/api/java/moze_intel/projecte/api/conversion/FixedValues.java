@@ -33,7 +33,7 @@ public record FixedValues(Object2LongSortedMap<NormalizedSimpleStack> setValueBe
 							val -> val == ProjectEAPI.FREE_ARITHMETIC_VALUE ? "free" : null,
 							str -> str.equalsIgnoreCase("free") ? ProjectEAPI.FREE_ARITHMETIC_VALUE : null
 					)
-			).fieldOf("value")
+			).fieldOf("emc_value")
 	), immutableMap -> {
 		Object2LongSortedMap<NormalizedSimpleStack> map = new Object2LongLinkedOpenHashMap<>(immutableMap);
 		map.defaultReturnValue(-1);

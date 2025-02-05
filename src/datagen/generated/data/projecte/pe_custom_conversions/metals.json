@@ -4,33 +4,33 @@
     "before": [
       {
         "type": "projecte:item",
-        "tag": "c:ingots/iron",
-        "value": 256
+        "emc_value": 256,
+        "tag": "c:ingots/iron"
       },
       {
         "type": "projecte:item",
-        "tag": "c:ingots/uranium",
-        "value": 4096
+        "emc_value": 4096,
+        "tag": "c:ingots/uranium"
       },
       {
         "type": "projecte:item",
-        "tag": "c:gems/amethyst",
-        "value": 32
+        "emc_value": 32,
+        "tag": "c:gems/amethyst"
       },
       {
         "type": "projecte:item",
-        "tag": "c:gems/ruby",
-        "value": 2048
+        "emc_value": 2048,
+        "tag": "c:gems/ruby"
       },
       {
         "type": "projecte:item",
-        "tag": "c:gems/sapphire",
-        "value": 2048
+        "emc_value": 2048,
+        "tag": "c:gems/sapphire"
       },
       {
         "type": "projecte:item",
-        "tag": "c:gems/peridot",
-        "value": 2048
+        "emc_value": 2048,
+        "tag": "c:gems/peridot"
       }
     ],
     "conversion": [
