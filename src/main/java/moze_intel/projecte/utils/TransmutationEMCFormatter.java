@@ -15,7 +15,7 @@ public class TransmutationEMCFormatter {
 		int length = emcAsString.length();
 		int splits = (length - 1) / 3;
 		if (splits < 4) {
-			return TextComponentUtil.getString(Constants.EMC_FORMATTER.format(emc));
+			return TextComponentUtil.getString(EMCHelper.formatEmc(emc));
 		}
 		int postfixIndex = splits - 4;
 		if (postfixIndex > MAX_POSTFIX_INDEX) {
@@ -35,6 +35,6 @@ public class TransmutationEMCFormatter {
 		} else {//if (extraDigits == 2)
 			value = Double.parseDouble(emcAsString.substring(0, 2) + "." + emcAsString.substring(2, 4));
 		}
-		return TextComponentUtil.smartTranslate(Util.makeDescriptionId("emc", PECore.rl("postfix." + postfixIndex)), Constants.EMC_FORMATTER.format(value));
+		return TextComponentUtil.smartTranslate(Util.makeDescriptionId("emc", PECore.rl("postfix." + postfixIndex)), EMCHelper.formatEmc(value));
 	}
 }

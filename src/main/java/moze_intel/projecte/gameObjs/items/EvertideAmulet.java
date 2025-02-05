@@ -113,9 +113,9 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IPedes
 					worldInfo.setThunderTime(i);
 					worldInfo.setRaining(true);
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.evertide.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.evertide.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

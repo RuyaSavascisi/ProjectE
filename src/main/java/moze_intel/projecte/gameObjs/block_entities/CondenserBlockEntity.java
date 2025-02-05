@@ -68,9 +68,11 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 
 	@Nullable
 	public final ItemInfo getLockInfo() {
-		if (requiredEmc == 0 && (level == null || !level.isClientSide)) {
-			//If the lock doesn't have EMC don't tell the client it is there
-			return null;
+		if (requiredEmc == 0) {
+			if (level == null || !level.isClientSide) {
+				//If the lock doesn't have EMC don't tell the client it is there
+				return null;
+			}
 		}
 		return lockInfo;
 	}
@@ -114,7 +116,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 		if (condenser.getLockInfo() != null) {
 			condenser.condense();
 		}
-		condenser.updateComparators();
+		condenser.updateComparators(level, pos);
 	}
 
 	private void checkLockAndUpdate(boolean force) {
@@ -189,7 +191,11 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 	}
 
 	public boolean attemptCondenserSet(Player player) {
-		if (level == null || level.isClientSide) {
+		return level != null && attemptCondenserSet(level, worldPosition, player);
+	}
+
+	private boolean attemptCondenserSet(@NotNull Level level, @NotNull BlockPos pos, Player player) {
+		if (level.isClientSide) {
 			return false;
 		}
 		if (getLockInfo() == null) {
@@ -200,7 +206,7 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 				if (!NeoForge.EVENT_BUS.post(new PlayerAttemptCondenserSetEvent(player, sourceInfo, reducedInfo)).isCanceled()) {
 					lockInfo = reducedInfo;
 					checkLockAndUpdate(true);
-					markDirty(false);
+					markDirty(level, pos, false);
 					return true;
 				}
 				return false;
@@ -213,16 +219,16 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 		}
 		lockInfo = null;
 		checkLockAndUpdate(true);
-		markDirty(false);
+		markDirty(level, pos, false);
 		return true;
 	}
 
 	@Override
 	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		inputInventory.deserializeNBT(registries, tag.getCompound("Input"));
-		if (tag.contains("LockInfo")) {
-			lockInfo = ItemInfo.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("LockInfo")).result().orElse(null);
+		inputInventory.deserializeNBT(registries, tag.getCompound("input"));
+		if (tag.contains("lock")) {
+			lockInfo = ItemInfo.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("lock")).result().orElse(null);
 		} else {
 			lockInfo = null;
 		}
@@ -231,11 +237,11 @@ public class CondenserBlockEntity extends EmcChestBlockEntity {
 	@Override
 	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.saveAdditional(tag, registries);
-		tag.put("Input", inputInventory.serializeNBT(registries));
+		tag.put("input", inputInventory.serializeNBT(registries));
 		if (lockInfo != null) {
 			DataResult<Tag> result = ItemInfo.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), lockInfo);
 			if (result.isSuccess()) {
-				tag.put("LockInfo", result.getOrThrow());
+				tag.put("lock", result.getOrThrow());
 			}
 		}
 	}

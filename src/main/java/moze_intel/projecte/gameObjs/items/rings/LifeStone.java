@@ -75,9 +75,9 @@ public class LifeStone extends PEToggleItem implements IPedestalItem, ICapabilit
 						player.gameEvent(GameEvent.EAT);
 					}
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.life.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.life.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

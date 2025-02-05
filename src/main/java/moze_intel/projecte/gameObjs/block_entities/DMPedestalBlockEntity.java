@@ -52,20 +52,16 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 	public static void tickClient(Level level, BlockPos pos, BlockState state, DMPedestalBlockEntity pedestal) {
 		if (pedestal.getActive()) {
 			ItemStack stack = pedestal.inventory.getStackInSlot(0);
-			if (stack.isEmpty()) {
-				pedestal.setActive(false);
+			IPedestalItem pedestalItem = stack.getCapability(PECapabilities.PEDESTAL_ITEM_CAPABILITY);
+			if (pedestalItem == null) {
+				pedestal.setActive(level, pos, false);
 			} else {
-				IPedestalItem pedestalItem = stack.getCapability(PECapabilities.PEDESTAL_ITEM_CAPABILITY);
-				if (pedestalItem != null) {
-					pedestalItem.updateInPedestal(stack, level, pos, pedestal);
-					if (pedestal.particleCooldown <= 0) {
-						pedestal.spawnParticleTypes();
-						pedestal.particleCooldown = Constants.TICKS_PER_HALF_SECOND;
-					} else {
-						pedestal.particleCooldown--;
-					}
+				pedestalItem.updateInPedestal(stack, level, pos, pedestal);
+				if (pedestal.particleCooldown <= 0) {
+					spawnParticleTypes(level, pos);
+					pedestal.particleCooldown = Constants.TICKS_PER_HALF_SECOND;
 				} else {
-					pedestal.setActive(false);
+					pedestal.particleCooldown--;
 				}
 			}
 		}
@@ -74,26 +70,20 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 	public static void tickServer(Level level, BlockPos pos, BlockState state, DMPedestalBlockEntity pedestal) {
 		if (pedestal.getActive()) {
 			ItemStack stack = pedestal.inventory.getStackInSlot(0);
-			if (stack.isEmpty()) {
-				pedestal.setActive(false);
-			} else {
-				IPedestalItem pedestalItem = stack.getCapability(PECapabilities.PEDESTAL_ITEM_CAPABILITY);
-				if (pedestalItem != null) {
-					if (pedestalItem.updateInPedestal(stack, level, pos, pedestal)) {
-						pedestal.inventory.onContentsChanged(0);
-					}
-				} else {
-					pedestal.setActive(false);
-				}
+			IPedestalItem pedestalItem = stack.getCapability(PECapabilities.PEDESTAL_ITEM_CAPABILITY);
+			if (pedestalItem == null) {
+				pedestal.setActive(level, pos, false);
+			} else if (pedestalItem.updateInPedestal(stack, level, pos, pedestal)) {
+				pedestal.inventory.onContentsChanged(0);
 			}
 		}
-		pedestal.updateComparators();
+		pedestal.updateComparators(level, pos);
 	}
 
-	private void spawnParticleTypes() {
-		int x = worldPosition.getX();
-		int y = worldPosition.getY();
-		int z = worldPosition.getZ();
+	private static void spawnParticleTypes(@NotNull Level level, @NotNull BlockPos pos) {
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
 		level.addParticle(ParticleTypes.FLAME, x + 0.2, y + 0.3, z + 0.2, 0, 0, 0);
 		level.addParticle(ParticleTypes.FLAME, x + 0.2, y + 0.3, z + 0.5, 0, 0, 0);
 		level.addParticle(ParticleTypes.FLAME, x + 0.2, y + 0.3, z + 0.8, 0, 0, 0);
@@ -104,15 +94,12 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 		level.addParticle(ParticleTypes.FLAME, x + 0.8, y + 0.3, z + 0.8, 0, 0, 0);
 		RandomSource rand = level.random;
 		for (int i = 0; i < 3; ++i) {
-			int j = rand.nextInt(2) * 2 - 1;
-			int k = rand.nextInt(2) * 2 - 1;
-			double d0 = (double) worldPosition.getX() + 0.5D + 0.25D * (double) j;
-			double d1 = (float) worldPosition.getY() + rand.nextFloat();
-			double d2 = (double) worldPosition.getZ() + 0.5D + 0.25D * (double) k;
-			double d3 = rand.nextFloat() * (float) j;
-			double d4 = ((double) rand.nextFloat() - 0.5D) * 0.125D;
-			double d5 = rand.nextFloat() * (float) k;
-			level.addParticle(ParticleTypes.PORTAL, d0, d1, d2, d3, d4, d5);
+			int xDirection = rand.nextBoolean() ? -1 : 1;
+			int zDirection = rand.nextBoolean() ? -1 : 1;
+			level.addParticle(ParticleTypes.PORTAL,
+					x + 0.5D + xDirection * 0.25D, y + rand.nextFloat(), z + 0.5D + zDirection * 0.25D,
+					xDirection * rand.nextFloat(), (rand.nextFloat() - 0.5D) * 0.125D, zDirection * rand.nextFloat()
+			);
 		}
 	}
 
@@ -122,17 +109,17 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 	}
 
 	@Override
-	public void setActivityCooldown(int cooldown) {
+	public void setActivityCooldown(@NotNull Level level, @NotNull BlockPos pos, int cooldown) {
 		if (activityCooldown != cooldown) {
 			activityCooldown = cooldown;
-			markDirty(false);
+			markDirty(level, pos, false);
 		}
 	}
 
 	@Override
-	public void decrementActivityCooldown() {
+	public void decrementActivityCooldown(@NotNull Level level, @NotNull BlockPos pos) {
 		activityCooldown--;
-		markDirty(false);
+		markDirty(level, pos, false);
 	}
 
 	@Override
@@ -144,8 +131,8 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
 		inventory.deserializeNBT(registries, tag);
-		setActive(tag.getBoolean("isActive"));
-		activityCooldown = tag.getInt("activityCooldown");
+		isActive = tag.getBoolean("active");
+		activityCooldown = tag.getInt("activity_cooldown");
 		previousRedstoneState = tag.getBoolean("powered");
 	}
 
@@ -153,8 +140,8 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.saveAdditional(tag, registries);
 		tag.merge(inventory.serializeNBT(registries));
-		tag.putBoolean("isActive", getActive());
-		tag.putInt("activityCooldown", activityCooldown);
+		tag.putBoolean("active", getActive());
+		tag.putInt("activity_cooldown", activityCooldown);
 		tag.putBoolean("powered", previousRedstoneState);
 	}
 
@@ -162,30 +149,30 @@ public class DMPedestalBlockEntity extends EmcBlockEntity implements IDMPedestal
 		return isActive;
 	}
 
-	public void setActive(boolean newState) {
-		if (newState != this.getActive() && level != null) {
+	public void setActive(@NotNull Level level, @NotNull BlockPos pos, boolean newState) {
+		if (newState != this.getActive()) {
 			if (newState) {
-				level.playSound(null, worldPosition, PESoundEvents.CHARGE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+				level.playSound(null, pos, PESoundEvents.CHARGE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 				for (int i = 0; i < level.random.nextInt(35) + 10; ++i) {
 					level.addParticle(ParticleTypes.WITCH,
-							worldPosition.getX() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
-							worldPosition.getY() + 1 + level.random.nextGaussian() * 0.12999999523162842D,
-							worldPosition.getZ() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
+							pos.getX() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
+							pos.getY() + 1 + level.random.nextGaussian() * 0.12999999523162842D,
+							pos.getZ() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
 							0.0D, 0.0D, 0.0D);
 				}
 			} else {
-				level.playSound(null, worldPosition, PESoundEvents.UNCHARGE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
+				level.playSound(null, pos, PESoundEvents.UNCHARGE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 				for (int i = 0; i < level.random.nextInt(35) + 10; ++i) {
 					level.addParticle(ParticleTypes.SMOKE,
-							worldPosition.getX() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
-							worldPosition.getY() + 1 + level.random.nextGaussian() * 0.12999999523162842D,
-							worldPosition.getZ() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
+							pos.getX() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
+							pos.getY() + 1 + level.random.nextGaussian() * 0.12999999523162842D,
+							pos.getZ() + 0.5 + level.random.nextGaussian() * 0.12999999523162842D,
 							0.0D, 0.0D, 0.0D);
 				}
 			}
 		}
 		this.isActive = newState;
-		setChanged();
+		markDirty(level, pos, true);
 	}
 
 	public IItemHandlerModifiable getInventory() {

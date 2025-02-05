@@ -72,13 +72,13 @@ public class CondenserMK2BlockEntity extends CondenserBlockEntity {
 	@Override
 	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		getOutput().deserializeNBT(registries, tag.getCompound("Output"));
+		getOutput().deserializeNBT(registries, tag.getCompound("output"));
 	}
 
 	@Override
 	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.saveAdditional(tag, registries);
-		tag.put("Output", getOutput().serializeNBT(registries));
+		tag.put("output", getOutput().serializeNBT(registries));
 	}
 
 	@Override

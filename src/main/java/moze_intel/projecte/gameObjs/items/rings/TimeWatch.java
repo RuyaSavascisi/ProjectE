@@ -83,27 +83,25 @@ public class TimeWatch extends PEToggleItem implements IPedestalItem, IItemCharg
 			return;
 		}
 		TimeWatchMode timeControl = stack.getOrDefault(PEDataComponentTypes.TIME_WATCH_MODE, TimeWatchMode.OFF);
-		if (!level.isClientSide && level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
+		if (timeControl != TimeWatchMode.OFF && !level.isClientSide && level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
 			ServerLevel serverWorld = (ServerLevel) level;
-			if (timeControl == TimeWatchMode.FAST_FORWARD) {
-				serverWorld.setDayTime(Math.min(level.getDayTime() + (getCharge(stack) + 1) * 4L, Long.MAX_VALUE));
-			} else if (timeControl == TimeWatchMode.REWIND) {
-				long charge = getCharge(stack) + 1;
-				if (level.getDayTime() - charge * 4 < 0) {
-					serverWorld.setDayTime(0);
-				} else {
-					serverWorld.setDayTime(level.getDayTime() - charge * 4);
-				}
+			long scaledCharge = 4L * (getCharge(stack) + 1);
+			if (timeControl == TimeWatchMode.REWIND) {//rewind
+				serverWorld.setDayTime(Math.max(level.getDayTime() - scaledCharge, 0));
+			} else if (level.getDayTime() > Long.MAX_VALUE - scaledCharge) {//Fast forward (would go past max long)
+				serverWorld.setDayTime(Long.MAX_VALUE);
+			} else {//Fast forward
+				serverWorld.setDayTime(level.getDayTime() + scaledCharge);
 			}
 		}
 		if (level.isClientSide || !stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			return;
 		}
-		long reqEmc = EMCHelper.removeFractionalEMC(stack, getEmcPerTick(this.getCharge(stack)));
+		int charge = getCharge(stack);
+		long reqEmc = EMCHelper.removeFractionalEMC(stack, getEmcPerTick(charge));
 		if (!consumeFuel(player, stack, reqEmc, true)) {
 			return;
 		}
-		int charge = this.getCharge(stack);
 		int bonusTicks;
 		float mobSlowdown;
 		if (charge == 0) {

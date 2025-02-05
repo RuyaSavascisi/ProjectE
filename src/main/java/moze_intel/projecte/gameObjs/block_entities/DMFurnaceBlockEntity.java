@@ -87,7 +87,7 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 				ItemStack input = getStackInSlot(0);
 				if (!ItemStack.isSameItemSameComponents(oldInput, input)) {
 					//Reset the cooking progress
-					RecipeResult recipeResult = level == null ? RecipeResult.EMPTY : getSmeltingRecipe(level, input);
+					RecipeResult recipeResult = getSmeltingRecipe(input);
 					cookingTotalTime = getTotalCookTime(recipeResult);
 					cookingProgress = 0;
 					oldInput = input.copy();
@@ -186,11 +186,11 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 	}
 
 	public float getBurnProgress() {
-		if (cookingTotalTime == 0 || level == null) {
+		if (cookingTotalTime == 0) {
 			return 0;
 		}
 		//Adjust by one so that it can look like it is actually reaching the end of the bar
-		int progress = isLit() && canSmelt(getSmeltingRecipe(level, getItemToSmelt())) ? cookingProgress + 1 : cookingProgress;
+		int progress = isLit() && canSmelt(getSmeltingRecipe(getItemToSmelt())) ? cookingProgress + 1 : cookingProgress;
 		return Mth.clamp(progress / (float) cookingTotalTime, 0, 1);
 	}
 
@@ -235,7 +235,7 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		}
 		furnace.inputInventory.compact();
 		furnace.outputInventory.compact();
-		furnace.pullFromInventories();
+		furnace.pullFromInventories(level, pos);
 
 		RecipeResult recipeResult = furnace.getSmeltingRecipe(level, furnace.getItemToSmelt());
 		boolean canSmelt = furnace.canSmelt(recipeResult);
@@ -247,7 +247,7 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 				if (simulatedExtraction == EMC_CONSUMPTION) {
 					furnace.forceInsertEmc(emcHolder.extractEmc(fuelItem, simulatedExtraction, EmcAction.EXECUTE), EmcAction.EXECUTE);
 				}
-				furnace.markDirty(false);
+				furnace.markDirty(level, pos, false);
 			}
 		}
 
@@ -266,7 +266,7 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 					if (fuelItem.isEmpty()) {
 						furnace.fuelInv.setStackInSlot(0, copy.getItem().getCraftingRemainingItem(copy));
 					}
-					furnace.markDirty(false);
+					furnace.markDirty(level, pos, false);
 				}
 			}
 			if (furnace.isLit() && ++furnace.cookingProgress == furnace.cookingTotalTime) {
@@ -282,26 +282,26 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 				//Should always be true, but validate it just in case
 				level.setBlockAndUpdate(pos, state.setValue(MatterFurnace.LIT, furnace.isLit()));
 			}
-			furnace.setChanged();
+			furnace.markDirty(level, pos, true);
 		}
-		furnace.pushToInventories();
+		furnace.pushToInventories(level, pos);
 		if (lastLitTime != furnace.litTime || lastCookingProgress != furnace.cookingProgress) {
-			furnace.markDirty(false);
+			furnace.markDirty(level, pos, false);
 		}
-		furnace.updateComparators();
+		furnace.updateComparators(level, pos);
 	}
 
 	public boolean isLit() {
 		return litTime > 0;
 	}
 
-	private boolean isHopper(BlockPos position) {
+	private static boolean isHopper(@NotNull Level level, @NotNull BlockPos position) {
 		//We let hoppers go at their normal rate
 		return WorldHelper.getBlockEntity(level, position) instanceof Hopper;
 	}
 
-	private void pullFromInventories() {
-		if (pullTarget == null || isHopper(worldPosition.above())) {
+	private void pullFromInventories(@NotNull Level level, @NotNull BlockPos pos) {
+		if (pullTarget == null || isHopper(level, pos.above())) {
 			return;
 		}
 		IItemHandler handler = pullTarget.getCapability();
@@ -316,8 +316,8 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		}
 	}
 
-	private void pushToInventories() {
-		if (pushTarget == null || outputInventory.isEmpty() || isHopper(worldPosition.below())) {
+	private void pushToInventories(@NotNull Level level, @NotNull BlockPos pos) {
+		if (pushTarget == null || outputInventory.isEmpty() || isHopper(level, pos.below())) {
 			return;
 		}
 		IItemHandler targetInv = pushTarget.getCapability();
@@ -341,8 +341,12 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		}
 	}
 
-	private RecipeResult getSmeltingRecipe(@NotNull Level level, ItemStack input) {
-		if (input.isEmpty()) {
+	private RecipeResult getSmeltingRecipe(ItemStack input) {
+		return getSmeltingRecipe(level, input);
+	}
+
+	private RecipeResult getSmeltingRecipe(@Nullable Level level, ItemStack input) {
+		if (level == null || input.isEmpty()) {
 			return RecipeResult.EMPTY;
 		}
 		//Note: We copy the input and fuel so that if anyone attempts to mutate the input from assemble then there is no side effects that occur
@@ -356,7 +360,7 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 	}
 
 	public boolean hasSmeltingResult(ItemStack input) {
-		return level != null && !getSmeltingRecipe(level, input).result().isEmpty();
+		return getSmeltingRecipe(input).hasResult();
 	}
 
 	private void smeltItem(@NotNull Level level, @NotNull RecipeResult recipeResult) {
@@ -417,15 +421,15 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 	@Override
 	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		litTime = tag.getInt("BurnTime");
-		cookingProgress = tag.getInt("CookTime");
-		cookingTotalTime = tag.getInt("CookTimeTotal");
-		fuelInv.deserializeNBT(registries, tag.getCompound("Fuel"));
-		inputInventory.deserializeNBT(registries, tag.getCompound("Input"));
-		outputInventory.deserializeNBT(registries, tag.getCompound("Output"));
+		litTime = tag.getInt("burn_time");
+		cookingProgress = tag.getInt("cook_time");
+		cookingTotalTime = tag.getInt("cook_time_total");
+		fuelInv.deserializeNBT(registries, tag.getCompound("fuel"));
+		inputInventory.deserializeNBT(registries, tag.getCompound("input"));
+		outputInventory.deserializeNBT(registries, tag.getCompound("output"));
 		litDuration = getItemBurnTime(getFuelItem());
 		//[VanillaCopy] AbstractFurnaceBlockEntity
-		CompoundTag usedRecipes = tag.getCompound("RecipesUsed");
+		CompoundTag usedRecipes = tag.getCompound("recipes_used");
 		for (String recipeId : usedRecipes.getAllKeys()) {
 			this.recipesUsed.put(ResourceLocation.parse(recipeId), usedRecipes.getInt(recipeId));
 		}
@@ -434,19 +438,19 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 	@Override
 	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.saveAdditional(tag, registries);
-		tag.putInt("BurnTime", litTime);
-		tag.putInt("CookTime", cookingProgress);
-		tag.putInt("CookTimeTotal", this.cookingTotalTime);
-		tag.put("Input", inputInventory.serializeNBT(registries));
-		tag.put("Output", outputInventory.serializeNBT(registries));
-		tag.put("Fuel", fuelInv.serializeNBT(registries));
+		tag.putInt("burn_time", litTime);
+		tag.putInt("cook_time", cookingProgress);
+		tag.putInt("cook_time_total", this.cookingTotalTime);
+		tag.put("input", inputInventory.serializeNBT(registries));
+		tag.put("output", outputInventory.serializeNBT(registries));
+		tag.put("fuel", fuelInv.serializeNBT(registries));
 		//[VanillaCopy] AbstractFurnaceBlockEntity
 		CompoundTag usedRecipes = new CompoundTag();
 		for (Iterator<Object2IntMap.Entry<ResourceLocation>> iterator = Object2IntMaps.fastIterator(recipesUsed); iterator.hasNext(); ) {
 			Object2IntMap.Entry<ResourceLocation> entry = iterator.next();
 			usedRecipes.putInt(entry.getKey().toString(), entry.getIntValue());
 		}
-		tag.put("RecipesUsed", usedRecipes);
+		tag.put("recipes_used", usedRecipes);
 	}
 
 	@Override
@@ -523,6 +527,10 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 				return result.copyWithCount(2 * result.getCount());
 			}
 			return result.copy();
+		}
+
+		public boolean hasResult() {
+			return !result.isEmpty();
 		}
 	}
 }

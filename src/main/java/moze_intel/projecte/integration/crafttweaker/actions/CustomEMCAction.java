@@ -4,7 +4,7 @@ import com.blamejared.crafttweaker.api.action.base.IUndoableAction;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.integration.crafttweaker.mappers.CrTCustomEMCMapper;
-import moze_intel.projecte.utils.Constants;
+import moze_intel.projecte.utils.EMCHelper;
 import org.jetbrains.annotations.NotNull;
 
 public class CustomEMCAction implements IUndoableAction {
@@ -25,7 +25,7 @@ public class CustomEMCAction implements IUndoableAction {
 
 	@Override
 	public String describe() {
-		return "Registered emc value of '" + Constants.EMC_FORMATTER.format(emc) + "' for: " + stack;
+		return "Registered emc value of '" + EMCHelper.formatEmc(emc) + "' for: " + stack;
 	}
 
 	@Override

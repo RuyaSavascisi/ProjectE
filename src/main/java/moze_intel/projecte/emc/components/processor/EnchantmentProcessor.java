@@ -55,7 +55,7 @@ public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEncha
 
 	@Override
 	public void addConfigOptions(IConfigBuilder<IDataComponentProcessor> configBuilder) {
-		PEConfigTranslations.DCP_ENCHANTMENT_EMC_BONUS.applyToBuilder(configBuilder.builder());
+		PEConfigTranslations.DCP_ENCHANTMENT_EMC_BONUS.applyToBuilder(configBuilder.builder()).worldRestart();
 		enchantmentEmcBonus = configBuilder.create("enchantment_emc_bonus", DEFAULT_ENCHANT_EMC_BONUS, 0, Long.MAX_VALUE);
 	}
 

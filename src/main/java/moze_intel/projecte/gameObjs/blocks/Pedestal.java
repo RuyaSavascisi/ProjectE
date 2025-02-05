@@ -132,7 +132,7 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 			if (stack.isEmpty() && !item.isEmpty()) {
 				IPedestalItem pedestalItem = item.getCapability(PECapabilities.PEDESTAL_ITEM_CAPABILITY);
 				if (pedestalItem != null) {
-					pedestal.setActive(!pedestal.getActive());
+					pedestal.setActive(level, pos, !pedestal.getActive());
 					level.sendBlockUpdated(pos, state, state, Block.UPDATE_IMMEDIATE);
 				}
 			} else if (!stack.isEmpty() && item.isEmpty()) {
@@ -153,12 +153,12 @@ public class Pedestal extends Block implements SimpleWaterloggedBlock, PEEntityB
 				ItemStack stack = ped.getInventory().getStackInSlot(0);
 				//Note: Checking the capability is present will validate that the stack is not empty
 				if (stack.getCapability(PECapabilities.PEDESTAL_ITEM_CAPABILITY) != null) {
-					ped.setActive(!ped.getActive());
+					ped.setActive(level, pos, !ped.getActive());
 					level.sendBlockUpdated(pos, state, state, Block.UPDATE_ALL_IMMEDIATE);
 				}
 			}
 			ped.previousRedstoneState = hasSignal;
-			ped.markDirty(false);
+			ped.markDirty(level, pos, false);
 		}
 	}
 

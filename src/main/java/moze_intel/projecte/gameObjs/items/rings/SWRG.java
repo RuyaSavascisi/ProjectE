@@ -145,9 +145,9 @@ public class SWRG extends ItemPE implements IPedestalItem, IProjectileShooter, I
 						level.addFreshEntity(lightning);
 					}
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.swrg.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.swrg.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

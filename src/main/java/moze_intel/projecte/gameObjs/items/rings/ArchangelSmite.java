@@ -108,9 +108,9 @@ public class ArchangelSmite extends PEToggleItem implements IPedestalItem {
 						level.addFreshEntity(arrow);
 					}
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.archangel.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.archangel.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

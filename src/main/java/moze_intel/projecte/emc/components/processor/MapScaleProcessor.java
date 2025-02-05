@@ -109,7 +109,7 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 
 		@Nullable
 		public static Level getLevel() {
-			return  Minecraft.getInstance().level;
+			return Minecraft.getInstance().level;
 		}
 	}
 }

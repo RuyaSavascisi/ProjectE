@@ -60,9 +60,9 @@ public class RepairTalisman extends ItemPE implements IAlchBagItem, IAlchChestIt
 		if (!level.isClientSide && ProjectEConfig.server.cooldown.pedestal.repair.get() != -1) {
 			if (pedestal.getActivityCooldown() == 0) {
 				level.getEntitiesOfClass(Player.class, pedestal.getEffectBounds()).forEach(RepairTalisman::repairAllItems);
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.repair.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.repair.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

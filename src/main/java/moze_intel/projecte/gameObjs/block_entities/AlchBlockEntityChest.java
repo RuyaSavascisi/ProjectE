@@ -68,12 +68,13 @@ public class AlchBlockEntityChest extends EmcChestBlockEntity {
 	}
 
 	public static void tickServer(Level level, BlockPos pos, BlockState state, AlchBlockEntityChest alchChest) {
-		for (int i = 0, slots = alchChest.inventory.getSlots(); i < slots; i++) {
-			ItemStack stack = alchChest.inventory.getStackInSlot(i);
+		StackHandler inventory = alchChest.inventory;
+		for (int i = 0, slots = inventory.getSlots(); i < slots; i++) {
+			ItemStack stack = inventory.getStackInSlot(i);
 			if (!stack.isEmpty()) {
 				IAlchChestItem alchChestItem = stack.getCapability(PECapabilities.ALCH_CHEST_ITEM_CAPABILITY);
 				if (alchChestItem != null && alchChestItem.updateInAlchChest(level, pos, stack)) {
-					alchChest.inventory.onContentsChanged(i);
+					inventory.onContentsChanged(i);
 				}
 			}
 		}
@@ -82,7 +83,7 @@ public class AlchBlockEntityChest extends EmcChestBlockEntity {
 			alchChest.inventoryChanged = false;
 			level.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
 		}
-		alchChest.updateComparators();
+		alchChest.updateComparators(level, pos);
 	}
 
 	public IItemHandler getInventory() {

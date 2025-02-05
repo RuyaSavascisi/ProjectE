@@ -72,9 +72,9 @@ public class Ignition extends PEToggleItem implements IPedestalItem, IFireProtec
 					living.hurt(fire, 3.0F);
 					living.igniteForSeconds(8);
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.ignition.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.ignition.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

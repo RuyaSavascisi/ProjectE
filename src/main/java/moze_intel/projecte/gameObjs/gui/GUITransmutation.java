@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
-import moze_intel.projecte.utils.Constants;
+import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.TransmutationEMCFormatter;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.Minecraft;
@@ -19,7 +19,9 @@ import org.lwjgl.glfw.GLFW;
 
 public class GUITransmutation extends PEContainerScreen<TransmutationContainer> {
 
+	private static final BigInteger MAX_EXACT_TRANSMUTATION_DISPLAY = BigInteger.valueOf(1_000_000_000_000L);
 	private static final ResourceLocation texture = PECore.rl("textures/gui/transmute.png");
+
 	private final TransmutationInventory inv;
 	private EditBox textBoxFilter;
 	private Button previous, next;
@@ -157,7 +159,7 @@ public class GUITransmutation extends PEContainerScreen<TransmutationContainer> 
 	protected void renderTooltip(@NotNull GuiGraphics graphics, int mouseX, int mouseY) {
 		BigInteger emcAmount = inv.getAvailableEmc();
 
-		if (emcAmount.compareTo(Constants.MAX_EXACT_TRANSMUTATION_DISPLAY) < 0) {
+		if (emcAmount.compareTo(MAX_EXACT_TRANSMUTATION_DISPLAY) < 0) {
 			super.renderTooltip(graphics, mouseX, mouseY);
 			return;
 		}
@@ -168,7 +170,7 @@ public class GUITransmutation extends PEContainerScreen<TransmutationContainer> 
 		int emcBottom = emcTop + 15;
 
 		if (mouseX > emcLeft && mouseX < emcRight && mouseY > emcTop && mouseY < emcBottom) {
-			setTooltipForNextRenderPass(PELang.EMC_TOOLTIP.translate(Constants.EMC_FORMATTER.format(emcAmount)));
+			setTooltipForNextRenderPass(PELang.EMC_TOOLTIP.translate(EMCHelper.formatEmc(emcAmount)));
 		} else {
 			super.renderTooltip(graphics, mouseX, mouseY);
 		}

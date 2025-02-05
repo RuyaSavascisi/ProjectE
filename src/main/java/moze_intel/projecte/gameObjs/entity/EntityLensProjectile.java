@@ -1,7 +1,7 @@
 package moze_intel.projecte.gameObjs.entity;
 
+import moze_intel.projecte.gameObjs.items.HyperkineticLens.ExplosiveLensCharge;
 import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
-import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -18,14 +18,14 @@ import org.jetbrains.annotations.NotNull;
 
 public class EntityLensProjectile extends NoGravityThrowableProjectile {
 
-	private int charge;
+	private ExplosiveLensCharge charge;
 
 	public EntityLensProjectile(EntityType<EntityLensProjectile> type, Level level) {
 		super(type, level);
 	}
 
-	public EntityLensProjectile(Player entity, int charge, Level level) {
-		super(PEEntityTypes.LENS_PROJECTILE.get(), entity, level);
+	public EntityLensProjectile(Player entity, ExplosiveLensCharge charge) {
+		super(PEEntityTypes.LENS_PROJECTILE.get(), entity, entity.level());
 		this.charge = charge;
 	}
 
@@ -46,8 +46,9 @@ public class EntityLensProjectile extends NoGravityThrowableProjectile {
 	@Override
 	protected void onHit(@NotNull HitResult result) {
 		if (!level().isClientSide) {
-			WorldHelper.createNovaExplosion(level(), getOwner(), getX(), getY(), getZ(), Constants.EXPLOSIVE_LENS_RADIUS[charge]);
+			WorldHelper.createNovaExplosion(level(), getOwner(), getX(), getY(), getZ(), charge.radius());
 		}
+		//TODO - 1.21: Should we be calling super instead for handling the game events etc
 		gameEvent(GameEvent.PROJECTILE_LAND, getOwner());
 		discard();
 	}
@@ -55,13 +56,13 @@ public class EntityLensProjectile extends NoGravityThrowableProjectile {
 	@Override
 	public void addAdditionalSaveData(@NotNull CompoundTag nbt) {
 		super.addAdditionalSaveData(nbt);
-		nbt.putInt("Charge", charge);
+		nbt.putInt("charge", charge.ordinal());
 	}
 
 	@Override
 	public void readAdditionalSaveData(@NotNull CompoundTag nbt) {
 		super.readAdditionalSaveData(nbt);
-		charge = nbt.getInt("Charge");
+		charge = ExplosiveLensCharge.BY_ID.apply(nbt.getInt("charge"));
 	}
 
 	@Override

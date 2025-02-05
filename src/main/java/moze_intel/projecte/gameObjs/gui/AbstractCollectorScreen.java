@@ -4,7 +4,7 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.CollectorMK1Container;
 import moze_intel.projecte.gameObjs.container.CollectorMK2Container;
 import moze_intel.projecte.gameObjs.container.CollectorMK3Container;
-import moze_intel.projecte.utils.Constants;
+import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +33,7 @@ public abstract class AbstractCollectorScreen<T extends CollectorMK1Container> e
 		graphics.drawString(font, Long.toString(menu.emc.get()), 60 + getBonusXShift(), 32, 0x404040, false);
 		long kleinCharge = menu.kleinEmc.get();
 		if (kleinCharge > 0) {
-			graphics.drawString(font, Constants.EMC_FORMATTER.format(kleinCharge), 60 + getBonusXShift(), 44, 0x404040, false);
+			graphics.drawString(font, EMCHelper.formatEmc(kleinCharge), 60 + getBonusXShift(), 44, 0x404040, false);
 		}
 	}
 

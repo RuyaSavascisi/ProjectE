@@ -1,11 +1,15 @@
 package moze_intel.projecte.emc.arithmetic;
 
+import java.math.BigInteger;
+import moze_intel.projecte.api.ProjectEAPI;
 import moze_intel.projecte.api.mapper.arithmetic.IValueArithmetic;
-import moze_intel.projecte.utils.Constants;
 import moze_intel.projecte.utils.MathUtils;
 import org.apache.commons.math3.fraction.BigFraction;
 
 public class FullBigFractionArithmetic implements IValueArithmetic<BigFraction> {
+
+	private static final BigInteger FREE_BIG_INT_VALUE = BigInteger.valueOf(ProjectEAPI.FREE_ARITHMETIC_VALUE);
+	private static final BigFraction FREE_FRACTION_VALUE = new BigFraction(FREE_BIG_INT_VALUE);
 
 	@Override
 	public BigFraction getZero() {
@@ -87,7 +91,7 @@ public class FullBigFractionArithmetic implements IValueArithmetic<BigFraction> 
 
 	@Override
 	public BigFraction getFree() {
-		return Constants.FREE_FRACTION_VALUE;
+		return FREE_FRACTION_VALUE;
 	}
 
 	private boolean isZeroOrFree(BigFraction value) {
@@ -105,7 +109,7 @@ public class FullBigFractionArithmetic implements IValueArithmetic<BigFraction> 
 		} else if (sign == 1) {
 			return false;
 		}
-		return value.getNumerator().equals(Constants.FREE_BIG_INT_VALUE);
+		return value.getNumerator().equals(FREE_BIG_INT_VALUE);
 	}
 
 	@Override
@@ -120,6 +124,6 @@ public class FullBigFractionArithmetic implements IValueArithmetic<BigFraction> 
 			// potential values, so we check it first
 			return false;
 		}
-		return value.getNumerator().equals(Constants.FREE_BIG_INT_VALUE);
+		return value.getNumerator().equals(FREE_BIG_INT_VALUE);
 	}
 }

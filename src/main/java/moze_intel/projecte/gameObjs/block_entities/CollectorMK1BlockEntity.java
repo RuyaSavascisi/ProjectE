@@ -150,9 +150,9 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 			collector.needsCompacting = false;
 		}
 		collector.checkFuelOrKlein();
-		collector.updateEmc();
+		collector.updateEmc(level, pos);
 		collector.rotateUpgraded();
-		collector.updateComparators();
+		collector.updateComparators(level, pos);
 	}
 
 	private void rotateUpgraded() {
@@ -186,15 +186,15 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 		}
 	}
 
-	private void updateEmc() {
+	private void updateEmc(@NotNull Level level, @NotNull BlockPos pos) {
 		if (!this.hasMaxedEmc()) {
-			unprocessedEMC += emcGen * (getSunLevel() / 320.0f);
+			unprocessedEMC += emcGen * (getSunLevel(level, pos) / 320.0f);
 			if (unprocessedEMC >= 1) {
 				//Force add the EMC regardless of if we can receive EMC from external sources
 				unprocessedEMC -= forceInsertEmc((long) unprocessedEMC, EmcAction.EXECUTE);
 			}
 			//Note: We don't need to recheck comparators because it doesn't take the unprocessed emc into account
-			markDirty(false);
+			markDirty(level, pos, false);
 		}
 
 		if (this.getStoredEmc() > 0) {
@@ -232,8 +232,8 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 			} else {
 				//Only send EMC when we are not upgrading fuel or charging an item
 				long toSend = this.getStoredEmc() < emcGen ? this.getStoredEmc() : emcGen;
-				this.sendToAllAcceptors(toSend);
-				this.sendRelayBonus();
+				this.sendToAllAcceptors(level, pos, toSend);
+				sendRelayBonus(level, pos);
 			}
 		}
 	}
@@ -280,10 +280,14 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 	}
 
 	public int getSunLevel() {
+		return level == null ? 0 : getSunLevel(level, worldPosition);
+	}
+
+	public static int getSunLevel(@NotNull Level level, @NotNull BlockPos pos) {
 		if (level.dimensionType().ultraWarm()) {
 			return 16;
 		}
-		return level.getMaxLocalRawBrightness(worldPosition.above()) + 1;
+		return level.getMaxLocalRawBrightness(pos.above()) + 1;
 	}
 
 	public double getFuelProgress() {
@@ -316,24 +320,25 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
 		unprocessedEMC = tag.getDouble("unprocessed_emc");
-		input.deserializeNBT(registries, tag.getCompound("Input"));
-		auxSlots.deserializeNBT(registries, tag.getCompound("AuxSlots"));
+		input.deserializeNBT(registries, tag.getCompound("input"));
+		auxSlots.deserializeNBT(registries, tag.getCompound("aux_slots"));
 	}
 
 	@Override
 	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.saveAdditional(tag, registries);
 		tag.putDouble("unprocessed_emc", unprocessedEMC);
-		tag.put("Input", input.serializeNBT(registries));
-		tag.put("AuxSlots", auxSlots.serializeNBT(registries));
+		tag.put("input", input.serializeNBT(registries));
+		tag.put("aux_slots", auxSlots.serializeNBT(registries));
 	}
 
-	private void sendRelayBonus() {
+	private static void sendRelayBonus(@NotNull Level level, @NotNull BlockPos pos) {
 		for (Direction dir : Constants.DIRECTIONS) {
-			RelayMK1BlockEntity relay = WorldHelper.getBlockEntity(RelayMK1BlockEntity.class, level, worldPosition.relative(dir));
+			BlockPos relayPos = pos.relative(dir);
+			RelayMK1BlockEntity relay = WorldHelper.getBlockEntity(RelayMK1BlockEntity.class, level, relayPos);
 			if (relay != null) {
 				//The other tiers of relay extend RelayMK1BlockEntity and add the correct bonus
-				relay.addBonus();
+				relay.addBonus(level, relayPos);
 			}
 		}
 	}

@@ -1,12 +1,13 @@
 package moze_intel.projecte.gameObjs.items;
 
+import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
 import moze_intel.projecte.gameObjs.entity.EntityLensProjectile;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
-import moze_intel.projecte.utils.Constants;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -34,13 +35,13 @@ public class HyperkineticLens extends ItemPE implements IProjectileShooter, IIte
 
 	@Override
 	public boolean shootProjectile(@NotNull Player player, @NotNull ItemStack stack, InteractionHand hand) {
-		Level level = player.level();
-		long requiredEmc = Constants.EXPLOSIVE_LENS_COST[this.getCharge(stack)];
-		if (!consumeFuel(player, stack, requiredEmc, true)) {
+		ExplosiveLensCharge charge = ExplosiveLensCharge.BY_ID.apply(getCharge(stack));
+		if (!consumeFuel(player, stack, charge.emcCost(), true)) {
 			return false;
 		}
+		Level level = player.level();
 		level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
-		EntityLensProjectile ent = new EntityLensProjectile(player, this.getCharge(stack), level);
+		EntityLensProjectile ent = new EntityLensProjectile(player, charge);
 		ent.shootFromRotation(player, player.getXRot(), player.getYRot(), 0, 1.5F, 1);
 		level.addFreshEntity(ent);
 		return true;
@@ -69,5 +70,30 @@ public class HyperkineticLens extends ItemPE implements IProjectileShooter, IIte
 	@Override
 	public int getBarColor(@NotNull ItemStack stack) {
 		return getColorForBar(stack);
+	}
+
+	public enum ExplosiveLensCharge {
+		UNCHARGED(4, 384),
+		SINGLE_CHARGE(8, 768),
+		DOUBLE_CHARGE(12, 1_536),
+		MAX_CHARGE(16, 2_304);
+
+		public static final IntFunction<ExplosiveLensCharge> BY_ID = ByIdMap.continuous(ExplosiveLensCharge::ordinal, values(), ByIdMap.OutOfBoundsStrategy.CLAMP);
+
+		private final float radius;
+		private final long emcCost;
+
+		ExplosiveLensCharge(float radius, long emcCost) {
+			this.radius = radius;
+			this.emcCost = emcCost;
+		}
+
+		public float radius() {
+			return radius;
+		}
+
+		public long emcCost() {
+			return emcCost;
+		}
 	}
 }

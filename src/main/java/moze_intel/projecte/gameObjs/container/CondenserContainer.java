@@ -10,7 +10,6 @@ import moze_intel.projecte.gameObjs.container.slots.ValidatedSlot;
 import moze_intel.projecte.gameObjs.registration.impl.ContainerTypeRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEContainerTypes;
 import moze_intel.projecte.network.packets.to_client.UpdateCondenserLockPKT;
-import moze_intel.projecte.utils.Constants;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -21,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class CondenserContainer extends EmcChestBlockEntityContainer<CondenserBlockEntity> {
+
+	public static final int MAX_PROGRESS = 102;
 
 	public final BoxedLong displayEmc = new BoxedLong();
 	public final BoxedLong requiredEmc = new BoxedLong();
@@ -83,9 +84,9 @@ public class CondenserContainer extends EmcChestBlockEntityContainer<CondenserBl
 			return 0;
 		}
 		if (displayEmc.get() >= requiredEmc.get()) {
-			return Constants.MAX_CONDENSER_PROGRESS;
+			return MAX_PROGRESS;
 		}
-		return (int) (Constants.MAX_CONDENSER_PROGRESS * ((double) displayEmc.get() / requiredEmc.get()));
+		return (int) (MAX_PROGRESS * ((double) displayEmc.get() / requiredEmc.get()));
 	}
 
 	public void updateLockInfo(@Nullable ItemInfo lockInfo) {

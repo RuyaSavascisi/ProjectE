@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.container.CondenserContainer;
 import moze_intel.projecte.gameObjs.container.CondenserMK2Container;
-import moze_intel.projecte.utils.Constants;
+import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.TransmutationEMCFormatter;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.gui.GuiGraphics;
@@ -59,7 +59,7 @@ public abstract class AbstractCondenserScreen<T extends CondenserContainer> exte
 		int emcBottom = emcTop + 15;
 
 		if (mouseX > emcLeft && mouseX < emcRight && mouseY > emcTop && mouseY < emcBottom) {
-			setTooltipForNextRenderPass(PELang.EMC_TOOLTIP.translate(Constants.EMC_FORMATTER.format(toDisplay)));
+			setTooltipForNextRenderPass(PELang.EMC_TOOLTIP.translate(EMCHelper.formatEmc(toDisplay)));
 		} else {
 			super.renderTooltip(graphics, mouseX, mouseY);
 		}

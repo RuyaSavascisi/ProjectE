@@ -3,6 +3,7 @@ package moze_intel.projecte.api.capabilities.item;
 import moze_intel.projecte.api.PEDataComponents;
 import moze_intel.projecte.api.PESounds;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -40,7 +41,7 @@ public interface IItemCharge {
 	 * @return The charge on the stack
 	 */
 	default int getCharge(@NotNull ItemStack stack) {
-		return stack.getOrDefault(PEDataComponents.CHARGE, 0);
+		return Mth.clamp(stack.getOrDefault(PEDataComponents.CHARGE, 0), 0, getNumCharges(stack));
 	}
 
 	/**

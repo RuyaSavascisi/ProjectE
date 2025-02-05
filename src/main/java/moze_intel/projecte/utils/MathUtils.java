@@ -11,6 +11,9 @@ import net.minecraft.world.TickRateManager;
  */
 public final class MathUtils {
 
+	private static final BigInteger MAX_INTEGER = BigInteger.valueOf(Integer.MAX_VALUE);
+	private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
+
 	/**
 	 * Scales this proportion into redstone, where 0 means none, 15 means full, and the rest are an appropriate scaling.
 	 */
@@ -47,12 +50,16 @@ public final class MathUtils {
 		return Math.round(secs * tickRate);
 	}
 
+	public static int clampToInt(BigInteger bigInt) {
+		return bigInt.compareTo(MAX_INTEGER) >= 0 ? Integer.MAX_VALUE : bigInt.intValue();
+	}
+
 	//Note: This does not clamp to negative so will error if a negative big int is passed that is out of long's bounds
 	public static long clampToLong(BigInteger bigInt) {
-		return bigInt.compareTo(Constants.MAX_LONG) >= 0 ? Long.MAX_VALUE : bigInt.longValue();
+		return bigInt.compareTo(MAX_LONG) >= 0 ? Long.MAX_VALUE : bigInt.longValue();
 	}
 
 	public static boolean isGreaterThanLong(BigInteger bigInt) {
-		return bigInt.compareTo(Constants.MAX_LONG) > 0;
+		return bigInt.compareTo(MAX_LONG) > 0;
 	}
 }

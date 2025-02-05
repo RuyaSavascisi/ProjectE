@@ -1,10 +1,11 @@
 package moze_intel.projecte.gameObjs.gui;
 
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.gameObjs.container.CondenserContainer;
 import moze_intel.projecte.gameObjs.container.RelayMK1Container;
 import moze_intel.projecte.gameObjs.container.RelayMK2Container;
 import moze_intel.projecte.gameObjs.container.RelayMK3Container;
-import moze_intel.projecte.utils.Constants;
+import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,7 +38,7 @@ public class GUIRelay<CONTAINER extends RelayMK1Container> extends PEContainerSc
 	protected void renderLabels(@NotNull GuiGraphics graphics, int x, int y) {
 		graphics.drawString(font, title, titleLabelX, titleLabelY, 0x404040, false);
 		//Don't render inventory as we don't have space
-		graphics.drawString(font, Constants.EMC_FORMATTER.format(menu.emc.get()), emcX, emcY, 0x404040, false);
+		graphics.drawString(font, EMCHelper.formatEmc(menu.emc.get()), emcX, emcY, 0x404040, false);
 	}
 
 	@Override
@@ -45,7 +46,7 @@ public class GUIRelay<CONTAINER extends RelayMK1Container> extends PEContainerSc
 		graphics.blit(texture, leftPos, topPos, 0, 0, imageWidth, imageHeight);
 
 		//Emc bar progress
-		int progress = (int) ((double) menu.emc.get() / menu.relay.getMaximumEmc() * Constants.MAX_CONDENSER_PROGRESS);
+		int progress = (int) ((double) menu.emc.get() / menu.relay.getMaximumEmc() * CondenserContainer.MAX_PROGRESS);
 		graphics.blit(texture, leftPos + emcBarShift, topPos + 6, 30, vOffset, progress, 10);
 
 		//Klein start bar progress. Max is 30.

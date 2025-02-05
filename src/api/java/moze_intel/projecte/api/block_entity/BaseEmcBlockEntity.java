@@ -167,16 +167,12 @@ public class BaseEmcBlockEntity extends BlockEntity implements IEmcStorage {
 		if (getStoredEmc() > getMaximumEmc()) {
 			currentEMC = getMaximumEmc();
 		}
-		tag.putLong("EMC", getStoredEmc());
+		tag.putLong("emc", getStoredEmc());
 	}
 
 	@Override
 	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		long set = tag.getLong("EMC");
-		if (set > getMaximumEmc()) {
-			set = getMaximumEmc();
-		}
-		currentEMC = set;
+		currentEMC = Math.min(tag.getLong("emc"), getMaximumEmc());
 	}
 }

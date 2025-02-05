@@ -76,9 +76,9 @@ public class Zero extends PEToggleItem implements IPedestalItem, IItemCharge, IB
 				for (Entity ent : level.getEntitiesOfClass(Entity.class, aabb, e -> !e.isSpectator() && e.isOnFire())) {
 					ent.clearFire();
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.zero.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.zero.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

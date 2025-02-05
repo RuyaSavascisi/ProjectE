@@ -120,12 +120,13 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 	}
 
 	public static void tickServer(Level level, BlockPos pos, BlockState state, RelayMK1BlockEntity relay) {
-		relay.sendEmc();
+		relay.sendToAllAcceptors(level, pos, relay.getAvailableCharge());
 		relay.input.compact();
 		ItemStack stack = relay.getBurn();
 		if (!stack.isEmpty()) {
 			IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
 			if (emcHolder != null) {
+				//Try to take emc from the stack in the burn slot and put it in the relay
 				long simulatedVal = relay.forceInsertEmc(emcHolder.extractEmc(stack, relay.chargeRate, EmcAction.SIMULATE), EmcAction.SIMULATE);
 				if (simulatedVal > 0) {
 					relay.forceInsertEmc(emcHolder.extractEmc(stack, simulatedVal, EmcAction.EXECUTE), EmcAction.EXECUTE);
@@ -143,22 +144,15 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 		if (!chargeable.isEmpty() && relay.getStoredEmc() > 0) {
 			IItemEmcHolder emcHolder = chargeable.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
 			if (emcHolder != null) {
-				long actualSent = emcHolder.insertEmc(chargeable, Math.min(relay.getStoredEmc(), relay.chargeRate), EmcAction.EXECUTE);
+				long actualSent = emcHolder.insertEmc(chargeable, relay.getAvailableCharge(), EmcAction.EXECUTE);
 				relay.forceExtractEmc(actualSent, EmcAction.EXECUTE);
 			}
 		}
-		relay.updateComparators();
+		relay.updateComparators(level, pos);
 	}
 
-	private void sendEmc() {
-		if (this.getStoredEmc() == 0) {
-			return;
-		}
-		if (this.getStoredEmc() <= chargeRate) {
-			this.sendToAllAcceptors(this.getStoredEmc());
-		} else {
-			this.sendToAllAcceptors(chargeRate);
-		}
+	private long getAvailableCharge() {
+		return Math.min(chargeRate, getStoredEmc());
 	}
 
 	public double getItemChargeProportion() {
@@ -187,24 +181,24 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 	@Override
 	public void loadAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.loadAdditional(tag, registries);
-		input.deserializeNBT(registries, tag.getCompound("Input"));
-		output.deserializeNBT(registries, tag.getCompound("Output"));
-		bonusEMC = tag.getDouble("BonusEMC");
+		input.deserializeNBT(registries, tag.getCompound("input"));
+		output.deserializeNBT(registries, tag.getCompound("output"));
+		bonusEMC = tag.getDouble("bonus_emc");
 	}
 
 	@Override
 	protected void saveAdditional(@NotNull CompoundTag tag, @NotNull HolderLookup.Provider registries) {
 		super.saveAdditional(tag, registries);
-		tag.put("Input", input.serializeNBT(registries));
-		tag.put("Output", output.serializeNBT(registries));
-		tag.putDouble("BonusEMC", bonusEMC);
+		tag.put("input", input.serializeNBT(registries));
+		tag.put("output", output.serializeNBT(registries));
+		tag.putDouble("bonus_emc", bonusEMC);
 	}
 
 	protected double getBonusToAdd() {
 		return 0.05;
 	}
 
-	public void addBonus() {
+	void addBonus(@NotNull Level level, @NotNull BlockPos pos) {
 		bonusEMC += getBonusToAdd();
 		if (bonusEMC >= 1) {
 			long emcToInsert = (long) bonusEMC;
@@ -213,7 +207,7 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 			// an infinite amount of "bonus" emc if our buffer is full.
 			bonusEMC -= emcToInsert;
 		}
-		markDirty(false);
+		markDirty(level, pos, false);
 	}
 
 	@NotNull

@@ -62,9 +62,9 @@ public class SoulStone extends PEToggleItem implements IPedestalItem, ICapabilit
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.HEAL.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
 					player.heal(1.0F); // 1/2 heart
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.soul.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.soul.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

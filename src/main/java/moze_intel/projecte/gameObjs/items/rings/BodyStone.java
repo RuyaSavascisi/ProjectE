@@ -65,9 +65,9 @@ public class BodyStone extends PEToggleItem implements IPedestalItem, ICapabilit
 						player.getFoodData().eat(1, 1); // 1/2 shank
 					}
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.body.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.body.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

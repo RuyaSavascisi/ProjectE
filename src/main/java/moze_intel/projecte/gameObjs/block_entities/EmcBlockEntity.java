@@ -12,9 +12,13 @@ import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
@@ -22,6 +26,7 @@ import org.jetbrains.annotations.Range;
 public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 
 	private boolean updateComparators;
+	private long lastSave;
 
 	public EmcBlockEntity(BlockEntityTypeRegistryObject<? extends EmcBlockEntity> type, BlockPos pos, BlockState state) {
 		this(type, pos, state, Long.MAX_VALUE);
@@ -33,14 +38,14 @@ public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 		setMaximumEMC(maxAmount);
 	}
 
-	protected void updateComparators() {
+	protected void updateComparators(@NotNull Level level, @NotNull BlockPos pos) {
 		//Only update the comparator state if we need to update comparators
 		//Note: We call this at the end of child implementations to try and update any changes immediately instead
 		// of them having to be delayed a tick
 		if (updateComparators) {
 			BlockState state = getBlockState();
 			if (!state.isAir()) {
-				level.updateNeighbourForOutputSignal(worldPosition, state.getBlock());
+				level.updateNeighbourForOutputSignal(pos, state.getBlock());
 			}
 			updateComparators = false;
 		}
@@ -52,24 +57,32 @@ public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 
 	@Override
 	protected void storedEmcChanged() {
-		markDirty(emcAffectsComparators());
+		if (level != null) {
+			markDirty(level, worldPosition, emcAffectsComparators());
+		}
 	}
 
 	@Override
-	public void setChanged() {
-		markDirty(true);
+	public final void setChanged() {
+		if (level != null) {
+			markDirty(level, worldPosition, true);
+		}
 	}
 
-	public void markDirty(boolean recheckComparators) {
+	public void markDirty(@NotNull Level level, @NotNull BlockPos pos, boolean recheckComparators) {
 		//Copy of the base impl of markDirty in BlockEntity, except only updates comparator state when something changed
 		// and if our block supports having a comparator signal, instead of always doing it
-		if (level != null) {
-			if (level.hasChunkAt(worldPosition)) {
-				level.getChunkAt(worldPosition).setUnsaved(true);
+		long time = level.getGameTime();
+		if (lastSave != time) {
+			//Only mark the chunk as dirty at most once per tick
+			ChunkAccess chunk = level.getChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()), ChunkStatus.FULL, false);
+			if (chunk != null) {
+				chunk.setUnsaved(true);
 			}
-			if (recheckComparators && !level.isClientSide) {
-				updateComparators = true;
-			}
+			lastSave = time;
+		}
+		if (recheckComparators && !level.isClientSide) {
+			updateComparators = true;
 		}
 	}
 
@@ -93,8 +106,8 @@ public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 	 * @return The amount of Emc we actually sent
 	 */
 	@Range(from = 0, to = Long.MAX_VALUE)
-	protected long sendToAllAcceptors(long emc) {
-		if (level == null || !canProvideEmc()) {
+	protected long sendToAllAcceptors(@NotNull Level level, BlockPos pos, long emc) {
+		if (emc == 0 || !canProvideEmc()) {
 			//If we cannot provide emc then just return
 			return 0;
 		}
@@ -102,17 +115,14 @@ public abstract class EmcBlockEntity extends BaseEmcBlockEntity {
 		long sentEmc = 0;
 		List<IEmcStorage> targets = new ArrayList<>();
 		for (Direction dir : Constants.DIRECTIONS) {
-			BlockPos neighboringPos = worldPosition.relative(dir);
 			//Make sure the neighboring block is loaded as if we are on a chunk border on the edge of loaded chunks this may not be the case
-			if (level.isLoaded(neighboringPos)) {
-				IEmcStorage theirEmcStorage = WorldHelper.getCapability(level, PECapabilities.EMC_STORAGE_CAPABILITY, neighboringPos, dir.getOpposite());
-				if (theirEmcStorage != null) {
-					if (!isRelay() || !theirEmcStorage.isRelay()) {
-						//If they are both relays don't add the pairing so as to prevent thrashing
-						if (theirEmcStorage.insertEmc(1, EmcAction.SIMULATE) > 0) {
-							//If they would be wiling to accept any Emc then we consider them to be an "acceptor"
-							targets.add(theirEmcStorage);
-						}
+			IEmcStorage theirEmcStorage = WorldHelper.getCapability(level, PECapabilities.EMC_STORAGE_CAPABILITY, pos.relative(dir), dir.getOpposite());
+			if (theirEmcStorage != null) {
+				if (!isRelay() || !theirEmcStorage.isRelay()) {
+					//If they are both relays don't add the pairing to prevent thrashing
+					if (theirEmcStorage.insertEmc(1, EmcAction.SIMULATE) > 0) {
+						//If they are wiling to accept any Emc then we consider them to be an "acceptor"
+						targets.add(theirEmcStorage);
 					}
 				}
 			}

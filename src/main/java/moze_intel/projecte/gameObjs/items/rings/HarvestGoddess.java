@@ -198,9 +198,9 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 		if (!level.isClientSide && ProjectEConfig.server.cooldown.pedestal.harvest.get() != -1) {
 			if (pedestal.getActivityCooldown() == 0) {
 				WorldHelper.growNearbyRandomly(true, level, pedestal.getEffectBounds(), null);
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.harvest.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.harvest.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;

@@ -7,6 +7,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import java.math.BigInteger;
+import java.text.NumberFormat;
 import java.util.Iterator;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.api.capabilities.block_entity.IEmcStorage.EmcAction;
@@ -19,6 +20,7 @@ import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.text.ILangEntry;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -32,6 +34,9 @@ import org.jetbrains.annotations.Range;
  * Helper class for EMC. Notice: Please try to keep methods tidy and alphabetically ordered. Thanks!
  */
 public final class EMCHelper {
+
+	//Only ever use a single decimal point for our formatter, because the majority of the time we are a whole number except for when we are abbreviating
+	private static final NumberFormat EMC_FORMATTER = Util.make(NumberFormat.getInstance(), formatter -> formatter.setMaximumFractionDigits(1));
 
 	public static <K> Object2IntMap<K> intMapOf(final K key, int value) {
 		return Object2IntMaps.singleton(key, value);
@@ -138,6 +143,18 @@ public final class EMCHelper {
 		return 0;
 	}
 
+	public static String formatEmc(Number emc) {
+		return EMC_FORMATTER.format(emc);
+	}
+
+	public static String formatEmc(double emc) {
+		return EMC_FORMATTER.format(emc);
+	}
+
+	public static String formatEmc(long emc) {
+		return EMC_FORMATTER.format(emc);
+	}
+
 	@Range(from = 0, to = Long.MAX_VALUE)
 	public static long getEmcSellValue(@Range(from = 0, to = Long.MAX_VALUE) long originalValue) {
 		if (originalValue == 0) {
@@ -160,10 +177,10 @@ public final class EMCHelper {
 			String value;
 			if (stackSize > 1) {
 				prefix = PELang.EMC_STACK_TOOLTIP;
-				value = Constants.EMC_FORMATTER.format(BigInteger.valueOf(emc).multiply(BigInteger.valueOf(stackSize)));
+				value = formatEmc(BigInteger.valueOf(emc).multiply(BigInteger.valueOf(stackSize)));
 			} else {
 				prefix = PELang.EMC_TOOLTIP;
-				value = Constants.EMC_FORMATTER.format(emc);
+				value = formatEmc(emc);
 			}
 			return prefix.translateColored(ChatFormatting.YELLOW, ChatFormatting.WHITE, value);
 		}
@@ -175,12 +192,12 @@ public final class EMCHelper {
 		if (stackSize > 1) {
 			prefix = PELang.EMC_STACK_TOOLTIP_WITH_SELL;
 			BigInteger bigIntStack = BigInteger.valueOf(stackSize);
-			value = Constants.EMC_FORMATTER.format(BigInteger.valueOf(emc).multiply(bigIntStack));
-			sell = Constants.EMC_FORMATTER.format(BigInteger.valueOf(emcSellValue).multiply(bigIntStack));
+			value = formatEmc(BigInteger.valueOf(emc).multiply(bigIntStack));
+			sell = formatEmc(BigInteger.valueOf(emcSellValue).multiply(bigIntStack));
 		} else {
 			prefix = PELang.EMC_TOOLTIP_WITH_SELL;
-			value = Constants.EMC_FORMATTER.format(emc);
-			sell = Constants.EMC_FORMATTER.format(emcSellValue);
+			value = formatEmc(emc);
+			sell = formatEmc(emcSellValue);
 		}
 		return prefix.translateColored(ChatFormatting.YELLOW, ChatFormatting.WHITE, value, ChatFormatting.BLUE, sell);
 	}

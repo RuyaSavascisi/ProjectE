@@ -77,10 +77,9 @@ public class DestructionCatalyst extends ItemPE implements IItemCharge, IBarHelp
 
 	private int calculateDepthFromCharge(ItemStack stack) {
 		int charge = getCharge(stack);
-		if (charge <= 0) {
+		if (charge == 0) {
 			return 1;
-		}
-		if (this instanceof CataliticLens) {
+		} else if (this instanceof CataliticLens) {
 			return 8 + 8 * charge;
 		}
 		return (int) Math.pow(2, 1 + charge);

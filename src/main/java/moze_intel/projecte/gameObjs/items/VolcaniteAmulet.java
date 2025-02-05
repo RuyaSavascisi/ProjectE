@@ -108,9 +108,9 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IPede
 					worldInfo.setRaining(false);
 					worldInfo.setThundering(false);
 				}
-				pedestal.setActivityCooldown(ProjectEConfig.server.cooldown.pedestal.volcanite.get());
+				pedestal.setActivityCooldown(level, pos, ProjectEConfig.server.cooldown.pedestal.volcanite.get());
 			} else {
-				pedestal.decrementActivityCooldown();
+				pedestal.decrementActivityCooldown(level, pos);
 			}
 		}
 		return false;
