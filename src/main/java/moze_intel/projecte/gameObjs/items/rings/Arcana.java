@@ -59,6 +59,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import org.jetbrains.annotations.NotNull;
 
@@ -210,6 +212,14 @@ public class Arcana extends ItemPE implements IItemMode<ArcanaMode>, IFireProtec
 	@Override
 	public boolean canProtectAgainstFire(ItemStack stack, Player player) {
 		return true;
+	}
+
+	@Override
+	public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility action) {
+		if (action == ItemAbilities.FIRESTARTER_LIGHT && getMode(stack) == ArcanaMode.IGNITION) {
+			return true;
+		}
+		return super.canPerformAction(stack, action);
 	}
 
 	@Override

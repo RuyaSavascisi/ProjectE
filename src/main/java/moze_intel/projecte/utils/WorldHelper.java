@@ -56,9 +56,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.BucketPickup;
-import net.minecraft.world.level.block.CampfireBlock;
-import net.minecraft.world.level.block.CandleBlock;
-import net.minecraft.world.level.block.CandleCakeBlock;
 import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.GrassBlock;
@@ -75,7 +72,6 @@ import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -84,6 +80,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.common.IShearable;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.util.ItemStackMap;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.items.IItemHandler;
@@ -683,10 +680,6 @@ public final class WorldHelper {
 				.scale(1 / (1.5 * distance)));
 	}
 
-	public static boolean canLight(BlockState state) {
-		return CampfireBlock.canLight(state) || CandleBlock.canLight(state) || CandleCakeBlock.canLight(state);
-	}
-
 	@NotNull
 	public static InteractionResult igniteBlock(UseOnContext ctx) {
 		Player player = ctx.getPlayer();
@@ -696,28 +689,33 @@ public final class WorldHelper {
 		Level level = ctx.getLevel();
 		BlockPos pos = ctx.getClickedPos();
 		Direction side = ctx.getClickedFace();
-		BlockState state = level.getBlockState(pos);
 		if (BaseFireBlock.canBePlacedAt(level, pos, side)) {
 			if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
 				level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
 				level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 			}
-		} else if (canLight(state)) {
-			if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
-				level.setBlockAndUpdate(pos, state.setValue(BlockStateProperties.LIT, true));
-				level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
-			}
-		} else if (state.isFlammable(level, pos, side)) {
-			if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
-				// Ignite the block
-				state.onCaughtFire(level, pos, side, player);
-				if (state.getBlock() instanceof TntBlock) {
-					level.removeBlock(pos, false);
-				}
-				level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
-			}
 		} else {
-			return InteractionResult.PASS;
+			BlockState state = level.getBlockState(pos);
+			if (state.getToolModifiedState(ctx, ItemAbilities.FIRESTARTER_LIGHT, true) != null) {
+				if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+					BlockState modifiedState = state.getToolModifiedState(ctx, ItemAbilities.FIRESTARTER_LIGHT, false);
+					if (modifiedState != null) {//Theoretically should not be null as we just simulated, but validate it just in case
+						level.setBlockAndUpdate(pos, modifiedState);
+						level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+					}
+				}
+			} else if (state.isFlammable(level, pos, side)) {
+				if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+					// Ignite the block
+					state.onCaughtFire(level, pos, side, player);
+					if (state.getBlock() instanceof TntBlock) {
+						level.removeBlock(pos, false);
+					}
+					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+				}
+			} else {
+				return InteractionResult.PASS;
+			}
 		}
 		return InteractionResult.sidedSuccess(level.isClientSide);
 	}

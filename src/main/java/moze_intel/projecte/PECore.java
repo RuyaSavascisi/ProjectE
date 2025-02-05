@@ -15,8 +15,6 @@ import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.emc.FuelMapper;
 import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
-import moze_intel.projecte.gameObjs.items.rings.Arcana;
-import moze_intel.projecte.gameObjs.items.rings.Arcana.ArcanaMode;
 import moze_intel.projecte.gameObjs.registries.PEArmorMaterials;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
@@ -64,16 +62,19 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -82,6 +83,7 @@ import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.Capabilities.FluidHandler;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
@@ -194,12 +196,10 @@ public class PECore {
 				@Override
 				protected ItemStack execute(@NotNull BlockSource source, @NotNull ItemStack stack) {
 					//[VanillaCopy] Based off the flint and steel dispense behavior
-					if (stack.getItem() instanceof Arcana item) {
-						if (item.getMode(stack) != ArcanaMode.IGNITION) {
-							//Only allow using the arcana ring to ignite things when on ignition mode
-							setSuccess(false);
-							return super.execute(source, stack);
-						}
+					if (!stack.canPerformAction(ItemAbilities.FIRESTARTER_LIGHT)) {
+						//Only allow using the arcana ring to ignite things when on ignition mode
+						setSuccess(false);
+						return super.execute(source, stack);
 					}
 					Level level = source.level();
 					setSuccess(true);
@@ -208,15 +208,23 @@ public class PECore {
 					BlockState state = level.getBlockState(pos);
 					if (BaseFireBlock.canBePlacedAt(level, pos, direction)) {
 						level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
-					} else if (WorldHelper.canLight(state)) {
-						level.setBlockAndUpdate(pos, state.setValue(BlockStateProperties.LIT, true));
-					} else if (state.isFlammable(level, pos, direction.getOpposite())) {
-						state.onCaughtFire(level, pos, direction.getOpposite(), null);
-						if (state.getBlock() instanceof TntBlock) {
-							level.removeBlock(pos, false);
-						}
+						level.gameEvent(null, GameEvent.BLOCK_PLACE, pos);
 					} else {
-						setSuccess(false);
+						Direction opposite = direction.getOpposite();
+						BlockHitResult hitResult = new BlockHitResult(pos.getCenter(), opposite, pos, false);
+						UseOnContext context = new UseOnContext(level, null, InteractionHand.MAIN_HAND, stack, hitResult);
+						BlockState modifiedState = state.getToolModifiedState(context, ItemAbilities.FIRESTARTER_LIGHT, false);
+						if (modifiedState != null) {
+							level.setBlockAndUpdate(pos, modifiedState);
+							level.gameEvent(null, GameEvent.BLOCK_CHANGE, pos);
+						} else if (state.isFlammable(level, pos, opposite)) {
+							state.onCaughtFire(level, pos, opposite, null);
+							if (state.getBlock() instanceof TntBlock) {
+								level.removeBlock(pos, false);
+							}
+						} else {
+							setSuccess(false);
+						}
 					}
 					return stack;
 				}

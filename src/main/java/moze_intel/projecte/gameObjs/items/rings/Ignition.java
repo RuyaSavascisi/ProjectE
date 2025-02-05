@@ -28,6 +28,8 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.common.ItemAbility;
 import org.jetbrains.annotations.NotNull;
 
 public class Ignition extends PEToggleItem implements IPedestalItem, IFireProtector, IProjectileShooter, ICapabilityAware {
@@ -106,6 +108,11 @@ public class Ignition extends PEToggleItem implements IPedestalItem, IFireProtec
 	@Override
 	public boolean canProtectAgainstFire(ItemStack stack, Player player) {
 		return true;
+	}
+
+	@Override
+	public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility action) {
+		return action == ItemAbilities.FIRESTARTER_LIGHT || super.canPerformAction(stack, action);
 	}
 
 	@Override
