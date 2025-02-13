@@ -25,10 +25,12 @@ public abstract class CustomConversionProvider implements DataProvider {
 	private final Map<ResourceLocation, CustomConversionBuilder> customConversions = new LinkedHashMap<>();
 	private final CompletableFuture<HolderLookup.Provider> lookupProvider;
 	private final PathProvider outputProvider;
+	private final String modid;
 
-	protected CustomConversionProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+	protected CustomConversionProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modid) {
 		this.outputProvider = output.createPathProvider(Target.DATA_PACK, "pe_custom_conversions");
 		this.lookupProvider = lookupProvider;
+		this.modid = modid;
 	}
 
 	@Override
@@ -37,10 +39,9 @@ public abstract class CustomConversionProvider implements DataProvider {
 			customConversions.clear();
 			addCustomConversions(registries);
 			return registries;
-		}).thenCompose(registries -> CompletableFuture.allOf(
-				customConversions.entrySet().stream()
-						.map(entry -> DataProvider.saveStable(output, registries, CustomConversionFile.CODEC, entry.getValue().build(), outputProvider.json(entry.getKey())))
-						.toArray(CompletableFuture[]::new)
+		}).thenCompose(registries -> CompletableFuture.allOf(customConversions.entrySet().stream()
+				.map(entry -> DataProvider.saveStable(output, registries, CustomConversionFile.CODEC, entry.getValue().build(), outputProvider.json(entry.getKey())))
+				.toArray(CompletableFuture[]::new)
 		));
 	}
 
@@ -69,7 +70,7 @@ public abstract class CustomConversionProvider implements DataProvider {
 	}
 
 	@Override
-	public String getName() {
-		return "Custom EMC Conversions";
+	public final String getName() {
+		return "Custom EMC Conversions: " + modid;
 	}
 }

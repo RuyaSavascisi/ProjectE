@@ -1,9 +1,11 @@
 package moze_intel.projecte.integration.jei.world_transmute;
 
 import com.mojang.datafixers.util.Either;
+import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -17,14 +19,16 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.api.imc.WorldTransmutationEntry;
+import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
 import moze_intel.projecte.gameObjs.registries.PEItems;
-import moze_intel.projecte.utils.WorldTransmutations;
 import moze_intel.projecte.utils.text.PELang;
+import moze_intel.projecte.world_transmutation.WorldTransmutationManager;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackLinkedSet;
 import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStackLinkedSet;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,34 +78,24 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 
 	@Override
 	public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull WorldTransmuteEntry recipe, @NotNull IFocusGroup focuses) {
-		Optional<Either<ItemStack, FluidStack>> recipeInput = recipe.getInput();
-		if (recipeInput.isPresent()) {
-			Either<ItemStack, FluidStack> input = recipeInput.get();
-			Optional<ItemStack> left = input.left();
-			//noinspection OptionalIsPresent - Capturing lambda
-			if (left.isPresent()) {
-				builder.addSlot(RecipeIngredientRole.INPUT, 16, 16)
-						.addItemStack(left.get());
-			}
-			Optional<FluidStack> right = input.right();
-			//noinspection OptionalIsPresent - Capturing lambda
-			if (right.isPresent()) {
-				builder.addSlot(RecipeIngredientRole.INPUT, 16, 16)
-						.addIngredient(NeoForgeTypes.FLUID_STACK, right.get())
-						.setFluidRenderer(FluidType.BUCKET_VOLUME, false, 16, 16);
-			}
+		if (recipe.hasInput()) {
+			addIngredient(builder, RecipeIngredientRole.INPUT, 16, recipe.getInput());
 		}
 		int xPos = 96;
 		for (Either<ItemStack, FluidStack> output : recipe.getOutput()) {
-			IRecipeSlotBuilder slot = builder.addSlot(RecipeIngredientRole.OUTPUT, xPos, 16);
-			output.ifLeft(slot::addItemStack);
-			Optional<FluidStack> right = output.right();
-			//noinspection OptionalIsPresent - Capturing lambda
-			if (right.isPresent()) {
-				slot.addIngredient(NeoForgeTypes.FLUID_STACK, right.get())
-						.setFluidRenderer(FluidType.BUCKET_VOLUME, false, 16, 16);
-			}
+			addIngredient(builder, RecipeIngredientRole.OUTPUT, xPos, output);
 			xPos += 16;
+		}
+	}
+
+	private void addIngredient(IRecipeLayoutBuilder builder, RecipeIngredientRole role, int xPos, Either<ItemStack, FluidStack> ingredient) {
+		IRecipeSlotBuilder slot = builder.addSlot(role, xPos, 16);
+		ingredient.ifLeft(slot::addItemStack);
+		Optional<FluidStack> right = ingredient.right();
+		//noinspection OptionalIsPresent - Capturing lambda
+		if (right.isPresent()) {
+			slot.addIngredient(NeoForgeTypes.FLUID_STACK, right.get())
+					.setFluidRenderer(FluidType.BUCKET_VOLUME, false, 16, 16);
 		}
 	}
 
@@ -113,37 +107,16 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 	}
 
 	public static List<WorldTransmuteEntry> getAllTransmutations() {
-		List<WorldTransmutationEntry> allWorldTransmutations = WorldTransmutations.getWorldTransmutations();
 		//All the ones that have a block state that can be rendered in JEI.
 		//For example only render one pumpkin to melon transmutation
+		Set<ItemStack> seenItems = new ObjectOpenCustomHashSet<>(ItemStackLinkedSet.TYPE_AND_TAG);
+		Set<FluidStack> seenFluids = new ObjectOpenCustomHashSet<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS);
 		List<WorldTransmuteEntry> visible = new ArrayList<>();
-		for (WorldTransmutationEntry entry : allWorldTransmutations) {
-			WorldTransmuteEntry e = new WorldTransmuteEntry(entry);
-			if (e.isRenderable()) {
-				boolean alreadyHas = false;
-				FluidStack inputFluid = e.getInputFluid();
-				if (inputFluid.isEmpty()) {
-					ItemStack inputItem = e.getInputItem();
-					for (WorldTransmuteEntry worldTransmuteEntry : visible) {
-						ItemStack otherInputItem = worldTransmuteEntry.getInputItem();
-						if (!otherInputItem.isEmpty() && ItemStack.isSameItemSameComponents(inputItem, otherInputItem)) {
-							alreadyHas = true;
-							break;
-						}
-					}
-				} else {
-					for (WorldTransmuteEntry worldTransmuteEntry : visible) {
-						FluidStack otherInputFluid = worldTransmuteEntry.getInputFluid();
-						if (!otherInputFluid.isEmpty() && FluidStack.isSameFluidSameComponents(inputFluid, otherInputFluid)) {
-							alreadyHas = true;
-							break;
-						}
-					}
-				}
-				if (!alreadyHas) {
-					//Only add items that we haven't already had.
-					visible.add(e);
-				}
+		for (IWorldTransmutation transmutation : WorldTransmutationManager.INSTANCE.getWorldTransmutations()) {
+			WorldTransmuteEntry entry = new WorldTransmuteEntry(transmutation);
+			if (entry.isRenderable() && entry.isUnseenInput(seenItems, seenFluids)) {
+				//Only add recipes for transmutations we have not had
+				visible.add(entry);
 			}
 		}
 		return visible;

@@ -3,15 +3,16 @@ package moze_intel.projecte.integration.jei.world_transmute;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import moze_intel.projecte.api.imc.WorldTransmutationEntry;
+import java.util.Set;
+import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
+import moze_intel.projecte.api.world_transmutation.SimpleWorldTransmutation;
+import moze_intel.projecte.api.world_transmutation.WorldTransmutation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
-import org.jetbrains.annotations.Nullable;
 
 public class WorldTransmuteEntry {
 
@@ -35,22 +36,37 @@ public class WorldTransmuteEntry {
 	private final StateInfo leftOutput;
 	private final StateInfo rightOutput;
 
-	public WorldTransmuteEntry(WorldTransmutationEntry transmutationEntry) {
-		BlockState leftOutputState = transmutationEntry.result();
-		BlockState rightOutputState = transmutationEntry.altResult();
-		if (leftOutputState == rightOutputState) {
-			//Don't show two outputs if it is just a fallback from the primary
-			rightOutputState = null;
+	public WorldTransmuteEntry(IWorldTransmutation transmutation) {
+		if (transmutation instanceof SimpleWorldTransmutation(Block origin, Block result, Block altResult)) {
+			input = createInfo(origin);
+			leftOutput = createInfo(result);
+			if (transmutation.hasAlternate()) {
+				rightOutput = createInfo(altResult);
+			} else {
+				rightOutput = EMPTY;
+			}
+		} else if (transmutation instanceof WorldTransmutation(BlockState origin, BlockState result, BlockState altResult)) {
+			input = createInfo(origin);
+			leftOutput = createInfo(result);
+			if (transmutation.hasAlternate()) {
+				rightOutput = createInfo(altResult);
+			} else {
+				rightOutput = EMPTY;
+			}
+		} else {
+			throw new IllegalStateException("Unknown transmutation implementation: " + transmutation);
 		}
-		input = createInfo(transmutationEntry.origin());
-		leftOutput = createInfo(leftOutputState);
-		rightOutput = createInfo(rightOutputState);
 	}
 
-	private StateInfo createInfo(@Nullable BlockState output) {
-		if (output == null) {
-			return EMPTY;
+	private StateInfo createInfo(Block output) {
+		FluidStack outputFluid = fluidFromBlock(output);
+		if (outputFluid.isEmpty()) {
+			return new StateInfo(new ItemStack(output), outputFluid);
 		}
+		return new StateInfo(ItemStack.EMPTY, outputFluid);
+	}
+
+	private StateInfo createInfo(BlockState output) {
 		FluidStack outputFluid = fluidFromBlock(output.getBlock());
 		if (outputFluid.isEmpty()) {
 			return new StateInfo(itemFromBlock(output.getBlock(), output), outputFluid);
@@ -76,18 +92,22 @@ public class WorldTransmuteEntry {
 	}
 
 	public boolean isRenderable() {
-		return !input.isEmpty() && (!leftOutput.isEmpty() || !rightOutput.isEmpty());
+		return hasInput() && (!leftOutput.isEmpty() || !rightOutput.isEmpty());
 	}
 
-	public Optional<Either<ItemStack, FluidStack>> getInput() {
+	public boolean hasInput() {
+		return !input.isEmpty();
+	}
+
+	public Either<ItemStack, FluidStack> getInput() {
 		if (input.isEmpty()) {
-			return Optional.empty();
+			throw new IllegalStateException("getInput called with empty input");
 		}
-		return Optional.of(input.toEither());
+		return input.toEither();
 	}
 
 	public Iterable<Either<ItemStack, FluidStack>> getOutput() {
-		List<Either<ItemStack, FluidStack>> outputs = new ArrayList<>();
+		List<Either<ItemStack, FluidStack>> outputs = new ArrayList<>(2);
 		if (!leftOutput.isEmpty()) {
 			outputs.add(leftOutput.toEither());
 		}
@@ -97,11 +117,10 @@ public class WorldTransmuteEntry {
 		return outputs;
 	}
 
-	public ItemStack getInputItem() {
-		return input.item();
-	}
-
-	public FluidStack getInputFluid() {
-		return input.fluid();
+	public boolean isUnseenInput(Set<ItemStack> seenItems, Set<FluidStack> seenFluids) {
+		if (input.item().isEmpty()) {
+			return !input.fluid().isEmpty() && seenFluids.add(input.fluid());
+		}
+		return seenItems.add(input.item());
 	}
 }

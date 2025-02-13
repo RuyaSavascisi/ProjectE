@@ -13,6 +13,7 @@ import moze_intel.projecte.common.PECustomConversionProvider;
 import moze_intel.projecte.common.PEDataMapsProvider;
 import moze_intel.projecte.common.PEDatapackRegistryProvider;
 import moze_intel.projecte.common.PEPackMetadataGenerator;
+import moze_intel.projecte.common.PEWorldTransmutationProvider;
 import moze_intel.projecte.common.loot.PEBlockLootTable;
 import moze_intel.projecte.common.recipe.PERecipeProvider;
 import moze_intel.projecte.common.tag.PEBlockEntityTypeTagsProvider;
@@ -71,5 +72,6 @@ public class ProjectEDataGenerator {
 		gen.addProvider(event.includeServer(), new PERecipeProvider(output, lookupProvider));
 		gen.addProvider(event.includeServer(), new PEDataMapsProvider(output, lookupProvider));
 		gen.addProvider(event.includeServer(), new PECustomConversionProvider(output, lookupProvider));
+		gen.addProvider(event.includeServer(), new PEWorldTransmutationProvider(output, lookupProvider));
 	}
 }

@@ -25,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
 public class PECustomConversionProvider extends CustomConversionProvider {
 
 	public PECustomConversionProvider(@NotNull PackOutput output, @NotNull CompletableFuture<HolderLookup.Provider> lookupProvider) {
-		super(output, lookupProvider);
+		super(output, lookupProvider, PECore.MODID);
 	}
 
 	@Override

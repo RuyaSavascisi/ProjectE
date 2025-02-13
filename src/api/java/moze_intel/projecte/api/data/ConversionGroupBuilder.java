@@ -6,37 +6,24 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import moze_intel.projecte.api.conversion.ConversionGroup;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Builder class to help create conversion groups.
  */
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class ConversionGroupBuilder implements CustomConversionNSSHelper<ConversionBuilder<ConversionGroupBuilder>> {
+public class ConversionGroupBuilder extends BaseFileBuilder<ConversionGroupBuilder> implements CustomConversionNSSHelper<ConversionBuilder<ConversionGroupBuilder>> {
 
 	private final CustomConversionBuilder customConversionBuilder;
 	private final List<ConversionBuilder<?>> conversions = new ArrayList<>();
-	@Nullable
-	private String comment;
 
 	ConversionGroupBuilder(CustomConversionBuilder customConversionBuilder) {
+		super("Group");
 		this.customConversionBuilder = customConversionBuilder;
 	}
 
 	ConversionGroup build() {
 		return new ConversionGroup(comment, conversions.stream().map(ConversionBuilder::build).toList());
-	}
-
-	/**
-	 * Optionally adds a given comment to the conversion group. Useful for describing what the group is used for to people looking at the json file.
-	 *
-	 * @param comment Comment to add.
-	 */
-	public ConversionGroupBuilder comment(String comment) {
-		CustomConversionBuilder.validateComment(this.comment, comment, "Group");
-		this.comment = comment;
-		return this;
 	}
 
 	@Override
@@ -54,12 +41,5 @@ public class ConversionGroupBuilder implements CustomConversionNSSHelper<Convers
 	 */
 	public CustomConversionBuilder end() {
 		return customConversionBuilder;
-	}
-
-	/**
-	 * @return {@code true} if this group has a comment, {@code false} otherwise.
-	 */
-	boolean hasComment() {
-		return comment != null;
 	}
 }

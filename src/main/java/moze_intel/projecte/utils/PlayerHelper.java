@@ -1,6 +1,7 @@
 package moze_intel.projecte.utils;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.function.BiPredicate;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.integration.IntegrationHelper;
@@ -26,6 +27,7 @@ import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.BlockSnapshot;
 import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.level.BlockEvent.EntityMultiPlaceEvent;
 import net.neoforged.neoforge.items.IItemHandler;
 
 /**
@@ -46,20 +48,39 @@ public final class PlayerHelper {
 
 	private static boolean partiallyCheckedPlaceBlock(Player player, BlockPos pos, BlockState state) {
 		Level level = player.level();
-		BlockSnapshot before = BlockSnapshot.create(level.dimension(), level, pos);
+		level.captureBlockSnapshots = true;
 		level.setBlockAndUpdate(pos, state);
-		BlockEvent.EntityPlaceEvent evt = new BlockEvent.EntityPlaceEvent(before, Blocks.AIR.defaultBlockState(), player);
-		NeoForge.EVENT_BUS.post(evt);
-		if (evt.isCanceled()) {
-			level.restoringBlockSnapshots = true;
-			//TODO - 1.21: Look at CommonHooks#onPlaceItemIntoWorld. Do we need to handle multiple snapshots instead of just latest?
-			before.restore(before.getFlags() | Block.UPDATE_CLIENTS);
-			level.restoringBlockSnapshots = false;
-			//PELogger.logInfo("Checked place block got canceled, restoring snapshot.");
-			return false;
+		level.captureBlockSnapshots = false;
+
+		@SuppressWarnings("unchecked")
+		List<BlockSnapshot> blockSnapshots = (List<BlockSnapshot>) level.capturedBlockSnapshots.clone();
+		level.capturedBlockSnapshots.clear();
+
+		boolean eventResult = false;
+		if (blockSnapshots.size() > 1) {
+			eventResult = NeoForge.EVENT_BUS.post(new EntityMultiPlaceEvent(blockSnapshots, Blocks.AIR.defaultBlockState(), player)).isCanceled();
+		} else if (blockSnapshots.size() == 1) {
+			eventResult = NeoForge.EVENT_BUS.post(new BlockEvent.EntityPlaceEvent(blockSnapshots.getFirst(), Blocks.AIR.defaultBlockState(), player)).isCanceled();
 		}
-		//PELogger.logInfo("Checked place block passed!");
-		return true;
+
+		if (eventResult) {
+			level.restoringBlockSnapshots = true;
+			for (BlockSnapshot snapshot : blockSnapshots.reversed()) {
+				snapshot.restore(snapshot.getFlags() | Block.UPDATE_CLIENTS);
+			}
+			level.restoringBlockSnapshots = false;
+		} else {
+			//Place all the blocks into the world and sync them to the client
+			for (BlockSnapshot snap : blockSnapshots) {
+				int updateFlag = snap.getFlags();
+				BlockState oldBlock = snap.getState();
+				BlockState newBlock = level.getBlockState(snap.getPos());
+				newBlock.onPlace(level, snap.getPos(), oldBlock, false);
+				level.markAndNotifyBlock(snap.getPos(), level.getChunkAt(snap.getPos()), oldBlock, newBlock, updateFlag, Block.UPDATE_LIMIT);
+			}
+		}
+		level.capturedBlockSnapshots.clear();
+		return !eventResult;
 	}
 
 	public static boolean checkedReplaceBlock(ServerPlayer player, BlockPos pos, BlockState state) {
@@ -117,9 +138,7 @@ public final class PlayerHelper {
 
 	static boolean checkBreakPermission(ServerPlayer player, BlockPos pos) {
 		Level level = player.level();
-		//TODO - 1.21: Test this
-		BlockEvent.BreakEvent event = CommonHooks.fireBlockBreak(level, player.gameMode.getGameModeForPlayer(), player, pos, level.getBlockState(pos));
-		return !event.isCanceled();
+		return !CommonHooks.fireBlockBreak(level, player.gameMode.getGameModeForPlayer(), player, pos, level.getBlockState(pos)).isCanceled();
 	}
 
 	public static boolean hasEditPermission(Player player, BlockPos pos) {

@@ -15,21 +15,19 @@ import moze_intel.projecte.api.conversion.CustomConversionFile;
 import moze_intel.projecte.api.conversion.FixedValues;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import org.jetbrains.annotations.Nullable;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CustomConversionBuilder implements CustomConversionBuilderNSSHelper {
+public class CustomConversionBuilder extends BaseFileBuilder<CustomConversionBuilder> implements CustomConversionBuilderNSSHelper {
 
 	private final Map<String, ConversionGroupBuilder> groups = new LinkedHashMap<>();
 	private final Object2LongSortedMap<NormalizedSimpleStack> fixedValueBefore = new Object2LongLinkedOpenHashMap<>();
 	private final Object2LongSortedMap<NormalizedSimpleStack> fixedValueAfter = new Object2LongLinkedOpenHashMap<>();
 	private final List<ConversionBuilder<?>> fixedValueConversions = new ArrayList<>();
 	private boolean replace;
-	@Nullable
-	private String comment;
 
 	CustomConversionBuilder() {
+		super("Custom Conversion");
 	}
 
 	CustomConversionFile build() {
@@ -39,17 +37,6 @@ public class CustomConversionBuilder implements CustomConversionBuilderNSSHelper
 				}, LinkedHashMap::new)),
 				new FixedValues(fixedValueBefore, fixedValueAfter, fixedValueConversions.stream().map(ConversionBuilder::build).toList())
 		);
-	}
-
-	/**
-	 * Optionally adds a given comment to the custom conversion file. Useful for describing what the file is used for to people looking at the json file.
-	 *
-	 * @param comment Comment to add.
-	 */
-	public CustomConversionBuilder comment(String comment) {
-		validateComment(this.comment, comment, "Custom Conversion");
-		this.comment = comment;
-		return this;
 	}
 
 	/**
@@ -122,15 +109,5 @@ public class CustomConversionBuilder implements CustomConversionBuilderNSSHelper
 		ConversionBuilder<CustomConversionBuilder> builder = new ConversionBuilder<>(this, output, amount);
 		fixedValueConversions.add(builder);
 		return builder;
-	}
-
-	/**
-	 * Validates only one comment per section is set and that the comment being set is not null.
-	 */
-	static void validateComment(@Nullable String currentComment, String comment, String location) {
-		Objects.requireNonNull(comment, "Comment defaults to null, remove unnecessary call.");
-		if (currentComment != null) {
-			throw new RuntimeException(location + " Builder already has a comment declared.");
-		}
 	}
 }

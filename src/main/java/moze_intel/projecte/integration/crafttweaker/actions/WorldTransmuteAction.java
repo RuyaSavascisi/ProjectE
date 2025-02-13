@@ -1,125 +1,83 @@
 package moze_intel.projecte.integration.crafttweaker.actions;
 
 import com.blamejared.crafttweaker.api.action.base.IUndoableAction;
+import com.blamejared.crafttweaker.natives.block.ExpandBlock;
 import com.blamejared.crafttweaker.natives.block.ExpandBlockState;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.utils.WorldTransmutations;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
+import moze_intel.projecte.api.world_transmutation.SimpleWorldTransmutation;
+import moze_intel.projecte.api.world_transmutation.WorldTransmutation;
+import moze_intel.projecte.world_transmutation.WorldTransmutationManager;
 
-public abstract class WorldTransmuteAction implements IUndoableAction {
+public class WorldTransmuteAction implements IUndoableAction {
 
-	protected final BlockState input;
-	protected final BlockState output;
-	@Nullable
-	protected final BlockState sneakOutput;
+	protected final IWorldTransmutation transmutation;
+	private final boolean add;
 
-	private WorldTransmuteAction(BlockState input, BlockState output, @Nullable BlockState sneakOutput) {
-		this.input = input;
-		this.output = output;
-		this.sneakOutput = sneakOutput;
+	public WorldTransmuteAction(IWorldTransmutation transmutation, boolean add) {
+		this.transmutation = transmutation;
+		this.add = add;
 	}
 
-	protected void apply(boolean add) {
+	@Override
+	public String systemName() {
+		return PECore.MODNAME;
+	}
+
+	@Override
+	public void apply() {
+		apply(add);
+	}
+
+	@Override
+	public void undo() {
+		apply(!add);
+	}
+
+	private void apply(boolean add) {
 		if (add) {
-			WorldTransmutations.register(this.input, this.output, this.sneakOutput);
+			WorldTransmutationManager.INSTANCE.register(transmutation);
 		} else {
-			WorldTransmutations.getWorldTransmutations().removeIf(entry -> {
-				BlockState altOutput = this.sneakOutput == null ? this.output : this.sneakOutput;
-				return entry.origin() == this.input && entry.result() == this.output && entry.altResult() == altOutput;
-			});
+			WorldTransmutationManager.INSTANCE.removeWorldTransmutation(transmutation);
 		}
 	}
 
-	public static class Add extends WorldTransmuteAction {
-
-		public Add(BlockState input, BlockState output, @Nullable BlockState sneakOutput) {
-			super(input, output, sneakOutput);
-		}
-
-		@Override
-		public void apply() {
-			apply(true);
-		}
-
-		@Override
-		public String describe() {
-			if (sneakOutput == null) {
-				return "Adding world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-					   ExpandBlockState.getCommandString(output);
+	private String describeTransmutation() {
+		return switch (transmutation) {
+			case SimpleWorldTransmutation simple -> {
+				String representation = ExpandBlock.getCommandString(simple.origin()) + " with output: " +
+										ExpandBlock.getCommandString(simple.result());
+				if (simple.hasAlternate()) {
+					representation += " and secondary output: " + ExpandBlock.getCommandString(simple.altResult());
+				}
+				yield representation;
 			}
-			return "Adding world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-				   ExpandBlockState.getCommandString(output) + " and secondary output: " + ExpandBlockState.getCommandString(sneakOutput);
-		}
-
-		@Override
-		public void undo() {
-			apply(false);
-		}
-
-		@Override
-		public String describeUndo() {
-			if (sneakOutput == null) {
-				return "Undoing addition of world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-					   ExpandBlockState.getCommandString(output);
+			case WorldTransmutation worldTransmutation -> {
+				String representation = ExpandBlockState.getCommandString(worldTransmutation.origin()) + " with output: " +
+										ExpandBlockState.getCommandString(worldTransmutation.result());
+				if (worldTransmutation.hasAlternate()) {
+					representation += " and secondary output: " + ExpandBlockState.getCommandString(worldTransmutation.altResult());
+				}
+				yield representation;
 			}
-			return "Undoing addition of world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-				   ExpandBlockState.getCommandString(output) + " and secondary output: " + ExpandBlockState.getCommandString(sneakOutput);
-		}
-
-		@Override
-		public String systemName() {
-			return PECore.MODNAME;
-		}
+		};
 	}
 
-	public static class Remove extends WorldTransmuteAction {
+	@Override
+	public String describe() {
+		return (add ? "Adding" : "Removing") + " world transmutation recipe for: " + describeTransmutation();
+	}
 
-		public Remove(BlockState input, BlockState output, @Nullable BlockState sneakOutput) {
-			super(input, output, sneakOutput);
-		}
-
-		@Override
-		public void apply() {
-			apply(false);
-		}
-
-		@Override
-		public String describe() {
-			if (sneakOutput == null) {
-				return "Removing world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-					   ExpandBlockState.getCommandString(output);
-			}
-			return "Removing world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-				   ExpandBlockState.getCommandString(output) + " and secondary output: " + ExpandBlockState.getCommandString(sneakOutput);
-		}
-
-		@Override
-		public void undo() {
-			apply(true);
-		}
-
-		@Override
-		public String describeUndo() {
-			if (sneakOutput == null) {
-				return "Undoing removal of world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-					   ExpandBlockState.getCommandString(output);
-			}
-			return "Undoing removal of world transmutation recipe for: " + ExpandBlockState.getCommandString(input) + " with output: " +
-				   ExpandBlockState.getCommandString(output) + " and secondary output: " + ExpandBlockState.getCommandString(sneakOutput);
-		}
-
-		@Override
-		public String systemName() {
-			return PECore.MODNAME;
-		}
+	@Override
+	public String describeUndo() {
+		return "Undoing " + (add ? "addition" : "removal") + " of world transmutation recipe for: " + describeTransmutation();
 	}
 
 	public static class RemoveAll implements IUndoableAction {
 
 		@Override
 		public void apply() {
-			WorldTransmutations.getWorldTransmutations().clear();
+			WorldTransmutationManager.INSTANCE.clearTransmutations();
 		}
 
 		@Override
@@ -129,7 +87,7 @@ public abstract class WorldTransmuteAction implements IUndoableAction {
 
 		@Override
 		public void undo() {
-			WorldTransmutations.resetWorldTransmutations();
+			WorldTransmutationManager.INSTANCE.resetWorldTransmutations();
 		}
 
 		@Override

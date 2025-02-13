@@ -45,7 +45,7 @@ import moze_intel.projecte.network.commands.ShowBagCMD;
 import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.SyncFuelMapperPKT;
 import moze_intel.projecte.utils.WorldHelper;
-import moze_intel.projecte.utils.WorldTransmutations;
+import moze_intel.projecte.world_transmutation.WorldTransmutationManager;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
@@ -79,7 +79,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.Capabilities.FluidHandler;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -135,8 +134,7 @@ public class PECore {
 		MOD_CONTAINER = modContainer;
 
 		modEventBus.addListener(this::commonSetup);
-		modEventBus.addListener(this::imcQueue);
-		modEventBus.addListener(WorldTransmutations::handleIMC);
+		modEventBus.addListener(IntegrationHelper::sendIMCMessages);
 		modEventBus.addListener(APICustomEMCMapper::handleIMC);
 		modEventBus.addListener(this::registerCapabilities);
 		modEventBus.addListener(this::registerRegistries);
@@ -257,11 +255,6 @@ public class PECore {
 		}
 	}
 
-	private void imcQueue(InterModEnqueueEvent event) {
-		WorldTransmutations.init();
-		IntegrationHelper.sendIMCMessages(event);
-	}
-
 	private void dataPackSync(OnDatapackSyncEvent event) {
 		if (emcUpdateResourceManager != null) {
 			long start = System.currentTimeMillis();
@@ -300,6 +293,7 @@ public class PECore {
 
 	private void addReloadListeners(AddReloadListenerEvent event) {
 		event.addListener((ResourceManagerReloadListener) manager -> emcUpdateResourceManager = new EmcUpdateData(event.getServerResources(), event.getRegistryAccess(), manager));
+		event.addListener(WorldTransmutationManager.INSTANCE);
 	}
 
 	private void registerCommands(RegisterCommandsEvent event) {

@@ -2,11 +2,11 @@ package moze_intel.projecte.rendering;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone.PhilosophersStoneMode;
 import moze_intel.projecte.utils.Constants;
-import moze_intel.projecte.utils.WorldTransmutations;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -20,6 +20,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -37,7 +38,7 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 
 	private final Minecraft mc = Minecraft.getInstance();
 	@Nullable
-	private BlockState transmutationResult;
+	private Block transmutationResult;
 	private long lastGameTime;
 
 	public TransmutationRenderingOverlay() {
@@ -47,7 +48,7 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 	@Override
 	public void render(@NotNull GuiGraphics graphics, @NotNull DeltaTracker delta) {
 		if (!mc.options.hideGui && transmutationResult != null) {
-			if (transmutationResult.getBlock() instanceof LiquidBlock liquidBlock) {
+			if (transmutationResult instanceof LiquidBlock liquidBlock) {
 				IClientFluidTypeExtensions properties = IClientFluidTypeExtensions.of(liquidBlock.fluid);
 				int color = properties.getTintColor();
 				float red = (color >> 16 & 0xFF) / 255.0F;
@@ -59,7 +60,7 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 			} else {
 				//Just render it normally instead of with the given model as some block's don't render properly then as an item
 				// for example glass panes
-				graphics.renderItem(new ItemStack(transmutationResult.getBlock()), 1, 1);
+				graphics.renderItem(new ItemStack(transmutationResult), 1, 1);
 			}
 			long gameTime = mc.level == null ? 0 : mc.level.getGameTime();
 			if (lastGameTime != gameTime) {
@@ -91,17 +92,19 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 		// can properly take fluid into account/ignore it when needed
 		BlockHitResult rtr = philoStone.getHitBlock(player);
 		if (rtr.getType() == HitResult.Type.BLOCK) {
-			BlockState current = level.getBlockState(rtr.getBlockPos());
-			transmutationResult = WorldTransmutations.getWorldTransmutation(current, player.isSecondaryUseActive());
-			if (transmutationResult != null) {
+			int charge = philoStone.getCharge(stack);
+			PhilosophersStoneMode mode = philoStone.getMode(stack);
+			Object2ReferenceMap<BlockPos, BlockState> changes = PhilosophersStone.getChanges(level, rtr.getBlockPos(), player, rtr.getDirection(), mode, charge);
+			if (changes.isEmpty()) {
+				transmutationResult = null;
+			} else {
+				transmutationResult = changes.values().iterator().next().getBlock();
 				Vec3 viewPosition = activeRenderInfo.getPosition();
-				int charge = philoStone.getCharge(stack);
-				PhilosophersStoneMode mode = philoStone.getMode(stack);
 				float alpha = ProjectEConfig.client.pulsatingOverlay.get() ? getPulseProportion() * 0.60F : 0.35F;
 				VertexConsumer builder = event.getMultiBufferSource().getBuffer(PERenderType.TRANSMUTATION_OVERLAY);
 				PoseStack matrix = event.getPoseStack();
 				CollisionContext selectionContext = CollisionContext.of(player);
-				for (BlockPos pos : PhilosophersStone.getChanges(level, rtr.getBlockPos(), player, rtr.getDirection(), mode, charge).keySet()) {
+				for (BlockPos pos : changes.keySet()) {
 					BlockState state = level.getBlockState(pos);
 					if (!state.isAir()) {
 						VoxelShape shape = state.getShape(level, pos, selectionContext);

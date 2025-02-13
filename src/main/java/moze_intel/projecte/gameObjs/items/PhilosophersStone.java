@@ -5,13 +5,13 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMaps;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
+import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
 import moze_intel.projecte.gameObjs.container.PhilosStoneContainer;
 import moze_intel.projecte.gameObjs.entity.EntityMobRandomizer;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone.PhilosophersStoneMode;
@@ -21,9 +21,9 @@ import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
-import moze_intel.projecte.utils.WorldTransmutations;
 import moze_intel.projecte.utils.text.IHasTranslationKey;
 import moze_intel.projecte.utils.text.PELang;
+import moze_intel.projecte.world_transmutation.WorldTransmutationManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentType;
@@ -49,7 +49,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -83,15 +82,14 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		if (player == null) {
 			return InteractionResult.FAIL;
 		}
-		BlockPos pos = ctx.getClickedPos();
-		Direction sideHit = ctx.getClickedFace();
 		Level level = ctx.getLevel();
-		ItemStack stack = ctx.getItemInHand();
-
 		if (level.isClientSide) {
 			return InteractionResult.SUCCESS;
 		}
 
+		BlockPos pos = ctx.getClickedPos();
+		Direction sideHit = ctx.getClickedFace();
+		ItemStack stack = ctx.getItemInHand();
 		BlockHitResult rtr = getHitBlock(player);
 		if (rtr.getType() == HitResult.Type.BLOCK && !rtr.getBlockPos().equals(pos)) {
 			pos = rtr.getBlockPos();
@@ -136,10 +134,8 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 	}
 
 	public static Object2ReferenceMap<BlockPos, BlockState> getChanges(Level level, BlockPos pos, Player player, Direction sideHit, PhilosophersStoneMode mode, int charge) {
-		BlockState targeted = level.getBlockState(pos);
-		boolean isSneaking = player.isSecondaryUseActive();
-		BlockState result = WorldTransmutations.getWorldTransmutation(targeted, isSneaking);
-		if (result == null) {
+		IWorldTransmutation transmutation = WorldTransmutationManager.INSTANCE.getWorldTransmutation(level.getBlockState(pos));
+		if (transmutation == null) {
 			//Targeted block has no transmutations, no positions
 			return Object2ReferenceMaps.emptyMap();
 		}
@@ -159,24 +155,14 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		if (targets == null) {
 			return Object2ReferenceMaps.emptyMap();
 		}
-		Map<BlockState, BlockState> conversions = new Reference2ReferenceOpenHashMap<>();
-		conversions.put(targeted, result);
+		boolean isSneaking = player.isSecondaryUseActive();
 		Object2ReferenceMap<BlockPos, BlockState> changes = new Object2ReferenceOpenHashMap<>();
-		Block targetBlock = targeted.getBlock();
 		for (BlockPos currentPos : targets) {
-			BlockState state = level.getBlockState(currentPos);
-			if (state.is(targetBlock)) {
-				BlockState actualResult;
-				if (conversions.containsKey(state)) {
-					actualResult = conversions.get(state);
-				} else {
-					conversions.put(state, actualResult = WorldTransmutations.getWorldTransmutation(state, isSneaking));
-				}
-				//We allow for null keys to avoid having to look it up again from the world transmutations
-				// which may be slightly slower, but we only add it as a position to change if we have a result
-				if (actualResult != null) {
-					changes.put(currentPos.immutable(), actualResult);
-				}
+			BlockState actualResult = transmutation.result(level.getBlockState(currentPos), isSneaking);
+			//We allow for null keys to avoid having to look it up again from the world transmutations
+			// which may be slightly slower, but we only add it as a position to change if we have a result
+			if (actualResult != null) {
+				changes.put(currentPos.immutable(), actualResult);
 			}
 		}
 		return changes;
