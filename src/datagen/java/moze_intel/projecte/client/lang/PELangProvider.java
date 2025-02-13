@@ -48,12 +48,6 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PELang.BLACKLIST, "Blacklist");
 		add(PELang.WHITELIST, "Whitelist");
 		add(PELang.DENSITY_MODE_TARGET, "Set target to: %s");
-		//Mappers
-		//TODO: Figure out a way to specify which mod it is modifying
-		add(PELang.CUSTOM_EMC_PERMISSION_BOTH, "Allow the mod to modify (add and remove) EMC values.");
-		add(PELang.CUSTOM_EMC_PERMISSION_REMOVE, "Allow the mod to remove EMC values, but not add EMC values.");
-		add(PELang.CUSTOM_EMC_PERMISSION_SET,  "Allow the mod to add EMC values, but not remove EMC values.");
-		add(PELang.CUSTOM_EMC_PERMISSION_NONE, "Deny the mod from modifying (adding or removing) EMC values.");
 		//Divining Rod
 		add(PELang.DIVINING_AVG_EMC, "Average EMC for %s blocks: %s");
 		add(PELang.DIVINING_MAX_EMC, "Max EMC: %s");

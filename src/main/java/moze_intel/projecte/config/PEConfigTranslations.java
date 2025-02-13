@@ -121,9 +121,6 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			+ "that the algorithm did not overwrite. Exploits that derive from conversions that are unknown to ProjectE will not be found."),
 
 	MAPPING_MAPPERS("mapping.mapper", "EMC Mappers", "Used to configure settings for the various EMC Mappers.", true),
-	MAPPING_API_CUSTOM_MAPPER("mapping.mapper.api", "API Custom EMC Mapper", "Allows other mods to easily set EMC values using the ProjectEAPI.", true),
-	MAPPING_API_CUSTOM_MAPPER_PRIORITY("mapping.mapper.api.priority", "Priority", "Priority to apply changes from this mod at."),
-	MAPPING_API_CUSTOM_MAPPER_PERMISSIONS("mapping.mapper.api.permissions", "Permissions", "Controls whether the mod is able to set and/or remove values from another mod."),
 
 	MAPPING_BREWING_MAPPER("mapping.mapper.brewing", "Brewing Mapper", "Add Conversions for Brewing Recipes.", true),
 	MAPPING_OXIDATION_MAPPER("mapping.mapper.oxidation", "Oxidization Mapper", "Add Conversions for all oxidizable blocks.", true),

@@ -13,7 +13,6 @@ import moze_intel.projecte.config.CustomEMCParser;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.emc.FuelMapper;
-import moze_intel.projecte.emc.mappers.APICustomEMCMapper;
 import moze_intel.projecte.gameObjs.items.IHasConditionalAttributes;
 import moze_intel.projecte.gameObjs.registries.PEArmorMaterials;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
@@ -135,7 +134,6 @@ public class PECore {
 
 		modEventBus.addListener(this::commonSetup);
 		modEventBus.addListener(IntegrationHelper::sendIMCMessages);
-		modEventBus.addListener(APICustomEMCMapper::handleIMC);
 		modEventBus.addListener(this::registerCapabilities);
 		modEventBus.addListener(this::registerRegistries);
 		PEAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus);
