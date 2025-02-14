@@ -12,7 +12,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,12 +44,11 @@ public class EntityLensProjectile extends NoGravityThrowableProjectile {
 
 	@Override
 	protected void onHit(@NotNull HitResult result) {
+		super.onHit(result);
 		if (!level().isClientSide) {
 			WorldHelper.createNovaExplosion(level(), getOwner(), getX(), getY(), getZ(), charge.radius());
+			discard();
 		}
-		//TODO - 1.21: Should we be calling super instead for handling the game events etc
-		gameEvent(GameEvent.PROJECTILE_LAND, getOwner());
-		discard();
 	}
 
 	@Override

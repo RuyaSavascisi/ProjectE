@@ -42,15 +42,6 @@
       "result": "minecraft:oak_log"
     },
     {
-      "origin": {
-        "Name": "minecraft:oak_log",
-        "Properties": {
-          "axis": "y"
-        }
-      },
-      "result": "minecraft:diamond_block"
-    },
-    {
       "alt_result": "minecraft:stripped_cherry_log",
       "origin": "minecraft:stripped_oak_log",
       "result": "minecraft:stripped_birch_log"

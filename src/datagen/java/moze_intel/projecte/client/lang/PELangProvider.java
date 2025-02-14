@@ -208,8 +208,8 @@ public class PELangProvider extends BaseLanguageProvider {
 
 	private void addEMC() {
 		add(PELang.EMC, "%s EMC");
-		add(PELang.EMC_MAX_GEN_RATE, "Maximum Generation Rate: %s EMC/s");
-		add(PELang.EMC_MAX_OUTPUT_RATE, "Maximum Output Rate: %s EMC/s");
+		add(PELang.EMC_MAX_GEN_RATE, "Maximum Generation Rate: %s EMC/t");
+		add(PELang.EMC_MAX_OUTPUT_RATE, "Maximum Output Rate: %s EMC/t");
 		add(PELang.EMC_MAX_STORAGE, "Maximum Storage: %s EMC");
 		add(PELang.EMC_STORED, "Stored EMC: %s");
 		add(PELang.EMC_HAS_KNOWLEDGE, "Learned");

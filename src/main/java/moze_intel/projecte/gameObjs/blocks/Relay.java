@@ -55,7 +55,6 @@ public class Relay extends BlockDirection implements PEEntityBlock<RelayMK1Block
 	public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull List<Component> tooltip, @NotNull TooltipFlag flags) {
 		super.appendHoverText(stack, context, tooltip, flags);
 		if (ProjectEConfig.client.statToolTips.get()) {
-			//TODO - 1.21: Make this scale based on the tooltip context's tickrate as well as the collector's tooltip
 			tooltip.add(PELang.EMC_MAX_OUTPUT_RATE.translateColored(ChatFormatting.DARK_PURPLE, ChatFormatting.BLUE, EMCHelper.formatEmc(tier.getChargeRate())));
 			tooltip.add(PELang.EMC_MAX_STORAGE.translateColored(ChatFormatting.DARK_PURPLE, ChatFormatting.BLUE, EMCHelper.formatEmc(tier.getStorage())));
 		}
