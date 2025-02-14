@@ -83,7 +83,7 @@ public final class EMCMappingHandler {
 		Optional<Object2LongMap<ItemInfo>> readPregeneratedValues = PregeneratedEMC.read(registryAccess, pregeneratedEmcFile, usePregenerated);
 		if (readPregeneratedValues.isPresent()) {
 			int values = updateEmcValues(readPregeneratedValues.get());
-			PECore.LOGGER.info("Loaded {} values from pregenerated EMC File", values);
+			PECore.debugLog("Loaded {} values from pregenerated EMC File", values);
 		} else {
 			SimpleGraphMapper.setLogFoundExploits(MappingConfig.logExploits());
 

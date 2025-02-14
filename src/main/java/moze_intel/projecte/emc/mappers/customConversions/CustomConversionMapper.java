@@ -72,7 +72,7 @@ public class CustomConversionMapper implements IEMCMapper<NormalizedSimpleStack,
 			ResourceLocation file = entry.getKey();//<domain>:foo/bar
 			ResourceLocation conversionId = CONVERSION_LISTER.fileToId(file);
 
-			PECore.LOGGER.info("Considering file {}, ID {}", file, conversionId);
+			PECore.debugLog("Considering file {}, ID {}", file, conversionId);
 			NSSFake.setCurrentNamespace(conversionId.toString());
 
 			// Iterate through all copies of this conversion, from lowest to highest priority datapack, merging the results together

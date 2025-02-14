@@ -45,7 +45,7 @@ public class AnnotationHelper {
 						int priority = getPriority(data);
 						dataComponentProcessors.add(processor);
 						priorities.put(processor, priority);
-						PECore.LOGGER.info("Found and loaded Data Component Processor: {}, with priority {}", processor.getName(), priority);
+						PECore.debugLog("Found and loaded Data Component Processor: {}, with priority {}", processor.getName(), priority);
 					}
 				}
 			}
@@ -67,7 +67,7 @@ public class AnnotationHelper {
 						int priority = getPriority(data);
 						recipeTypeMappers.add(mapper);
 						priorities.put(mapper, priority);
-						PECore.LOGGER.info("Found and loaded RecipeType Mapper: {}, with priority {}", mapper.getName(), priority);
+						PECore.debugLog("Found and loaded RecipeType Mapper: {}, with priority {}", mapper.getName(), priority);
 					}
 				}
 			}
@@ -92,7 +92,7 @@ public class AnnotationHelper {
 							int priority = getPriority(data);
 							emcMappers.add(emcMapper);
 							priorities.put(emcMapper, priority);
-							PECore.LOGGER.info("Found and loaded EMC mapper: {}, with priority {}", mapper.getName(), priority);
+							PECore.debugLog("Found and loaded EMC mapper: {}, with priority {}", mapper.getName(), priority);
 						} catch (ClassCastException e) {
 							PECore.LOGGER.error("{}: Is not a mapper for {}, to {}", mapper.getClass(), NormalizedSimpleStack.class, Long.class, e);
 						}

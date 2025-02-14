@@ -50,7 +50,7 @@ public class ThreadCheckUpdate extends Thread {
 		} while (result == null && tries < 10);
 
 		if (result == null) {
-			PECore.LOGGER.info("Update check failed.");
+			PECore.LOGGER.warn("Update check failed.");
 			return;
 		}
 

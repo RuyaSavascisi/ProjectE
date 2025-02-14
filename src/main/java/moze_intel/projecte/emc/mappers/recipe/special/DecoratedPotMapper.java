@@ -27,7 +27,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.DecoratedPotRecipe;
 import net.minecraft.world.level.block.entity.PotDecorations;
 
-//@RecipeTypeMapper//TODO - 1.21: Figure out if we want to do it this way or via the component processor
+//@RecipeTypeMapper//TODO: Evaluate if we want to eventually move from the component processor to just premapping values for all pots
 public class DecoratedPotMapper extends SpecialRecipeMapper<DecoratedPotRecipe> {
 
 	private static final ResourceLocation DECORATED_POT = BuiltInRegistries.ITEM.getKey(Items.DECORATED_POT);
@@ -43,20 +43,6 @@ public class DecoratedPotMapper extends SpecialRecipeMapper<DecoratedPotRecipe> 
 		if (tag.isEmpty()) {
 			return false;
 		}
-		//TODO - 1.21: With this mapper
-		// Registered 333225 EMC values. (took 6678 ms)
-		// With this mapper, making use of dummy groups
-		// Registered 333225 EMC values. (took 3731 ms)
-		// With this mapper, making use of dummy groups after performance improvements to the mapping system
-		// Registered 333226 EMC values. (took 2197 ms)
-		// Registered 333226 EMC values. (took 1444 ms)
-		// With this mapper, all the performance improvements AND looking up keys for NSS from holders instead of registry where available
-		// Registered 333235 EMC values. (took 2023 ms)
-		// Without this mapper:
-		// Registered 1450 EMC values. (took 239 ms)
-		// Without this mapper, after the performance improvements
-		// Registered 1450 EMC values. (took 176 ms)
-		// Registered 1450 EMC values. (took 55 ms)
 		int recipeCount = 0;
 		int uniqueInputs = 0;
 		record IngredientData(Item item, NSSItem nss) {

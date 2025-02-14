@@ -43,6 +43,7 @@ import moze_intel.projecte.network.commands.SetEmcCMD;
 import moze_intel.projecte.network.commands.ShowBagCMD;
 import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.SyncFuelMapperPKT;
+import moze_intel.projecte.network.packets.to_client.SyncWorldTransmutations;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.world_transmutation.WorldTransmutationManager;
 import net.minecraft.commands.CommandBuildContext;
@@ -274,17 +275,18 @@ public class PECore {
 			}
 			SyncEmcPKT pkt = SyncEmcPKT.serializeEmcData(players.getFirst().registryAccess());
 			SyncFuelMapperPKT fuelPkt = FuelMapper.getSyncPacket();
+			SyncWorldTransmutations transmutationPkt = WorldTransmutationManager.getSyncPacket();
 			for (ServerPlayer player : players) {
 				if (!player.connection.getConnection().isMemoryConnection()) {
-					PacketDistributor.sendToPlayer(player, pkt);
-					PacketDistributor.sendToPlayer(player, fuelPkt);
+					PacketDistributor.sendToPlayer(player, pkt, fuelPkt);
+					PacketDistributor.sendToPlayer(player, transmutationPkt);
 				}
 			}
 		} else {
 			ServerPlayer player = event.getPlayer();
 			if (!player.connection.getConnection().isMemoryConnection()) {
-				PacketDistributor.sendToPlayer(player, SyncEmcPKT.serializeEmcData(player.registryAccess()));
-				PacketDistributor.sendToPlayer(player, FuelMapper.getSyncPacket());
+				PacketDistributor.sendToPlayer(player, SyncEmcPKT.serializeEmcData(player.registryAccess()), FuelMapper.getSyncPacket());
+				PacketDistributor.sendToPlayer(player, WorldTransmutationManager.getSyncPacket());
 			}
 		}
 	}

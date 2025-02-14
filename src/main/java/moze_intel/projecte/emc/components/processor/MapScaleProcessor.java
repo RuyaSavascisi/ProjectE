@@ -105,7 +105,7 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 		return null;
 	}
 
-	private static class ClientLevelHelper {//TODO - 1.21: Make sure this doesn't crash on a dedicated server
+	private static class ClientLevelHelper {
 
 		@Nullable
 		public static Level getLevel() {

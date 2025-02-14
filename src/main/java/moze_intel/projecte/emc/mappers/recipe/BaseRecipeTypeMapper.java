@@ -41,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 // Alternatively we should have the fake group manager keep track of an intermediary object that says what kind
 // of transformations actually is happening so that we can then basically compare sets/easier allow for custom objects
 // to do things
+//TODO: Do we want to somehow expose this class as a helper in the api?
 public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 
 	@Override
@@ -48,7 +49,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			INSSFakeGroupManager fakeGroupManager) {
 		Recipe<?> recipe = recipeHolder.value();
 		if (recipe.isSpecial()) {
-			//TODO - 1.21: Figure this out
+			//Skip handling of any "special" recipes as they might have issues if we try to handle them
 			return false;
 		}
 		ItemStack recipeOutput = recipe.getResultItem(registryAccess);

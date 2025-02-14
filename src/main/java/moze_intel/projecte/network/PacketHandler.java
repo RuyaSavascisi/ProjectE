@@ -7,12 +7,13 @@ import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.items.rings.ArchangelSmite;
 import moze_intel.projecte.network.packets.IPEPacket;
 import moze_intel.projecte.network.packets.to_client.NovaExplosionSyncPKT;
-import moze_intel.projecte.network.packets.to_client.alch_bag.SyncAllBagDataPKT;
-import moze_intel.projecte.network.packets.to_client.alch_bag.SyncBagsDataPKT;
 import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.SyncFuelMapperPKT;
+import moze_intel.projecte.network.packets.to_client.SyncWorldTransmutations;
 import moze_intel.projecte.network.packets.to_client.UpdateCondenserLockPKT;
 import moze_intel.projecte.network.packets.to_client.UpdateWindowLongPKT;
+import moze_intel.projecte.network.packets.to_client.alch_bag.SyncAllBagDataPKT;
+import moze_intel.projecte.network.packets.to_client.alch_bag.SyncBagsDataPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncChangePKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncEmcPKT;
 import moze_intel.projecte.network.packets.to_client.knowledge.KnowledgeSyncInputsAndLocksPKT;
@@ -90,6 +91,7 @@ public final class PacketHandler {
 		registrar.play(SyncBagsDataPKT.TYPE, SyncBagsDataPKT.STREAM_CODEC);
 		registrar.play(SyncEmcPKT.TYPE, SyncEmcPKT.STREAM_CODEC);
 		registrar.play(SyncFuelMapperPKT.TYPE, SyncFuelMapperPKT.STREAM_CODEC);
+		registrar.play(SyncWorldTransmutations.TYPE, SyncWorldTransmutations.STREAM_CODEC);
 		registrar.play(UpdateCondenserLockPKT.TYPE, UpdateCondenserLockPKT.STREAM_CODEC);
 		updateTransmutationTargets = registrar.playInstanced(PECore.rl("update_transmutation_targets"), (ignored, context) -> {
 			if (context.player().containerMenu instanceof TransmutationContainer container) {

@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DataResult;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,6 +14,7 @@ import java.util.Set;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.WorldTransmutationFile;
+import moze_intel.projecte.network.packets.to_client.SyncWorldTransmutations;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -37,6 +37,16 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 
 	private WorldTransmutationManager() {
 		super(GSON, "pe_world_transmutations");
+	}
+
+	public static SyncWorldTransmutations getSyncPacket() {
+		return new SyncWorldTransmutations(INSTANCE.getWorldTransmutations());
+	}
+
+	@ApiStatus.Internal
+	public void setEntries(Set<IWorldTransmutation> transmutations) {
+		this.entries = transmutations;
+		this.modifiedEntries = null;
 	}
 
 	@Override
@@ -67,11 +77,10 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 				result.ifError(error -> PECore.LOGGER.error("Parsing error loading world transmutation file {}: {}", file, error.message()));
 			}
 		}
-		entries = builder.build();
+		setEntries(builder.build());
 	}
 
-	//TODO - 1.21: Make sure the client has this for displaying the recipes when connected to a server
-	public Collection<IWorldTransmutation> getWorldTransmutations() {
+	public Set<IWorldTransmutation> getWorldTransmutations() {
 		return modifiedEntries == null ? entries : modifiedEntries;
 	}
 

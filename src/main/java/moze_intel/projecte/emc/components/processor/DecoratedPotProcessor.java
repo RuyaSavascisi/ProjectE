@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.entity.PotDecorations;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@DataComponentProcessor//TODO - 1.21: Figure out if we should remove this, also figure out where the base value even comes from
+@DataComponentProcessor
 public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecorations> {
 
 	@DataComponentProcessor.Instance

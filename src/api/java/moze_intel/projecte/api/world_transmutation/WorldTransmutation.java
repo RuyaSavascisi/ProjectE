@@ -3,9 +3,12 @@ package moze_intel.projecte.api.world_transmutation;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
@@ -22,8 +25,7 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 	static final String RESULT_KEY = "result";
 	static final String ALT_RESULT_KEY = "alt_result";
 
-	static final Codec<Block> BLOCK_CODEC = BuiltInRegistries.BLOCK.byNameCodec();
-	private static final Codec<BlockState> STATE_CODEC = NeoForgeExtraCodecs.withAlternative(BLOCK_CODEC.flatXmap(
+	private static final Codec<BlockState> STATE_CODEC = NeoForgeExtraCodecs.withAlternative(BuiltInRegistries.BLOCK.byNameCodec().flatXmap(
 			block -> DataResult.success(block.defaultBlockState()),
 			state -> {
 				if (state.getValues().isEmpty()) {
@@ -32,6 +34,7 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 				return DataResult.error(() -> "Flattened state codec cannot be used for blocks that define any properties.");
 			}
 	), BlockState.CODEC);
+	private static final StreamCodec<ByteBuf, BlockState> STATE_STREAM_CODEC = ByteBufCodecs.idMapper(Block.BLOCK_STATE_REGISTRY);
 
 	/**
 	 * Codec for serializing and deserializing World Transmutations.
@@ -41,6 +44,32 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 			STATE_CODEC.fieldOf(RESULT_KEY).forGetter(WorldTransmutation::result),
 			STATE_CODEC.optionalFieldOf(ALT_RESULT_KEY).forGetter(entry -> entry.hasAlternate() ? Optional.of(entry.altResult()) : Optional.empty())
 	).apply(instance, (origin, result, altResult) -> new WorldTransmutation(origin, result, altResult.orElse(result))));
+	/**
+	 * Stream codec for serializing and deserializing World Transmutations over the network.
+	 */
+	public static final StreamCodec<ByteBuf, WorldTransmutation> STREAM_CODEC = new StreamCodec<>() {
+		@NotNull
+		@Override
+		public WorldTransmutation decode(@NotNull ByteBuf buffer) {
+			BlockState origin = STATE_STREAM_CODEC.decode(buffer);
+			BlockState result = STATE_STREAM_CODEC.decode(buffer);
+			if (buffer.readBoolean()) {
+				return new WorldTransmutation(origin, result, STATE_STREAM_CODEC.decode(buffer));
+			}
+			return new WorldTransmutation(origin, result);
+		}
+
+		@Override
+		public void encode(@NotNull ByteBuf buffer, @NotNull WorldTransmutation transmutation) {
+			STATE_STREAM_CODEC.encode(buffer, transmutation.origin());
+			STATE_STREAM_CODEC.encode(buffer, transmutation.result());
+			boolean hasAlternate = transmutation.hasAlternate();
+			buffer.writeBoolean(hasAlternate);
+			if (hasAlternate) {
+				STATE_STREAM_CODEC.encode(buffer, transmutation.altResult());
+			}
+		}
+	};
 
 	public WorldTransmutation {
 		Objects.requireNonNull(origin, "Origin state cannot be null");

@@ -6,6 +6,10 @@ import java.util.Objects;
 import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -20,14 +24,43 @@ import org.jetbrains.annotations.Nullable;
  */
 public record SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block result, @NotNull Block altResult) implements IWorldTransmutation {
 
+	//TODO - 1.21: Should we convert simple world transmutation to using holders?
+	private static final Codec<Block> BLOCK_CODEC = BuiltInRegistries.BLOCK.byNameCodec();
+	private static final StreamCodec<RegistryFriendlyByteBuf, Block> BLOCK_STREAM_CODEC = ByteBufCodecs.registry(Registries.BLOCK);
 	/**
 	 * Codec for serializing and deserializing simple World Transmutations.
 	 */
 	public static final Codec<SimpleWorldTransmutation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			WorldTransmutation.BLOCK_CODEC.fieldOf(WorldTransmutation.ORIGIN_KEY).forGetter(SimpleWorldTransmutation::origin),
-			WorldTransmutation.BLOCK_CODEC.fieldOf(WorldTransmutation.RESULT_KEY).forGetter(SimpleWorldTransmutation::result),
-			WorldTransmutation.BLOCK_CODEC.optionalFieldOf(WorldTransmutation.ALT_RESULT_KEY).forGetter(entry -> entry.hasAlternate() ? Optional.of(entry.altResult()) : Optional.empty())
+			BLOCK_CODEC.fieldOf(WorldTransmutation.ORIGIN_KEY).forGetter(SimpleWorldTransmutation::origin),
+			BLOCK_CODEC.fieldOf(WorldTransmutation.RESULT_KEY).forGetter(SimpleWorldTransmutation::result),
+			BLOCK_CODEC.optionalFieldOf(WorldTransmutation.ALT_RESULT_KEY).forGetter(entry -> entry.hasAlternate() ? Optional.of(entry.altResult()) : Optional.empty())
 	).apply(instance, (origin, result, altResult) -> new SimpleWorldTransmutation(origin, result, altResult.orElse(result))));
+	/**
+	 * Stream codec for serializing and deserializing simple World Transmutations over the network.
+	 */
+	public static final StreamCodec<RegistryFriendlyByteBuf, SimpleWorldTransmutation> STREAM_CODEC = new StreamCodec<>() {
+		@NotNull
+		@Override
+		public SimpleWorldTransmutation decode(@NotNull RegistryFriendlyByteBuf buffer) {
+			Block origin = BLOCK_STREAM_CODEC.decode(buffer);
+			Block result = BLOCK_STREAM_CODEC.decode(buffer);
+			if (buffer.readBoolean()) {
+				return new SimpleWorldTransmutation(origin, result, BLOCK_STREAM_CODEC.decode(buffer));
+			}
+			return new SimpleWorldTransmutation(origin, result);
+		}
+
+		@Override
+		public void encode(@NotNull RegistryFriendlyByteBuf buffer, @NotNull SimpleWorldTransmutation transmutation) {
+			BLOCK_STREAM_CODEC.encode(buffer, transmutation.origin());
+			BLOCK_STREAM_CODEC.encode(buffer, transmutation.result());
+			boolean hasAlternate = transmutation.hasAlternate();
+			buffer.writeBoolean(hasAlternate);
+			if (hasAlternate) {
+				BLOCK_STREAM_CODEC.encode(buffer, transmutation.altResult());
+			}
+		}
+	};
 
 	public SimpleWorldTransmutation {
 		Objects.requireNonNull(origin, "Origin state cannot be null");
