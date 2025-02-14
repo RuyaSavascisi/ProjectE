@@ -45,8 +45,8 @@ public class WorldTransmuteEntry {
 			} else {
 				rightOutput = EMPTY;
 			}
-		} else if (transmutation instanceof WorldTransmutation(BlockState origin, BlockState result, BlockState altResult)) {
-			input = createInfo(origin);
+		} else if (transmutation instanceof WorldTransmutation(BlockState originState, BlockState result, BlockState altResult)) {
+			input = createInfo(originState);
 			leftOutput = createInfo(result);
 			if (transmutation.hasAlternate()) {
 				rightOutput = createInfo(altResult);

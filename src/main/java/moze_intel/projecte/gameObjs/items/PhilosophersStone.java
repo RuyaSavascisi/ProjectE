@@ -5,9 +5,9 @@ import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceMaps;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceOpenHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
@@ -97,7 +97,8 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		}
 		Object2ReferenceMap<BlockPos, BlockState> toChange = getChanges(level, pos, player, sideHit, getMode(stack), getCharge(stack));
 		if (!toChange.isEmpty()) {
-			for (Map.Entry<BlockPos, BlockState> entry : toChange.entrySet()) {
+			for (Iterator<Object2ReferenceMap.Entry<BlockPos, BlockState>> iterator = Object2ReferenceMaps.fastIterator(toChange); iterator.hasNext(); ) {
+				Object2ReferenceMap.Entry<BlockPos, BlockState> entry = iterator.next();
 				BlockPos currentPos = entry.getKey();
 				PlayerHelper.checkedReplaceBlock((ServerPlayer) player, currentPos, entry.getValue());
 				if (level.random.nextInt(8) == 0) {

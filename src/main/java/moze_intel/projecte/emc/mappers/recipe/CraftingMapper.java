@@ -4,11 +4,13 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -137,7 +139,9 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 			}
 		}
 		PECore.debugLog("{} Statistics:", getName());
-		for (Map.Entry<ResourceKey<RecipeType<?>>, RecipeCountInfo> entry : recipeCount.entrySet()) {
+
+		for (Iterator<Reference2ObjectMap.Entry<ResourceKey<RecipeType<?>>, RecipeCountInfo>> iterator = Reference2ObjectMaps.fastIterator(recipeCount); iterator.hasNext(); ) {
+			Reference2ObjectMap.Entry<ResourceKey<RecipeType<?>>, RecipeCountInfo> entry = iterator.next();
 			ResourceLocation typeRegistryName = entry.getKey().location();
 			RecipeCountInfo countInfo = entry.getValue();
 			int total = countInfo.getTotalRecipes();

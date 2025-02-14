@@ -112,11 +112,14 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 		Set<ItemStack> seenItems = new ObjectOpenCustomHashSet<>(ItemStackLinkedSet.TYPE_AND_TAG);
 		Set<FluidStack> seenFluids = new ObjectOpenCustomHashSet<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS);
 		List<WorldTransmuteEntry> visible = new ArrayList<>();
-		for (IWorldTransmutation transmutation : WorldTransmutationManager.INSTANCE.getWorldTransmutations()) {
-			WorldTransmuteEntry entry = new WorldTransmuteEntry(transmutation);
-			if (entry.isRenderable() && entry.isUnseenInput(seenItems, seenFluids)) {
-				//Only add recipes for transmutations we have not had
-				visible.add(entry);
+		for (Set<IWorldTransmutation> transmutationsForBlock : WorldTransmutationManager.INSTANCE.getWorldTransmutations().values()) {
+			for (IWorldTransmutation transmutation : transmutationsForBlock) {
+				WorldTransmuteEntry entry = new WorldTransmuteEntry(transmutation);
+				//TODO - 1.21: Can we get away with only checking seen items and fluids within a single transmutationsForBlock category?
+				if (entry.isRenderable() && entry.isUnseenInput(seenItems, seenFluids)) {
+					//Only add recipes for transmutations we have not had
+					visible.add(entry);
+				}
 			}
 		}
 		return visible;

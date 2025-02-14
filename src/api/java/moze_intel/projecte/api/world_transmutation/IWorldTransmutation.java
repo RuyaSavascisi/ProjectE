@@ -1,10 +1,17 @@
 package moze_intel.projecte.api.world_transmutation;
 
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public sealed interface IWorldTransmutation permits SimpleWorldTransmutation, WorldTransmutation {
+
+	/**
+	 * Gets the holder for the block that the origin is for. Used for grouping transmutations in order to prioritize state specific ones.
+	 */
+	Holder<Block> origin();
 
 	/**
 	 * {@return whether this world transmutation has an alternate output when sneaking}

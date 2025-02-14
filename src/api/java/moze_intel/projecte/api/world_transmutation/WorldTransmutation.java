@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import java.util.Objects;
 import java.util.Optional;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -15,11 +16,11 @@ import net.neoforged.neoforge.common.util.NeoForgeExtraCodecs;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * @param origin    defines what will match this transmutation.
+ * @param originState    defines what will match this transmutation.
  * @param result    defines what the normal right-click result of the transmutation will be.
  * @param altResult defines what the shift right-click result will be. May be equal to result.
  */
-public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState result, @NotNull BlockState altResult) implements IWorldTransmutation {
+public record WorldTransmutation(@NotNull BlockState originState, @NotNull BlockState result, @NotNull BlockState altResult) implements IWorldTransmutation {
 
 	static final String ORIGIN_KEY = "origin";
 	static final String RESULT_KEY = "result";
@@ -40,7 +41,7 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 	 * Codec for serializing and deserializing World Transmutations.
 	 */
 	public static final Codec<WorldTransmutation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-			STATE_CODEC.fieldOf(ORIGIN_KEY).forGetter(WorldTransmutation::origin),
+			STATE_CODEC.fieldOf(ORIGIN_KEY).forGetter(WorldTransmutation::originState),
 			STATE_CODEC.fieldOf(RESULT_KEY).forGetter(WorldTransmutation::result),
 			STATE_CODEC.optionalFieldOf(ALT_RESULT_KEY).forGetter(entry -> entry.hasAlternate() ? Optional.of(entry.altResult()) : Optional.empty())
 	).apply(instance, (origin, result, altResult) -> new WorldTransmutation(origin, result, altResult.orElse(result))));
@@ -61,7 +62,7 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 
 		@Override
 		public void encode(@NotNull ByteBuf buffer, @NotNull WorldTransmutation transmutation) {
-			STATE_STREAM_CODEC.encode(buffer, transmutation.origin());
+			STATE_STREAM_CODEC.encode(buffer, transmutation.originState());
 			STATE_STREAM_CODEC.encode(buffer, transmutation.result());
 			boolean hasAlternate = transmutation.hasAlternate();
 			buffer.writeBoolean(hasAlternate);
@@ -72,17 +73,17 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 	};
 
 	public WorldTransmutation {
-		Objects.requireNonNull(origin, "Origin state cannot be null");
+		Objects.requireNonNull(originState, "Origin state cannot be null");
 		Objects.requireNonNull(result, "Result state cannot be null");
 		Objects.requireNonNull(altResult, "Alternate result state cannot be null");
 	}
 
 	/**
-	 * @param origin defines what will match this transmutation.
+	 * @param originState defines what will match this transmutation.
 	 * @param result defines what the normal right-click result of the transmutation will be.
 	 */
-	public WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState result) {
-		this(origin, result, result);
+	public WorldTransmutation(@NotNull BlockState originState, @NotNull BlockState result) {
+		this(originState, result, result);
 	}
 
 	/**
@@ -115,6 +116,11 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 	}
 
 	@Override
+	public Holder<Block> origin() {
+		return originState.getBlockHolder();
+	}
+
+	@Override
 	public boolean hasAlternate() {
 		return altResult != result;
 	}
@@ -129,12 +135,12 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 
 	@Override
 	public boolean canTransmute(@NotNull BlockState state) {
-		return state == origin;
+		return state == originState;
 	}
 
 	@Override
 	public String toString() {
-		String representation = "World Transmutation from: '" + origin + "' to: '" + result + "'";
+		String representation = "World Transmutation from: '" + originState + "' to: '" + result + "'";
 		if (hasAlternate()) {
 			representation += ", with secondary output of: '" + altResult + "'";
 		}

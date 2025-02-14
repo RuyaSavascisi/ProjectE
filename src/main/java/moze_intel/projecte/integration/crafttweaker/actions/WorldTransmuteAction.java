@@ -53,7 +53,7 @@ public class WorldTransmuteAction implements IUndoableAction {
 				yield representation;
 			}
 			case WorldTransmutation worldTransmutation -> {
-				String representation = ExpandBlockState.getCommandString(worldTransmutation.origin()) + " with output: " +
+				String representation = ExpandBlockState.getCommandString(worldTransmutation.originState()) + " with output: " +
 										ExpandBlockState.getCommandString(worldTransmutation.result());
 				if (worldTransmutation.hasAlternate()) {
 					representation += " and secondary output: " + ExpandBlockState.getCommandString(worldTransmutation.altResult());

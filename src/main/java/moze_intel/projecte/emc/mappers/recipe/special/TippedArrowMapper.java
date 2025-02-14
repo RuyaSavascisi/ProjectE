@@ -10,7 +10,6 @@ import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import moze_intel.projecte.config.PEConfigTranslations;
 import moze_intel.projecte.utils.EMCHelper;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Holder.Reference;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
@@ -35,7 +34,7 @@ public class TippedArrowMapper extends SpecialRecipeMapper<TippedArrowRecipe> {
 	@Override
 	protected boolean handleRecipe(IMappingCollector<NormalizedSimpleStack, Long> mapper, RegistryAccess registryAccess, INSSFakeGroupManager fakeGroupManager) {
 		NSSItem nssArrow = NSSItem.createItem(Items.ARROW);
-		List<Reference<Potion>> potions = BuiltInRegistries.POTION.holders().toList();
+		List<Holder.Reference<Potion>> potions = BuiltInRegistries.POTION.holders().toList();
 		for (Holder<Potion> potionType : potions) {
 			PotionContents potionContents = new PotionContents(potionType);
 			mapper.addConversion(8, createItem(TIPPED_ARROW, potionContents), EMCHelper.intMapOf(
