@@ -70,6 +70,7 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 		entries = builder.build();
 	}
 
+	//TODO - 1.21: Make sure the client has this for displaying the recipes when connected to a server
 	public Collection<IWorldTransmutation> getWorldTransmutations() {
 		return modifiedEntries == null ? entries : modifiedEntries;
 	}

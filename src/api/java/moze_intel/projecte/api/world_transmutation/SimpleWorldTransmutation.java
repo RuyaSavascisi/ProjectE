@@ -11,9 +11,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-//TODO - 1.21: Implement docs and stuff for this
+/**
+ * Represents a simple world transmutation that goes from one block to another and copies any state properties that exist for both the origin and the result.
+ *
+ * @param origin    defines what will match this transmutation.
+ * @param result    defines what the normal right-click result of the transmutation will be.
+ * @param altResult defines what the shift right-click result will be. May be equal to result.
+ */
 public record SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block result, @NotNull Block altResult) implements IWorldTransmutation {
 
+	/**
+	 * Codec for serializing and deserializing simple World Transmutations.
+	 */
 	public static final Codec<SimpleWorldTransmutation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			WorldTransmutation.BLOCK_CODEC.fieldOf(WorldTransmutation.ORIGIN_KEY).forGetter(SimpleWorldTransmutation::origin),
 			WorldTransmutation.BLOCK_CODEC.fieldOf(WorldTransmutation.RESULT_KEY).forGetter(SimpleWorldTransmutation::result),
@@ -30,7 +39,7 @@ public record SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block res
 	 * @param origin defines what will match this transmutation.
 	 * @param result defines what the normal right-click result of the transmutation will be.
 	 */
-	public SimpleWorldTransmutation(Block origin, Block result) {
+	public SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block result) {
 		this(origin, result, result);
 	}
 

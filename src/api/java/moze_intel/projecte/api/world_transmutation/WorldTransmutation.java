@@ -33,9 +33,9 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 			}
 	), BlockState.CODEC);
 
-	//TODO - 1.21: Do we want to just do blocks and then have the origin dispatch to properties to handle what outputs are created?
-	// I think we might, but we probably want it as an alternative representation just so that we can provide people with the option to switch states to other ones
-	// We even could maybe have the properties be listed as a diff compared to the default state for said block
+	/**
+	 * Codec for serializing and deserializing World Transmutations.
+	 */
 	public static final Codec<WorldTransmutation> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			STATE_CODEC.fieldOf(ORIGIN_KEY).forGetter(WorldTransmutation::origin),
 			STATE_CODEC.fieldOf(RESULT_KEY).forGetter(WorldTransmutation::result),
@@ -46,18 +46,44 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 		Objects.requireNonNull(origin, "Origin state cannot be null");
 		Objects.requireNonNull(result, "Result state cannot be null");
 		Objects.requireNonNull(altResult, "Alternate result state cannot be null");
-		//TODO - 1.21: Do we want to error if all states have no properties, as then they should be using a simple world transmutation?
-		// If so do it via a helper maybe? And then make use of it for CrT
 	}
 
 	/**
 	 * @param origin defines what will match this transmutation.
 	 * @param result defines what the normal right-click result of the transmutation will be.
 	 */
-	public WorldTransmutation(BlockState origin, BlockState result) {
+	public WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState result) {
 		this(origin, result, result);
 	}
 
+	/**
+	 * Creates a {@link WorldTransmutation} for the given states. If none of the states have any properties this will instead return a {@link SimpleWorldTransmutation}.
+	 *
+	 * @param origin defines what will match this transmutation.
+	 * @param result defines what the normal right-click result of the transmutation will be.
+	 */
+	@NotNull
+	public static IWorldTransmutation of(@NotNull BlockState origin, @NotNull BlockState result) {
+		if (origin.getValues().isEmpty() && result.getValues().isEmpty()) {
+			return new SimpleWorldTransmutation(origin.getBlock(), result.getBlock());
+		}
+		return new WorldTransmutation(origin, result);
+	}
+
+	/**
+	 * Creates a {@link WorldTransmutation} for the given states. If none of the states have any properties this will instead return a {@link SimpleWorldTransmutation}.
+	 *
+	 * @param origin    defines what will match this transmutation.
+	 * @param result    defines what the normal right-click result of the transmutation will be.
+	 * @param altResult defines what the shift right-click result will be. May be equal to result.
+	 */
+	@NotNull
+	public static IWorldTransmutation of(@NotNull BlockState origin, @NotNull BlockState result, @NotNull BlockState altResult) {
+		if (origin.getValues().isEmpty() && result.getValues().isEmpty() && altResult.getValues().isEmpty()) {
+			return new SimpleWorldTransmutation(origin.getBlock(), result.getBlock(), altResult.getBlock());
+		}
+		return new WorldTransmutation(origin, result, altResult);
+	}
 
 	@Override
 	public boolean hasAlternate() {

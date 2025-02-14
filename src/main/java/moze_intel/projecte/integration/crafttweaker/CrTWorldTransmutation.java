@@ -41,7 +41,7 @@ public class CrTWorldTransmutation {
 	 */
 	@ZenCodeType.Method
 	public static void add(BlockState input, BlockState output, @ZenCodeType.Optional BlockState secondaryOutput) {
-		IWorldTransmutation transmutation = new WorldTransmutation(input, output, secondaryOutput == null ? output : secondaryOutput);
+		IWorldTransmutation transmutation = WorldTransmutation.of(input, output, secondaryOutput == null ? output : secondaryOutput);
 		CraftTweakerAPI.apply(new WorldTransmuteAction(transmutation, true));
 	}
 
@@ -67,7 +67,7 @@ public class CrTWorldTransmutation {
 	 */
 	@ZenCodeType.Method
 	public static void remove(BlockState input, BlockState output, @ZenCodeType.Optional BlockState secondaryOutput) {
-		IWorldTransmutation transmutation = new WorldTransmutation(input, output, secondaryOutput == null ? output : secondaryOutput);
+		IWorldTransmutation transmutation = WorldTransmutation.of(input, output, secondaryOutput == null ? output : secondaryOutput);
 		CraftTweakerAPI.apply(new WorldTransmuteAction(transmutation, false));
 	}
 

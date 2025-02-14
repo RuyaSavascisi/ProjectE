@@ -13,7 +13,10 @@ import net.neoforged.neoforge.common.conditions.ConditionalOps;
 import net.neoforged.neoforge.common.conditions.WithConditions;
 import org.jetbrains.annotations.Nullable;
 
-//TODO - 1.21: Docs
+/**
+ * @param comment        Optional comment describing the file.
+ * @param transmutations List of world transmutations.
+ */
 public record WorldTransmutationFile(@Nullable String comment, List<IWorldTransmutation> transmutations) {
 
 	private static final Codec<IWorldTransmutation> TRANSMUTATION_CODEC = Codec.either(
@@ -25,10 +28,16 @@ public record WorldTransmutationFile(@Nullable String comment, List<IWorldTransm
 	}));
 
 	private static final Codec<List<IWorldTransmutation>> LIST_CODEC = TRANSMUTATION_CODEC.listOf();
+	/**
+	 * Codec for serializing and deserializing World Transmutation Files.
+	 */
 	public static final Codec<WorldTransmutationFile> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			ExtraCodecs.NON_EMPTY_STRING.optionalFieldOf("comment").forGetter(file -> Optional.ofNullable(file.comment())),
 			LIST_CODEC.optionalFieldOf("transmutations").forGetter(file -> IPECodecHelper.INSTANCE.ifNotEmpty(file.transmutations()))
 	).apply(instance, (comment, transmutations) ->
 			new WorldTransmutationFile(comment.orElse(null), transmutations.orElseGet(Collections::emptyList))));
+	/**
+	 * Codec for serializing and deserializing World Transmutation Files that contain conditions that are checked before loading.
+	 */
 	public static final Codec<Optional<WithConditions<WorldTransmutationFile>>> CONDITIONAL_CODEC = ConditionalOps.createConditionalCodecWithConditions(CODEC);
 }
