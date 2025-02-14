@@ -70,13 +70,10 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 				continue;
 			}
 			ItemStack[] matches = getMatchingStacks(recipeItem, recipeID);
-			if (matches == null) {
-				//Failed to get matching stacks ingredient, bail but mark that we handled it as there is a 99% chance a later
-				// mapper would fail as well due to it being an invalid recipe
-				return true;
-			} else if (matches.length == 0) {
+			if (matches.length == 0) {
 				//If we don't have any matches for the ingredient just return that we handled it, as if it is an accidentally empty ingredient,
-				// nothing will be able to handle it. If it was explicitly empty, then it will be skipped above
+				// or we failed to get the matching ingredients, nothing will be able to handle it. If it was explicitly empty,
+				// then it will be skipped above
 				return true;
 			} else if (matches.length == 1) {
 				//Handle this ingredient as a direct representation of the stack it represents
@@ -153,7 +150,6 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 		return stack.getItem() == Items.BARRIER && stack.getHoverName() instanceof MutableComponent hoverName && hoverName.getString().startsWith("Empty Tag: ");
 	}
 
-	@Nullable
 	private ItemStack[] getMatchingStacks(Ingredient ingredient, ResourceLocation recipeID) {
 		try {
 			return ingredient.getItems();
@@ -171,7 +167,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 			} else {
 				PECore.LOGGER.error(LogUtils.FATAL_MARKER, "Error mapping recipe {}. Crashed when getting the matching stacks.", recipeID, e);
 			}
-			return null;
+			return new ItemStack[0];
 		}
 	}
 

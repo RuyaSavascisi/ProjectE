@@ -1,11 +1,8 @@
 package moze_intel.projecte.emc.components;
 
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
-import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
@@ -13,15 +10,7 @@ import moze_intel.projecte.config.MappingConfig;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.utils.AnnotationHelper;
-import moze_intel.projecte.utils.Constants;
-import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
-import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
@@ -29,8 +18,6 @@ import org.jetbrains.annotations.Range;
 public class DataComponentManager {
 
 	private static final List<IDataComponentProcessor> processors = new ArrayList<>();
-	@Nullable
-	private static Object2LongMap<DyeColor> colorEmc;
 
 	public static List<IDataComponentProcessor> loadProcessors() {
 		if (processors.isEmpty()) {
@@ -39,63 +26,9 @@ public class DataComponentManager {
 		return Collections.unmodifiableList(processors);
 	}
 
-	@Nullable
-	@SuppressWarnings("OptionalAssignedToNull")//TODO - 1.21: Rename? also expose as a helper?
-	public static <T> T getOrNull(DataComponentPatch patch, DataComponentType<? extends T> type) {
-		Optional<? extends T> storedComponent = patch.get(type);
-		if (storedComponent == null || storedComponent.isEmpty()) {
-			return null;
-		}
-		return storedComponent.get();
-	}
-
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getColorEmc(@NotNull DyeColor color) {
-		return colorEmc == null ? 0 : colorEmc.getLong(color);
-	}
-
-	//TODO - 1.21: Do we want to expose this as a helper
-	@Range(from = 0, to = Long.MAX_VALUE)
-	public static long getMinEmcFor(ToLongFunction<ItemInfo> emcLookup, Ingredient ingredient) {
-		try {
-			long minEmc = 0;
-			for (ItemStack stack : ingredient.getItems()) {
-				if (!stack.isEmpty()) {
-					long emc = emcLookup.applyAsLong(ItemInfo.fromStack(stack));
-					if (emc != 0 && (minEmc == 0 || emc < minEmc)) {
-						minEmc = emc;
-					}
-				}
-			}
-			return minEmc;
-		} catch (Exception e) {
-			//TODO - 1.21: Log an error, even though theoretically there shouldn't be any exceptions with how late we query the ingredient
-			return 0;
-		}
-	}
-
+	//TODO: Do we want to eventually try and make this support ProjectEAPI.FREE_ARITHMETIC_VALUE
 	public static void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
-		//TODO - 1.21: Log the time it takes to do this?
-		if (emcLookup == null) {
-			colorEmc = null;
-		} else {
-			//TODO - 1.21: Test this
-			//Calculate and store the min emc value needed for specific dye colors for use in data component processors
-			//TODO: Do we want to eventually try and make this support ProjectEAPI.FREE_ARITHMETIC_VALUE
-			colorEmc = new Object2LongOpenHashMap<>();
-			for (DyeColor color : Constants.COLORS) {
-				long minColorEmc = 0;
-				for (Holder<Item> dye : BuiltInRegistries.ITEM.getTagOrEmpty(color.getTag())) {
-					long dyeEmc = emcLookup.applyAsLong(ItemInfo.fromItem(dye));
-					if (dyeEmc != 0 && (minColorEmc == 0 || dyeEmc < minColorEmc)) {
-						minColorEmc = dyeEmc;
-					}
-				}
-				if (minColorEmc > 0) {
-					colorEmc.put(color, minColorEmc);
-				}
-			}
-		}
+		ComponentProcessorHelper.instance().updateCachedValues(emcLookup);
 		for (IDataComponentProcessor processor : processors) {
 			//TODO - 1.21: Do we want to fire this even when the processor is disabled in case it gets enabled later?
 			// That or we need to add in some callbacks for when processor enabled state changes
@@ -103,11 +36,10 @@ public class DataComponentManager {
 				processor.updateCachedValues(emcLookup);
 			}
 		}
-
 	}
 
 	@NotNull
-	public static ItemInfo getPersistentInfo(@NotNull ItemInfo info) {
+	static ItemInfo getPersistentInfo(@NotNull ItemInfo info) {
 		if (!info.hasModifiedComponents() || info.getItem().is(PETags.Items.DATA_COMPONENT_WHITELIST) || EMCMappingHandler.hasEmcValue(info)) {
 			//If we have no custom Data Components, we want to allow data components to be kept, or we have an exact match to a stored value just go with it
 			return info;

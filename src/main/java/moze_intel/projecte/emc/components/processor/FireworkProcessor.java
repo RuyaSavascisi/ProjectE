@@ -3,9 +3,9 @@ package moze_intel.projecte.emc.components.processor;
 import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.api.components.IComponentProcessorHelper;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.PEConfigTranslations;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -74,7 +74,7 @@ public class FireworkProcessor extends PersistentComponentProcessor<Fireworks> {
 			return;
 		}
 		//TODO: Do we even want to be supporting this, or just getting the value for gunpowder?
-		powderEmc = DataComponentManager.getMinEmcFor(emcLookup, FireworkRocketRecipe.GUNPOWDER_INGREDIENT);
+		powderEmc = IComponentProcessorHelper.INSTANCE.getMinEmcFor(emcLookup, FireworkRocketRecipe.GUNPOWDER_INGREDIENT);
 	}
 
 	@Override

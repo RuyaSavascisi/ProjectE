@@ -21,10 +21,4 @@ public class EMCProxyImpl implements IEMCProxy {
 	public long getSellValue(@NotNull ItemInfo info) {
 		return EMCHelper.getEmcSellValue(getValue(info));
 	}
-
-	@NotNull
-	@Override
-	public ItemInfo getPersistentInfo(@NotNull ItemInfo info) {
-		return DataComponentManager.getPersistentInfo(info);
-	}
 }

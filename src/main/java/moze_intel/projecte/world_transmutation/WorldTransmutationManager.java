@@ -28,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class WorldTransmutationManager extends SimpleJsonResourceReloadListener {
 
-	//TODO - 1.21: Evaluate gson options
+	//Copy of gson settings from RecipeManager's gson instance
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 	public static final WorldTransmutationManager INSTANCE = new WorldTransmutationManager();
 	private Set<IWorldTransmutation> entries = Collections.emptySet();

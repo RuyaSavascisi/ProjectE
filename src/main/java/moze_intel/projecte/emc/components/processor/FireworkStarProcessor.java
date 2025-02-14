@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.api.components.IComponentProcessorHelper;
 import moze_intel.projecte.config.PEConfigTranslations;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import moze_intel.projecte.utils.Constants;
 import net.minecraft.Util;
 import net.minecraft.core.component.DataComponentType;
@@ -112,7 +112,7 @@ public class FireworkStarProcessor extends PersistentComponentProcessor<Firework
 				//Unknown color, fail
 				return 0;
 			}
-			long dyeEmc = DataComponentManager.getColorEmc(dyeColor);
+			long dyeEmc = IComponentProcessorHelper.INSTANCE.getColorEmc(dyeColor);
 			if (dyeEmc == 0) {//Dye doesn't have an EMC representation available
 				return 0;
 			}
@@ -139,8 +139,8 @@ public class FireworkStarProcessor extends PersistentComponentProcessor<Firework
 				}
 			}
 		}
-		trailEmc = DataComponentManager.getMinEmcFor(emcLookup, FireworkStarRecipe.TRAIL_INGREDIENT);
-		twinkleEmc = DataComponentManager.getMinEmcFor(emcLookup, FireworkStarRecipe.TWINKLE_INGREDIENT);
+		trailEmc = IComponentProcessorHelper.INSTANCE.getMinEmcFor(emcLookup, FireworkStarRecipe.TRAIL_INGREDIENT);
+		twinkleEmc = IComponentProcessorHelper.INSTANCE.getMinEmcFor(emcLookup, FireworkStarRecipe.TWINKLE_INGREDIENT);
 	}
 
 	@Override

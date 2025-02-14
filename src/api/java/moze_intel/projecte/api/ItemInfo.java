@@ -7,6 +7,7 @@ import java.util.Optional;
 import moze_intel.projecte.api.nss.NSSItem;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -160,6 +161,21 @@ public final class ItemInfo {
 	 */
 	public boolean hasModifiedComponents() {
 		return !componentsPatch.isEmpty();
+	}
+
+	/**
+	 * Gets the value stored in the component patch for the given component type, or null if there is no stored value for said type.
+	 *
+	 * @apiNote This might return null if the item has the component as a default component and the component is at that default value.
+	 */
+	@Nullable
+	@SuppressWarnings("OptionalAssignedToNull")
+	public <T> T getOrNull(DataComponentType<? extends T> type) {
+		Optional<? extends T> storedComponent = componentsPatch.get(type);
+		if (storedComponent == null || storedComponent.isEmpty()) {
+			return null;
+		}
+		return storedComponent.get();
 	}
 
 	/**

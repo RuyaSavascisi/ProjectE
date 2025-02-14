@@ -1,12 +1,19 @@
 package moze_intel.projecte.api.proxy;
 
 import moze_intel.projecte.api.codec.IPECodecHelper;
+import moze_intel.projecte.api.components.IComponentProcessorHelper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Test ProjectE's Proxies")
 class ProjectEProxyTest {
+
+	@Test
+	@DisplayName("Test getting the Data Component Processor Helper")
+	void testGetComponentProcessorHelper() {
+		Assertions.assertNotNull(IComponentProcessorHelper.INSTANCE);
+	}
 
 	@Test
 	@DisplayName("Test getting the EMC Proxy")

@@ -2,7 +2,9 @@ package moze_intel.projecte.api.proxy;
 
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.function.ToLongFunction;
 import moze_intel.projecte.api.ItemInfo;
+import moze_intel.projecte.api.components.IComponentProcessorHelper;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -11,7 +13,7 @@ import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Range;
 
-public interface IEMCProxy {
+public interface IEMCProxy extends ToLongFunction<ItemInfo> {
 
 	/**
 	 * The proxy for EMC-based API queries.
@@ -149,6 +151,12 @@ public interface IEMCProxy {
 	@Range(from = 0, to = Long.MAX_VALUE)
 	long getValue(@NotNull ItemInfo info);
 
+	@Override
+	@Range(from = 0, to = Long.MAX_VALUE)
+	default long applyAsLong(@NotNull ItemInfo info) {
+		return getValue(info);
+	}
+
 	/**
 	 * Queries the EMC sell-value for the provided stack
 	 * <p>
@@ -188,5 +196,7 @@ public interface IEMCProxy {
 	 * whatever data is persistent/matters.
 	 */
 	@NotNull
-	ItemInfo getPersistentInfo(@NotNull ItemInfo info);
+	default ItemInfo getPersistentInfo(@NotNull ItemInfo info) {
+		return IComponentProcessorHelper.INSTANCE.getPersistentInfo(info);
+	}
 }

@@ -1,6 +1,7 @@
 package moze_intel.projecte;
 
 import moze_intel.projecte.api.codec.IPECodecHelper;
+import moze_intel.projecte.api.components.IComponentProcessorHelper;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.api.proxy.ITransmutationProxy;
 import net.neoforged.fml.common.Mod;
@@ -14,6 +15,7 @@ import net.neoforged.fml.common.Mod;
 public class ProjectEClassInit {//TODO: Remove this as soon as possible
 
 	public ProjectEClassInit() {
+		forceInit(IComponentProcessorHelper.INSTANCE);
 		forceInit(IEMCProxy.INSTANCE);
 		forceInit(ITransmutationProxy.INSTANCE);
 		forceInit(IPECodecHelper.INSTANCE);

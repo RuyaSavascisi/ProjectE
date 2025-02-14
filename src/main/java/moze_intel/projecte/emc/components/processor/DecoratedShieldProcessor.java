@@ -5,7 +5,6 @@ import moze_intel.projecte.api.components.DataComponentProcessor;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.PEConfigTranslations;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.DyeColor;
@@ -44,23 +43,20 @@ public class DecoratedShieldProcessor implements IDataComponentProcessor {
 	@Override
 	public final long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
 		if (info.getItem().is(Tags.Items.TOOLS_SHIELD)) {
-			DataComponentPatch componentsPatch = info.getComponentsPatch();
-			if (!componentsPatch.isEmpty()) {
-				DyeColor baseColor = DataComponentManager.getOrNull(componentsPatch, DataComponents.BASE_COLOR);
-				if (baseColor != null) {
-					ItemStack banner = new ItemStack(BannerBlock.byColor(baseColor));
-					BannerPatternLayers patternLayers = DataComponentManager.getOrNull(componentsPatch, DataComponents.BANNER_PATTERNS);
-					if (patternLayers != null && !patternLayers.equals(BannerPatternLayers.EMPTY)) {
-						//If there is any pattern stored, set it so that we can get the value of the banner when it has that pattern stored
-						banner.set(DataComponents.BANNER_PATTERNS, patternLayers);
-					}
-					long bannerValue = IEMCProxy.INSTANCE.getValue(banner);
-					if (bannerValue == 0) {
-						//No valid value for the attached banner, don't allow the shield to be converted to emc
-						return 0;
-					}
-					return Math.addExact(currentEMC, bannerValue);
+			DyeColor baseColor = info.getOrNull(DataComponents.BASE_COLOR);
+			if (baseColor != null) {
+				ItemStack banner = new ItemStack(BannerBlock.byColor(baseColor));
+				BannerPatternLayers patternLayers = info.getOrNull(DataComponents.BANNER_PATTERNS);
+				if (patternLayers != null && !patternLayers.equals(BannerPatternLayers.EMPTY)) {
+					//If there is any pattern stored, set it so that we can get the value of the banner when it has that pattern stored
+					banner.set(DataComponents.BANNER_PATTERNS, patternLayers);
 				}
+				long bannerValue = IEMCProxy.INSTANCE.getValue(banner);
+				if (bannerValue == 0) {
+					//No valid value for the attached banner, don't allow the shield to be converted to emc
+					return 0;
+				}
+				return Math.addExact(currentEMC, bannerValue);
 			}
 		}
 		return currentEMC;
@@ -69,16 +65,13 @@ public class DecoratedShieldProcessor implements IDataComponentProcessor {
 	@Override
 	public final void collectPersistentComponents(@NotNull ItemInfo info, @NotNull DataComponentPatch.Builder builder) {
 		if (info.getItem().is(Tags.Items.TOOLS_SHIELD)) {
-			DataComponentPatch componentsPatch = info.getComponentsPatch();
-			if (!componentsPatch.isEmpty()) {
-				DyeColor baseColor = DataComponentManager.getOrNull(componentsPatch, DataComponents.BASE_COLOR);
-				if (baseColor != null) {
-					builder.set(DataComponents.BASE_COLOR, baseColor);
-					BannerPatternLayers patternLayers = DataComponentManager.getOrNull(componentsPatch, DataComponents.BANNER_PATTERNS);
-					if (patternLayers != null && !patternLayers.equals(BannerPatternLayers.EMPTY)) {
-						//If there is any pattern stored, set it so that we can get the value of the banner when it has that pattern stored
-						builder.set(DataComponents.BANNER_PATTERNS, patternLayers);
-					}
+			DyeColor baseColor = info.getOrNull(DataComponents.BASE_COLOR);
+			if (baseColor != null) {
+				builder.set(DataComponents.BASE_COLOR, baseColor);
+				BannerPatternLayers patternLayers = info.getOrNull(DataComponents.BANNER_PATTERNS);
+				if (patternLayers != null && !patternLayers.equals(BannerPatternLayers.EMPTY)) {
+					//If there is any pattern stored, set it so that we can get the value of the banner when it has that pattern stored
+					builder.set(DataComponents.BANNER_PATTERNS, patternLayers);
 				}
 			}
 		}

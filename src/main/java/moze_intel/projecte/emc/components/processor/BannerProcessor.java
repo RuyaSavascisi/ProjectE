@@ -2,8 +2,8 @@ package moze_intel.projecte.emc.components.processor;
 
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
+import moze_intel.projecte.api.components.IComponentProcessorHelper;
 import moze_intel.projecte.config.PEConfigTranslations;
-import moze_intel.projecte.emc.components.DataComponentManager;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BannerItem;
@@ -31,7 +31,7 @@ public class BannerProcessor extends PersistentComponentProcessor<BannerPatternL
 	@Override
 	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull BannerPatternLayers patternLayers) throws ArithmeticException {
 		for (BannerPatternLayers.Layer layer : patternLayers.layers()) {
-			long dyeEmc = DataComponentManager.getColorEmc(layer.color());
+			long dyeEmc = IComponentProcessorHelper.INSTANCE.getColorEmc(layer.color());
 			if (dyeEmc == 0) {//The dye doesn't have an EMC value so we can't get the emc value of the total thing
 				return 0;
 			}

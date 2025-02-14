@@ -70,6 +70,8 @@ public interface IDataComponentProcessor extends IConfigurableElement<IDataCompo
 	 * every time the processor runs.
 	 *
 	 * @param emcLookup Function to look up the emc value of an item, null if the cache should be cleared as data is being unloaded.
+	 *
+	 * @see IComponentProcessorHelper
 	 */
 	default void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
 	}
