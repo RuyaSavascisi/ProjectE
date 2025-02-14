@@ -7,8 +7,10 @@ import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.SimpleWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.WorldTransmutation;
 import moze_intel.projecte.integration.crafttweaker.actions.WorldTransmuteAction;
+import net.minecraft.core.Holder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import org.openzen.zencode.java.ZenCodeType;
 
 @ZenRegister
@@ -22,14 +24,13 @@ public class CrTWorldTransmutation {
 	/**
 	 * Adds a simple in world transmutation "recipe" that handles state data as best as it can.
 	 *
-	 * @param input           {@link BlockState} representing the input or target.
-	 * @param output          {@link BlockState} representing the output.
-	 * @param secondaryOutput Optional {@link BlockState} representing the output when sneaking.
+	 * @param input           {@link Block} representing the input or target.
+	 * @param output          {@link Block} representing the output.
+	 * @param secondaryOutput Optional {@link Block} representing the output when sneaking.
 	 */
 	@ZenCodeType.Method
 	public static void add(Block input, Block output, @ZenCodeType.Optional Block secondaryOutput) {
-		IWorldTransmutation transmutation = new SimpleWorldTransmutation(input, output, secondaryOutput == null ? output : secondaryOutput);
-		CraftTweakerAPI.apply(new WorldTransmuteAction(transmutation, true));
+		CraftTweakerAPI.apply(new WorldTransmuteAction(getWorldTransmutation(input, output, secondaryOutput), true));
 	}
 
 	/**
@@ -41,21 +42,19 @@ public class CrTWorldTransmutation {
 	 */
 	@ZenCodeType.Method
 	public static void add(BlockState input, BlockState output, @ZenCodeType.Optional BlockState secondaryOutput) {
-		IWorldTransmutation transmutation = WorldTransmutation.of(input, output, secondaryOutput == null ? output : secondaryOutput);
-		CraftTweakerAPI.apply(new WorldTransmuteAction(transmutation, true));
+		CraftTweakerAPI.apply(new WorldTransmuteAction(getWorldTransmutation(input, output, secondaryOutput), true));
 	}
 
 	/**
 	 * Removes an existing simple in world transmutation "recipe" that handles state data as best as it can.
 	 *
-	 * @param input           {@link BlockState} representing the input or target.
-	 * @param output          {@link BlockState} representing the output.
-	 * @param secondaryOutput Optional {@link BlockState} representing the output when sneaking.
+	 * @param input           {@link Block} representing the input or target.
+	 * @param output          {@link Block} representing the output.
+	 * @param secondaryOutput Optional {@link Block} representing the output when sneaking.
 	 */
 	@ZenCodeType.Method
 	public static void remove(Block input, Block output, @ZenCodeType.Optional Block secondaryOutput) {
-		IWorldTransmutation transmutation = new SimpleWorldTransmutation(input, output, secondaryOutput == null ? output : secondaryOutput);
-		CraftTweakerAPI.apply(new WorldTransmuteAction(transmutation, false));
+		CraftTweakerAPI.apply(new WorldTransmuteAction(getWorldTransmutation(input, output, secondaryOutput), false));
 	}
 
 	/**
@@ -67,8 +66,7 @@ public class CrTWorldTransmutation {
 	 */
 	@ZenCodeType.Method
 	public static void remove(BlockState input, BlockState output, @ZenCodeType.Optional BlockState secondaryOutput) {
-		IWorldTransmutation transmutation = WorldTransmutation.of(input, output, secondaryOutput == null ? output : secondaryOutput);
-		CraftTweakerAPI.apply(new WorldTransmuteAction(transmutation, false));
+		CraftTweakerAPI.apply(new WorldTransmuteAction(getWorldTransmutation(input, output, secondaryOutput), false));
 	}
 
 	/**
@@ -77,5 +75,15 @@ public class CrTWorldTransmutation {
 	@ZenCodeType.Method
 	public static void removeAll() {
 		CraftTweakerAPI.apply(new WorldTransmuteAction.RemoveAll());
+	}
+
+	@SuppressWarnings("deprecation")
+	private static IWorldTransmutation getWorldTransmutation(Block input, Block output, @Nullable Block secondaryOutput) {
+		Holder<Block> outputHolder = output.builtInRegistryHolder();
+		return new SimpleWorldTransmutation(input.builtInRegistryHolder(), outputHolder, secondaryOutput == null ? outputHolder : secondaryOutput.builtInRegistryHolder());
+	}
+
+	private static IWorldTransmutation getWorldTransmutation(BlockState input, BlockState output, @Nullable BlockState secondaryOutput) {
+		return WorldTransmutation.of(input, output, secondaryOutput == null ? output : secondaryOutput);
 	}
 }

@@ -45,10 +45,10 @@ public class WorldTransmuteAction implements IUndoableAction {
 	private String describeTransmutation() {
 		return switch (transmutation) {
 			case SimpleWorldTransmutation simple -> {
-				String representation = ExpandBlock.getCommandString(simple.origin()) + " with output: " +
-										ExpandBlock.getCommandString(simple.result());
+				String representation = ExpandBlock.getCommandString(simple.origin().value()) + " with output: " +
+										ExpandBlock.getCommandString(simple.result().value());
 				if (simple.hasAlternate()) {
-					representation += " and secondary output: " + ExpandBlock.getCommandString(simple.altResult());
+					representation += " and secondary output: " + ExpandBlock.getCommandString(simple.altResult().value());
 				}
 				yield representation;
 			}

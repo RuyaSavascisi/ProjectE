@@ -94,7 +94,7 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 	@NotNull
 	public static IWorldTransmutation of(@NotNull BlockState origin, @NotNull BlockState result) {
 		if (origin.getValues().isEmpty() && result.getValues().isEmpty()) {
-			return new SimpleWorldTransmutation(origin.getBlock(), result.getBlock());
+			return new SimpleWorldTransmutation(origin.getBlockHolder(), result.getBlockHolder());
 		}
 		return new WorldTransmutation(origin, result);
 	}
@@ -109,7 +109,7 @@ public record WorldTransmutation(@NotNull BlockState origin, @NotNull BlockState
 	@NotNull
 	public static IWorldTransmutation of(@NotNull BlockState origin, @NotNull BlockState result, @NotNull BlockState altResult) {
 		if (origin.getValues().isEmpty() && result.getValues().isEmpty() && altResult.getValues().isEmpty()) {
-			return new SimpleWorldTransmutation(origin.getBlock(), result.getBlock(), altResult.getBlock());
+			return new SimpleWorldTransmutation(origin.getBlockHolder(), result.getBlockHolder(), altResult.getBlockHolder());
 		}
 		return new WorldTransmutation(origin, result, altResult);
 	}

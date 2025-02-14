@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.Optional;
-import net.minecraft.Util;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -22,11 +22,10 @@ import org.jetbrains.annotations.Nullable;
  * @param result    defines what the normal right-click result of the transmutation will be.
  * @param altResult defines what the shift right-click result will be. May be equal to result.
  */
-public record SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block result, @NotNull Block altResult) implements IWorldTransmutation {
+public record SimpleWorldTransmutation(@NotNull Holder<Block> origin, @NotNull Holder<Block> result, @NotNull Holder<Block> altResult) implements IWorldTransmutation {
 
-	//TODO - 1.21: Should we convert simple world transmutation to using holders?
-	private static final Codec<Block> BLOCK_CODEC = BuiltInRegistries.BLOCK.byNameCodec();
-	private static final StreamCodec<RegistryFriendlyByteBuf, Block> BLOCK_STREAM_CODEC = ByteBufCodecs.registry(Registries.BLOCK);
+	private static final Codec<Holder<Block>> BLOCK_CODEC = BuiltInRegistries.BLOCK.holderByNameCodec();
+	private static final StreamCodec<RegistryFriendlyByteBuf, Holder<Block>> BLOCK_STREAM_CODEC = ByteBufCodecs.holderRegistry(Registries.BLOCK);
 	/**
 	 * Codec for serializing and deserializing simple World Transmutations.
 	 */
@@ -42,8 +41,8 @@ public record SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block res
 		@NotNull
 		@Override
 		public SimpleWorldTransmutation decode(@NotNull RegistryFriendlyByteBuf buffer) {
-			Block origin = BLOCK_STREAM_CODEC.decode(buffer);
-			Block result = BLOCK_STREAM_CODEC.decode(buffer);
+			Holder<Block> origin = BLOCK_STREAM_CODEC.decode(buffer);
+			Holder<Block> result = BLOCK_STREAM_CODEC.decode(buffer);
 			if (buffer.readBoolean()) {
 				return new SimpleWorldTransmutation(origin, result, BLOCK_STREAM_CODEC.decode(buffer));
 			}
@@ -72,21 +71,22 @@ public record SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block res
 	 * @param origin defines what will match this transmutation.
 	 * @param result defines what the normal right-click result of the transmutation will be.
 	 */
-	public SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block result) {
+	public SimpleWorldTransmutation(@NotNull Holder<Block> origin, @NotNull Holder<Block> result) {
 		this(origin, result, result);
 	}
 
 	@Override
 	public boolean hasAlternate() {
-		return result != altResult;
+		//Start with the simple check of if they are the same instance (which they will be if they got created by the two parameter constructor)
+		return result != altResult && !result.is(altResult);
 	}
 
 	@Nullable
 	@Override
 	public BlockState result(@NotNull BlockState state, boolean isSneaking) {
 		if (canTransmute(state)) {
-			Block resultBlock = isSneaking ? altResult : result;
-			return resultBlock.withPropertiesOf(state);
+			Holder<Block> resultBlock = isSneaking ? altResult : result;
+			return resultBlock.value().withPropertiesOf(state);
 		}
 		return null;
 	}
@@ -98,10 +98,9 @@ public record SimpleWorldTransmutation(@NotNull Block origin, @NotNull Block res
 
 	@Override
 	public String toString() {
-		String representation = "Simple World Transmutation from: " + Util.getRegisteredName(BuiltInRegistries.BLOCK, origin)
-								+ " to: " + Util.getRegisteredName(BuiltInRegistries.BLOCK, result);
+		String representation = "Simple World Transmutation from: " + origin.getRegisteredName() + " to: " + result.getRegisteredName();
 		if (hasAlternate()) {
-			representation += ", with secondary output of: " + Util.getRegisteredName(BuiltInRegistries.BLOCK, altResult);
+			representation += ", with secondary output of: " + altResult.getRegisteredName();
 		}
 		return representation;
 	}
