@@ -1,5 +1,7 @@
 package moze_intel.projecte.api.data;
 
+import com.mojang.logging.LogUtils;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -13,15 +15,24 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class WorldTransmutationBuilder extends BaseFileBuilder<WorldTransmutationBuilder> {
 
-	private final Set<IWorldTransmutation> transmutationEntries = new LinkedHashSet<>();
+	private static final Logger LOGGER = LogUtils.getLogger();
 
-	WorldTransmutationBuilder() {
+	private final Set<IWorldTransmutation> transmutationEntries = new LinkedHashSet<>();
+	private final Set<BlockState> seenBlockStates = new ReferenceOpenHashSet<>();
+	private final Set<Block> seenBlocks = new ReferenceOpenHashSet<>();
+	private final Set<BlockState> globalSeenBlockStates;
+	private final Set<Block> globalSeenBlocks;
+
+	WorldTransmutationBuilder(Set<Block> globalSeenBlocks, Set<BlockState> globalSeenBlockStates) {
 		super("World Transmutation");
+		this.globalSeenBlocks = globalSeenBlocks;
+		this.globalSeenBlockStates = globalSeenBlockStates;
 	}
 
 	WorldTransmutationFile build() {
@@ -29,9 +40,23 @@ public class WorldTransmutationBuilder extends BaseFileBuilder<WorldTransmutatio
 	}
 
 	private WorldTransmutationBuilder register(@NotNull IWorldTransmutation transmutation) {
-		//TODO - 1.21: Prevent against duplicate input blocks as well?
 		if (!transmutationEntries.add(transmutation)) {
 			throw new IllegalStateException("World transmutation file contains duplicate transmutations.");
+		} else if (transmutation instanceof SimpleWorldTransmutation simple) {
+			Holder<Block> origin = simple.origin();
+			Block block = origin.value();
+			if (!seenBlocks.add(block)) {
+				throw new IllegalStateException("World transmutation file contains multiple simple world transmutations from: " + origin.getRegisteredName());
+			} else if (!globalSeenBlocks.add(block)) {
+				LOGGER.warn("Multiple world transmutation files contain simple world transmutations from: '{}'", origin.getRegisteredName());
+			}
+		} else if (transmutation instanceof WorldTransmutation complex) {
+			BlockState state = complex.originState();
+			if (!seenBlockStates.add(state)) {
+				throw new IllegalStateException("World transmutation file contains multiple world transmutations from: " + state);
+			} else if (!globalSeenBlockStates.add(state)) {
+				LOGGER.warn("Multiple world transmutation files contain world transmutations from: '{}'", state);
+			}
 		}
 		return this;
 	}
