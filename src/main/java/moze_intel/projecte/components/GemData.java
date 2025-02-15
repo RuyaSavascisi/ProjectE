@@ -14,7 +14,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackLinkedSet;
 import org.jetbrains.annotations.ApiStatus.Internal;
 
-//TODO - 1.21: Do we want to enforce whitelist and consumed being unmodifiable views? Such as for GemData that gets initialized on the client
 public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemStack> consumed) {
 
 	public static final GemData EMPTY = new GemData(false, Collections.emptySet(), Collections.emptyList());
@@ -28,7 +27,7 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 				//Ensure the backing set when loading gem data from save properly handles comparing the type and ignores count
 				Set<ItemStack> whitelist = ItemStackLinkedSet.createTypeAndComponentsSet();
 				whitelist.addAll(list);
-				return Collections.unmodifiableSet(whitelist);
+				return whitelist;
 			}, List::copyOf).fieldOf("whitelist").forGetter(GemData::whitelist),
 			ItemStack.CODEC.listOf().fieldOf("consumed").forGetter(GemData::consumed)
 	).apply(instance, GemData::new));
@@ -43,6 +42,11 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 			ItemStack.LIST_STREAM_CODEC, GemData::consumed,
 			GemData::new
 	);
+
+	public GemData {
+		whitelist = whitelist.isEmpty() ? Collections.emptySet() : Collections.unmodifiableSet(whitelist);
+		consumed = consumed.isEmpty() ? Collections.emptyList() : Collections.unmodifiableList(consumed);
+	}
 
 	public boolean whitelistMatches(ItemStack stack) {
 		return !stack.isEmpty() && whitelist.contains(stack);
@@ -65,13 +69,10 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 
 	@Internal
 	public GemData withWhitelistSafe(Set<ItemStack> whitelist) {
-		if (whitelist.isEmpty()) {
-			if (whitelist().isEmpty()) {
-				return this;
-			}
-			return new GemData(isWhitelist, Collections.emptySet(), consumed);
+		if (whitelist.isEmpty() && whitelist().isEmpty()) {
+			return this;
 		}
-		return new GemData(isWhitelist, Collections.unmodifiableSet(whitelist), consumed);
+		return new GemData(isWhitelist, whitelist, consumed);
 	}
 
 	public GemData clearConsumed() {
@@ -101,7 +102,7 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 					//Replace the element that we are merging into with a fresh copy so that we don't affect the old data
 					existing = existing.copyWithCount(existing.getCount() + stack.getCount());
 					modifiableConsumed.set(i, existing);
-					return new GemData(isWhitelist, whitelist, List.copyOf(modifiableConsumed));
+					return new GemData(isWhitelist, whitelist, modifiableConsumed);
 				} else {
 					//Replace the element that we are merging into with a fresh copy so that we don't affect the old data
 					existing = existing.copyWithCount(existing.getCount() + spaceAvailable);
@@ -113,7 +114,7 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 		}
 		//Add whatever remains of the stack to the end of the list
 		modifiableConsumed.add(stack);
-		return new GemData(isWhitelist, whitelist, List.copyOf(modifiableConsumed));
+		return new GemData(isWhitelist, whitelist, modifiableConsumed);
 	}
 
 	@Override

@@ -12,7 +12,7 @@ import net.minecraft.world.TickRateManager;
 public final class MathUtils {
 
 	private static final BigInteger MAX_INTEGER = BigInteger.valueOf(Integer.MAX_VALUE);
-	private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
+	public static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
 
 	/**
 	 * Scales this proportion into redstone, where 0 means none, 15 means full, and the rest are an appropriate scaling.

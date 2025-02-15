@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
@@ -198,42 +200,55 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 
 	private static class NSSFakeGroupManager implements INSSFakeGroupManager {
 
+		private static final Function<Set<NormalizedSimpleStack>, String> SET_DESCRIPTOR =
+				set -> set.stream().map(NormalizedSimpleStack::toString).collect(Collectors.joining(", "));
+		private static final Function<Object2IntMap<NormalizedSimpleStack>, String> MAP_DESCRIPTOR = map -> map.object2IntEntrySet().stream()
+				.map(entry -> entry.getKey() + ":" + entry.getIntValue()).collect(Collectors.joining(", "));
+		private static final boolean DEBUG_GROUP_CONTENTS = false;
+
 		private final Map<Set<NormalizedSimpleStack>, FakeGroupData> groups = new HashMap<>();
 		private final Map<Object2IntMap<NormalizedSimpleStack>, FakeGroupData> groupsWithCount = new HashMap<>();
 		private int fakeIndex;
 
 		@Override
 		public FakeGroupData getOrCreateFakeGroup(Set<NormalizedSimpleStack> normalizedSimpleStacks) {
-			return getOrCreateFakeGroup(groups, normalizedSimpleStacks, HashSet::new);
+			return getOrCreateFakeGroup(groups, normalizedSimpleStacks, HashSet::new, SET_DESCRIPTOR);
 		}
 
 		@Override
 		public FakeGroupData getOrCreateFakeGroupDirect(Set<NormalizedSimpleStack> normalizedSimpleStacks) {
-			return getOrCreateFakeGroup(groups, normalizedSimpleStacks, UnaryOperator.identity());
+			return getOrCreateFakeGroup(groups, normalizedSimpleStacks, UnaryOperator.identity(), SET_DESCRIPTOR);
 		}
 
 		@Override
 		public FakeGroupData getOrCreateFakeGroup(Object2IntMap<NormalizedSimpleStack> normalizedSimpleStacks) {
-			return getOrCreateFakeGroup(groupsWithCount, normalizedSimpleStacks, Object2IntOpenHashMap::new);
+			return getOrCreateFakeGroup(groupsWithCount, normalizedSimpleStacks, Object2IntOpenHashMap::new, MAP_DESCRIPTOR);
 		}
 
 		@Override
 		public FakeGroupData getOrCreateFakeGroupDirect(Object2IntMap<NormalizedSimpleStack> normalizedSimpleStacks) {
-			return getOrCreateFakeGroup(groupsWithCount, normalizedSimpleStacks, UnaryOperator.identity());
+			return getOrCreateFakeGroup(groupsWithCount, normalizedSimpleStacks, UnaryOperator.identity(), MAP_DESCRIPTOR);
 		}
 
-		private <COLLECTION> FakeGroupData getOrCreateFakeGroup(Map<COLLECTION, FakeGroupData> groups, COLLECTION stacks, UnaryOperator<COLLECTION> copyFunction) {
+		private <COLLECTION> FakeGroupData getOrCreateFakeGroup(Map<COLLECTION, FakeGroupData> groups, COLLECTION stacks, UnaryOperator<COLLECTION> copyFunction,
+				Function<COLLECTION, String> descriptor) {
 			FakeGroupData data = groups.get(stacks);
 			if (data == null) {
 				//Doesn't exist, create one with the next index add it as known and return
 				// the group and the fact that we had to create a representation for it
-				// Note: We use an incrementing index here as our crafting mapper sets a namespace
-				// for NSSFake objects, so we can safely use integers as the description and not
-				// have to worry about intersecting fake stacks. We also for good measure specify in
-				// the IRecipeTypeMapper java docs that if fake stacks are needed by an implementer
-				// they should make sure to make the name more complex than just a simple integer to
-				// ensure that they do not collide with stacks created by this method.
-				NormalizedSimpleStack stack = NSSFake.create(Integer.toString(fakeIndex++));
+				String description;
+				if (DEBUG_GROUP_CONTENTS) {
+					description = descriptor.apply(stacks);
+				} else {
+					//Note: We use an incrementing index here as our crafting mapper sets a namespace
+					// for NSSFake objects, so we can safely use integers as the description and not
+					// have to worry about intersecting fake stacks. We also for good measure specify in
+					// the IRecipeTypeMapper java docs that if fake stacks are needed by an implementer
+					// they should make sure to make the name more complex than just a simple integer to
+					// ensure that they do not collide with stacks created by this method.
+					description = Integer.toString(fakeIndex++);
+				}
+				NormalizedSimpleStack stack = NSSFake.create(description);
 				//Note: We put that it wasn't created in the map, so when it is retrieved, we know this wasn't the first time
 				groups.put(copyFunction.apply(stacks), new FakeGroupData(stack, false));
 				return new FakeGroupData(stack, true);

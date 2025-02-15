@@ -87,8 +87,8 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 		}
 		//Calculate base decorated pot (four bricks) emc
 		paperEmc = emcLookup.applyAsLong(ItemInfo.fromItem(Items.PAPER));
-		//TODO - 1.21: Re-evaluate this, as the reason glass panes don't have an emc value is because it is less than zero
-		// so realistically they should be considered free
+		//TODO: Re-evaluate this, as the reason glass panes don't have an emc value is because it is less than zero
+		// so realistically they should be considered free, though I don't think it is worth keeping track of
 		lockEmc = emcLookup.applyAsLong(ItemInfo.fromItem(Items.GLASS_PANE));
 	}
 

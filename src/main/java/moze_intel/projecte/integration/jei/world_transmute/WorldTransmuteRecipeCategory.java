@@ -1,11 +1,10 @@
 package moze_intel.projecte.integration.jei.world_transmute;
 
 import com.mojang.datafixers.util.Either;
-import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.SequencedSet;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
@@ -26,9 +25,7 @@ import moze_intel.projecte.world_transmutation.WorldTransmutationManager;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ItemStackLinkedSet;
 import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidStackLinkedSet;
 import net.neoforged.neoforge.fluids.FluidType;
 import org.jetbrains.annotations.NotNull;
 
@@ -107,17 +104,11 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 	}
 
 	public static List<WorldTransmuteEntry> getAllTransmutations() {
-		//All the ones that have a block state that can be rendered in JEI.
-		//For example only render one pumpkin to melon transmutation
-		Set<ItemStack> seenItems = new ObjectOpenCustomHashSet<>(ItemStackLinkedSet.TYPE_AND_TAG);
-		Set<FluidStack> seenFluids = new ObjectOpenCustomHashSet<>(FluidStackLinkedSet.TYPE_AND_COMPONENTS);
 		List<WorldTransmuteEntry> visible = new ArrayList<>();
-		for (Set<IWorldTransmutation> transmutationsForBlock : WorldTransmutationManager.INSTANCE.getWorldTransmutations().values()) {
+		for (SequencedSet<IWorldTransmutation> transmutationsForBlock : WorldTransmutationManager.INSTANCE.getWorldTransmutations().values()) {
 			for (IWorldTransmutation transmutation : transmutationsForBlock) {
 				WorldTransmuteEntry entry = new WorldTransmuteEntry(transmutation);
-				//TODO - 1.21: Can we get away with only checking seen items and fluids within a single transmutationsForBlock category?
-				if (entry.isRenderable() && entry.isUnseenInput(seenItems, seenFluids)) {
-					//Only add recipes for transmutations we have not had
+				if (entry.isRenderable()) {
 					visible.add(entry);
 				}
 			}

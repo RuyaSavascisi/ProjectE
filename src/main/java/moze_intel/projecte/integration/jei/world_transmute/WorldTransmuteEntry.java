@@ -3,7 +3,6 @@ package moze_intel.projecte.integration.jei.world_transmute;
 import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.SimpleWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.WorldTransmutation;
@@ -116,12 +115,5 @@ public class WorldTransmuteEntry {
 			outputs.add(rightOutput.toEither());
 		}
 		return outputs;
-	}
-
-	public boolean isUnseenInput(Set<ItemStack> seenItems, Set<FluidStack> seenFluids) {
-		if (input.item().isEmpty()) {
-			return !input.fluid().isEmpty() && seenFluids.add(input.fluid());
-		}
-		return seenItems.add(input.item());
 	}
 }
