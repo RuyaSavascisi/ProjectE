@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.UnaryOperator;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.api.mapper.EMCMapper;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
@@ -57,17 +56,16 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 	}
 
 	@Override
-	public void addConfigOptions(IConfigBuilder<IEMCMapper<NormalizedSimpleStack, Long>> configBuilder) {
-		ModConfigSpec.Builder builder = configBuilder.builder();
+	public void addConfigOptions(ModConfigSpec.Builder configBuilder) {
 		for (IRecipeTypeMapper recipeMapper : recipeMappers) {
 			//TODO - 1.21: Do we want to prepend this by recipe mapper or anything, or at least document that you shouldn't name a recipe mapper "enabled"
-			builder.comment(recipeMapper.getDescription())
+			configBuilder.comment(recipeMapper.getDescription())
 					.translation(recipeMapper.getTranslationKey())
 					.push(recipeMapper.getConfigPath());
-			PEConfigTranslations.MAPPING_RECIPE_TYPE_MAPPER_ENABLED.applyToBuilder(builder);
-			enabledRecipeMappers.put(recipeMapper.getName(), configBuilder.create("enabled", recipeMapper.isAvailable()));
+			enabledRecipeMappers.put(recipeMapper.getName(), PEConfigTranslations.MAPPING_RECIPE_TYPE_MAPPER_ENABLED.applyToBuilder(configBuilder)
+					.define("enabled", recipeMapper.isAvailable()));
 			recipeMapper.addConfigOptions(configBuilder);
-			builder.pop();
+			configBuilder.pop();
 		}
 	}
 

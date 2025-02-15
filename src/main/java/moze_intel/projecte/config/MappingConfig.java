@@ -58,7 +58,7 @@ public class MappingConfig extends BasePEConfig {
 			mappersEnabledConfig.put(mapper.getName(),
 					CachedBooleanValue.wrap(this, PEConfigTranslations.MAPPING_MAPPER_ENABLED.applyToBuilder(builder).define("enabled", mapper.isAvailable()))
 			);
-			mapper.addConfigOptions(new ConfigBuilder<>(this, builder, mapper));
+			mapper.addConfigOptions(builder);
 			builder.pop();
 		}
 		builder.pop();
@@ -176,7 +176,7 @@ public class MappingConfig extends BasePEConfig {
 			} else {
 				persistent = null;
 			}
-			processor.addConfigOptions(new ConfigBuilder<>(config, builder, processor));
+			processor.addConfigOptions(builder);
 			builder.pop();
 		}
 	}

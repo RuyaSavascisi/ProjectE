@@ -4,8 +4,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.util.function.LongSupplier;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.components.DataComponentProcessor;
-import moze_intel.projecte.api.components.IDataComponentProcessor;
-import moze_intel.projecte.api.config.IConfigBuilder;
 import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
@@ -16,6 +14,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.NotNull;
 
 @DataComponentProcessor
@@ -54,9 +53,9 @@ public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEncha
 	}
 
 	@Override
-	public void addConfigOptions(IConfigBuilder<IDataComponentProcessor> configBuilder) {
-		PEConfigTranslations.DCP_ENCHANTMENT_EMC_BONUS.applyToBuilder(configBuilder.builder()).worldRestart();
-		enchantmentEmcBonus = configBuilder.create("enchantment_emc_bonus", DEFAULT_ENCHANT_EMC_BONUS, 0, Long.MAX_VALUE);
+	public void addConfigOptions(ModConfigSpec.Builder configBuilder) {
+		enchantmentEmcBonus = PEConfigTranslations.DCP_ENCHANTMENT_EMC_BONUS.applyToBuilder(configBuilder).worldRestart()
+				.defineInRange("enchantment_emc_bonus", DEFAULT_ENCHANT_EMC_BONUS, 0, Long.MAX_VALUE);
 	}
 
 	@Override

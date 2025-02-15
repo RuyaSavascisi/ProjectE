@@ -12,7 +12,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
  * @param <T> The type, that is used to uniquely identify Items/Blocks/Everything
  * @param <V> The type for the EMC Value
  */
-public interface IEMCMapper<T, V extends Comparable<V>> extends IConfigurableElement<IEMCMapper<T, V>> {
+public interface IEMCMapper<T, V extends Comparable<V>> extends IConfigurableElement {
 
 	/**
 	 * {@inheritDoc} If this returns {@code false} {@link #addMappings} will not be called.

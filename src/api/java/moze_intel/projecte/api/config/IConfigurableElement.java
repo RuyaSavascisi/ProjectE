@@ -1,8 +1,9 @@
 package moze_intel.projecte.api.config;
 
 import moze_intel.projecte.api.mapper.IEMCMapper;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
-public interface IConfigurableElement<TYPE> {
+public interface IConfigurableElement {
 
 	/**
 	 * A unique Name for the {@link IConfigurableElement}. This is used to identify the {@link IConfigurableElement}.
@@ -44,8 +45,8 @@ public interface IConfigurableElement<TYPE> {
 	}
 
 	/**
-	 * Use the config builder to declare any useful Config keys for your {@link IEMCMapper}.
+	 * Use the config builder to declare any useful config keys for your {@link IEMCMapper}.
 	 */
-	default void addConfigOptions(IConfigBuilder<TYPE> configBuilder) {
+	default void addConfigOptions(ModConfigSpec.Builder configBuilder) {
 	}
 }

@@ -1,7 +1,6 @@
 package moze_intel.projecte.api.mapper.recipe;
 
 import moze_intel.projecte.api.config.IConfigurableElement;
-import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.core.RegistryAccess;
@@ -12,7 +11,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 /**
  * Interface for Classes that want to make Contributions to the EMC Mapping via the CraftingMapper.
  */
-public interface IRecipeTypeMapper extends IConfigurableElement<IEMCMapper<NormalizedSimpleStack, Long>> {
+public interface IRecipeTypeMapper extends IConfigurableElement {
 
 	/**
 	 * {@inheritDoc} If this returns {@code false} {@link #canHandle(RecipeType)} and
