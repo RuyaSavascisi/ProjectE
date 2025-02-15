@@ -41,24 +41,25 @@ public class EntityLavaProjectile extends NoGravityThrowableProjectile {
 	@Override
 	public void tick() {
 		super.tick();
-		if (!level().isClientSide && isAlive()) {
+		Level level = level();
+		if (!level.isClientSide && isAlive()) {
 			if (getOwner() instanceof Player player) {
 				for (BlockPos pos : WorldHelper.positionsAround(blockPosition(), 3)) {
-					if (level().isLoaded(pos)) {
-						BlockState state = level().getBlockState(pos);
+					if (level.isLoaded(pos)) {
+						BlockState state = level.getBlockState(pos);
 						if (state.getFluidState().is(FluidTags.WATER)) {
 							pos = pos.immutable();
-							if (PlayerHelper.hasEditPermission(player, pos)) {
-								WorldHelper.drainFluid(player, level(), pos, state, Fluids.WATER);
-								level().playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F,
-										2.6F + (level().random.nextFloat() - level().random.nextFloat()) * 0.8F);
+							if (PlayerHelper.hasEditPermission(player, level, pos)) {
+								WorldHelper.drainFluid(player, level, pos, state, Fluids.WATER);
+								level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F,
+										2.6F + (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
 							}
 						}
 					}
 				}
 			}
-			if (getY() > level().getMaxBuildHeight()) {
-				LevelData worldInfo = level().getLevelData();
+			if (getY() > level.getMaxBuildHeight()) {
+				LevelData worldInfo = level.getLevelData();
 				worldInfo.setRaining(false);
 				discard();
 			}

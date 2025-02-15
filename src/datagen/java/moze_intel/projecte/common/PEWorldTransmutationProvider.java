@@ -40,7 +40,6 @@ public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
 				.registerConsecutivePairs(Blocks.CRIMSON_ROOTS, Blocks.WARPED_ROOTS)
 		;
 
-		//TODO - 1.21: Can we figure out how to handle signs?
 		createTransmutationBuilder(PECore.rl("wood"))
 				.comment("Default world transmutations for wooden vanilla blocks.")
 				.registerConsecutivePairs(Blocks.OAK_LOG, Blocks.BIRCH_LOG, Blocks.SPRUCE_LOG, Blocks.JUNGLE_LOG, Blocks.ACACIA_LOG, Blocks.DARK_OAK_LOG,
@@ -66,6 +65,20 @@ public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
 				.registerConsecutivePairs(Blocks.OAK_PRESSURE_PLATE, Blocks.BIRCH_PRESSURE_PLATE, Blocks.SPRUCE_PRESSURE_PLATE, Blocks.JUNGLE_PRESSURE_PLATE,
 						Blocks.ACACIA_PRESSURE_PLATE, Blocks.DARK_OAK_PRESSURE_PLATE, Blocks.MANGROVE_PRESSURE_PLATE, Blocks.CHERRY_PRESSURE_PLATE,
 						Blocks.BAMBOO_PRESSURE_PLATE)
+				.registerConsecutivePairs(Blocks.OAK_BUTTON, Blocks.BIRCH_BUTTON, Blocks.SPRUCE_BUTTON, Blocks.JUNGLE_BUTTON, Blocks.ACACIA_BUTTON, Blocks.DARK_OAK_BUTTON,
+						Blocks.MANGROVE_BUTTON, Blocks.CHERRY_BUTTON, Blocks.BAMBOO_BUTTON)
+				.registerConsecutivePairs(Blocks.OAK_TRAPDOOR, Blocks.BIRCH_TRAPDOOR, Blocks.SPRUCE_TRAPDOOR, Blocks.JUNGLE_TRAPDOOR, Blocks.ACACIA_TRAPDOOR, Blocks.DARK_OAK_TRAPDOOR,
+						Blocks.MANGROVE_TRAPDOOR, Blocks.CHERRY_TRAPDOOR, Blocks.BAMBOO_TRAPDOOR)
+				.registerConsecutivePairs(Blocks.OAK_DOOR, Blocks.BIRCH_DOOR, Blocks.SPRUCE_DOOR, Blocks.JUNGLE_DOOR, Blocks.ACACIA_DOOR, Blocks.DARK_OAK_DOOR,
+						Blocks.MANGROVE_DOOR, Blocks.CHERRY_DOOR, Blocks.BAMBOO_DOOR)
+				.registerConsecutivePairs(Blocks.OAK_SIGN, Blocks.BIRCH_SIGN, Blocks.SPRUCE_SIGN, Blocks.JUNGLE_SIGN, Blocks.ACACIA_SIGN, Blocks.DARK_OAK_SIGN,
+						Blocks.MANGROVE_SIGN, Blocks.CHERRY_SIGN, Blocks.BAMBOO_SIGN)
+				.registerConsecutivePairs(Blocks.OAK_WALL_SIGN, Blocks.BIRCH_WALL_SIGN, Blocks.SPRUCE_WALL_SIGN, Blocks.JUNGLE_WALL_SIGN, Blocks.ACACIA_WALL_SIGN, Blocks.DARK_OAK_WALL_SIGN,
+						Blocks.MANGROVE_WALL_SIGN, Blocks.CHERRY_WALL_SIGN, Blocks.BAMBOO_WALL_SIGN)
+				.registerConsecutivePairs(Blocks.OAK_HANGING_SIGN, Blocks.BIRCH_HANGING_SIGN, Blocks.SPRUCE_HANGING_SIGN, Blocks.JUNGLE_HANGING_SIGN, Blocks.ACACIA_HANGING_SIGN, Blocks.DARK_OAK_HANGING_SIGN,
+						Blocks.MANGROVE_HANGING_SIGN, Blocks.CHERRY_HANGING_SIGN, Blocks.BAMBOO_HANGING_SIGN)
+				.registerConsecutivePairs(Blocks.OAK_WALL_HANGING_SIGN, Blocks.BIRCH_WALL_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN, Blocks.JUNGLE_WALL_HANGING_SIGN, Blocks.ACACIA_WALL_HANGING_SIGN, Blocks.DARK_OAK_WALL_HANGING_SIGN,
+						Blocks.MANGROVE_WALL_HANGING_SIGN, Blocks.CHERRY_WALL_HANGING_SIGN, Blocks.BAMBOO_WALL_HANGING_SIGN)
 				//Nether wood blocks
 				.registerConsecutivePairs(Blocks.CRIMSON_STEM, Blocks.WARPED_STEM)
 				.registerConsecutivePairs(Blocks.STRIPPED_CRIMSON_STEM, Blocks.STRIPPED_WARPED_STEM)
@@ -76,6 +89,13 @@ public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
 				.registerConsecutivePairs(Blocks.CRIMSON_STAIRS, Blocks.WARPED_STAIRS)
 				.registerConsecutivePairs(Blocks.CRIMSON_FENCE, Blocks.WARPED_FENCE)
 				.registerConsecutivePairs(Blocks.CRIMSON_PRESSURE_PLATE, Blocks.WARPED_PRESSURE_PLATE)
+				.registerConsecutivePairs(Blocks.CRIMSON_BUTTON, Blocks.WARPED_BUTTON)
+				.registerConsecutivePairs(Blocks.CRIMSON_TRAPDOOR, Blocks.WARPED_TRAPDOOR)
+				.registerConsecutivePairs(Blocks.CRIMSON_DOOR, Blocks.WARPED_DOOR)
+				.registerConsecutivePairs(Blocks.CRIMSON_SIGN, Blocks.WARPED_SIGN)
+				.registerConsecutivePairs(Blocks.CRIMSON_WALL_SIGN, Blocks.WARPED_WALL_SIGN)
+				.registerConsecutivePairs(Blocks.CRIMSON_HANGING_SIGN, Blocks.WARPED_HANGING_SIGN)
+				.registerConsecutivePairs(Blocks.CRIMSON_WALL_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN)
 				;
 
 

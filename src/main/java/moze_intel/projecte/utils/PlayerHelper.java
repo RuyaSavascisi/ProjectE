@@ -19,6 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -42,12 +44,15 @@ public final class PlayerHelper {
 	 *
 	 * @return Whether the block was successfully placed
 	 */
-	public static boolean checkedPlaceBlock(Player player, BlockPos pos, BlockState state) {
-		return hasEditPermission(player, pos) && partiallyCheckedPlaceBlock(player, pos, state);
+	public static boolean checkedPlaceBlock(Player player, Level level, BlockPos pos, BlockState state) {
+		return hasEditPermission(player, level, pos) && partiallyCheckedPlaceBlock(player, level, pos, state);
 	}
 
-	private static boolean partiallyCheckedPlaceBlock(Player player, BlockPos pos, BlockState state) {
-		Level level = player.level();
+	private static boolean partiallyCheckedPlaceBlock(Player player, Level level, BlockPos pos, BlockState state) {
+		SignBlockEntity oldSign = null;
+		if (state.getBlock() instanceof SignBlock && level.getBlockEntity(pos) instanceof SignBlockEntity sign) {
+			oldSign = sign;
+		}
 		level.captureBlockSnapshots = true;
 		level.setBlockAndUpdate(pos, state);
 		level.captureBlockSnapshots = false;
@@ -72,19 +77,22 @@ public final class PlayerHelper {
 		} else {
 			//Place all the blocks into the world and sync them to the client
 			for (BlockSnapshot snap : blockSnapshots) {
-				int updateFlag = snap.getFlags();
 				BlockState oldBlock = snap.getState();
-				BlockState newBlock = level.getBlockState(snap.getPos());
-				newBlock.onPlace(level, snap.getPos(), oldBlock, false);
-				level.markAndNotifyBlock(snap.getPos(), level.getChunkAt(snap.getPos()), oldBlock, newBlock, updateFlag, Block.UPDATE_LIMIT);
+				BlockPos snapPos = snap.getPos();
+				BlockState newBlock = level.getBlockState(snapPos);
+				newBlock.onPlace(level, snapPos, oldBlock, false);
+				level.markAndNotifyBlock(snapPos, level.getChunkAt(snapPos), oldBlock, newBlock, snap.getFlags(), Block.UPDATE_LIMIT);
+				if (oldSign != null && snapPos.equals(pos)) {
+					WorldHelper.copySignData(level, pos, oldSign);
+				}
 			}
 		}
 		level.capturedBlockSnapshots.clear();
 		return !eventResult;
 	}
 
-	public static boolean checkedReplaceBlock(ServerPlayer player, BlockPos pos, BlockState state) {
-		return hasBreakPermission(player, pos) && partiallyCheckedPlaceBlock(player, pos, state);
+	public static boolean checkedReplaceBlock(ServerPlayer player, Level level, BlockPos pos, BlockState state) {
+		return hasBreakPermission(player, level, pos) && partiallyCheckedPlaceBlock(player, level, pos, state);
 	}
 
 	public static ItemStack findFirstItem(Player player, Holder<Item> consumeFrom) {
@@ -127,22 +135,20 @@ public final class PlayerHelper {
 	 * Returns a vec representing where the player is looking, capped at maxDistance away.
 	 */
 	public static Vec3 getLookTarget(Player player, double maxDistance) {
-		//TODO - 1.21: For both this and getBlockLookingAt, make sure we properly make use of the player interaction range attributes
 		Vec3 lookAngle = player.getLookAngle();
 		return player.getEyePosition().add(lookAngle.x * maxDistance, lookAngle.y * maxDistance, lookAngle.z * maxDistance);
 	}
 
-	public static boolean hasBreakPermission(ServerPlayer player, BlockPos pos) {
-		return hasEditPermission(player, pos) && checkBreakPermission(player, pos);
+	public static boolean hasBreakPermission(ServerPlayer player, Level level, BlockPos pos) {
+		return hasEditPermission(player, level, pos) && checkBreakPermission(player, level, pos);
 	}
 
-	static boolean checkBreakPermission(ServerPlayer player, BlockPos pos) {
-		Level level = player.level();
+	static boolean checkBreakPermission(ServerPlayer player, Level level, BlockPos pos) {
 		return !CommonHooks.fireBlockBreak(level, player.gameMode.getGameModeForPlayer(), player, pos, level.getBlockState(pos)).isCanceled();
 	}
 
-	public static boolean hasEditPermission(Player player, BlockPos pos) {
-		if (!player.mayInteract(player.level(), pos)) {
+	public static boolean hasEditPermission(Player player, Level level, BlockPos pos) {
+		if (!player.mayInteract(level, pos)) {
 			return false;
 		}
 		for (Direction e : Constants.DIRECTIONS) {

@@ -44,10 +44,11 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 	@Override
 	public void tick() {
 		super.tick();
-		if (!this.level().isClientSide && isAlive()) {
+		Level level = level();
+		if (!level.isClientSide && isAlive()) {
 			if (getOwner() instanceof Player player) {
 				for (BlockPos pos : WorldHelper.positionsAround(blockPosition(), 3)) {
-					BlockState state = level().getBlockState(pos);
+					BlockState state = level.getBlockState(pos);
 					FluidState fluidState = state.getFluidState();
 					if (fluidState.is(FluidTags.LAVA)) {
 						pos = pos.immutable();
@@ -55,23 +56,23 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 							//If it is a source block convert it
 							Block block = fluidState.isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE;
 							//Like: ForgeEventFactory#fireFluidPlaceBlockEvent except checks if it was cancelled
-							BlockEvent.FluidPlaceBlockEvent event = new BlockEvent.FluidPlaceBlockEvent(level(), pos, pos, block.defaultBlockState());
+							BlockEvent.FluidPlaceBlockEvent event = new BlockEvent.FluidPlaceBlockEvent(level, pos, pos, block.defaultBlockState());
 							if (!NeoForge.EVENT_BUS.post(event).isCanceled()) {
-								PlayerHelper.checkedPlaceBlock(player, pos, event.getNewState());
+								PlayerHelper.checkedPlaceBlock(player, level, pos, event.getNewState());
 							}
 						} else {
 							//Otherwise if it is lava logged, "void" the lava as we can't place a block in that spot
-							WorldHelper.drainFluid(player, level(), pos, state, Fluids.LAVA);
+							WorldHelper.drainFluid(player, level, pos, state, Fluids.LAVA);
 						}
-						playSound(SoundEvents.GENERIC_BURN, 0.5F, 2.6F + (level().random.nextFloat() - level().random.nextFloat()) * 0.8F);
+						playSound(SoundEvents.GENERIC_BURN, 0.5F, 2.6F + (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
 					}
 				}
 			}
 			if (isInWater()) {
 				discard();
 			}
-			if (getY() > level().getMaxBuildHeight()) {
-				LevelData worldInfo = this.level().getLevelData();
+			if (getY() > level.getMaxBuildHeight()) {
+				LevelData worldInfo = level.getLevelData();
 				worldInfo.setRaining(true);
 				discard();
 			}

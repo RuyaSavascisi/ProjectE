@@ -71,6 +71,7 @@ import net.minecraft.world.level.block.RootsBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
 import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -209,7 +210,7 @@ public final class WorldHelper {
 	public static void extinguishNearby(Level level, Player player) {
 		for (BlockPos pos : getPositionsInBox(player.getBoundingBox().inflate(1))) {
 			pos = pos.immutable();
-			if (level.getBlockState(pos).is(Blocks.FIRE) && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+			if (level.getBlockState(pos).is(Blocks.FIRE) && PlayerHelper.hasBreakPermission((ServerPlayer) player, level, pos)) {
 				level.removeBlock(pos, false);
 			}
 		}
@@ -222,7 +223,7 @@ public final class WorldHelper {
 			pos = pos.immutable();
 			if (state.is(Blocks.WATER) && (!random || level.random.nextInt(128) == 0)) {
 				if (player != null) {
-					PlayerHelper.checkedReplaceBlock((ServerPlayer) player, pos, Blocks.ICE.defaultBlockState());
+					PlayerHelper.checkedReplaceBlock((ServerPlayer) player, level, pos, Blocks.ICE.defaultBlockState());
 				} else {
 					level.setBlockAndUpdate(pos, Blocks.ICE.defaultBlockState());
 				}
@@ -238,7 +239,7 @@ public final class WorldHelper {
 				}
 				if (newState != null) {
 					if (player != null) {
-						PlayerHelper.checkedReplaceBlock((ServerPlayer) player, up, newState);
+						PlayerHelper.checkedReplaceBlock((ServerPlayer) player, level, up, newState);
 					} else {
 						level.setBlockAndUpdate(up, newState);
 					}
@@ -291,9 +292,18 @@ public final class WorldHelper {
 			if (player == null) {
 				level.setBlockAndUpdate(pos, fluid.defaultFluidState().createLegacyBlock());
 				level.gameEvent(null, GameEvent.FLUID_PLACE, pos);
-			} else if (PlayerHelper.checkedPlaceBlock(player, pos, fluid.defaultFluidState().createLegacyBlock())) {
+			} else if (PlayerHelper.checkedPlaceBlock(player, level, pos, fluid.defaultFluidState().createLegacyBlock())) {
 				level.gameEvent(player, GameEvent.FLUID_PLACE, pos);
 			}
+		}
+	}
+
+	public static void copySignData(Level level, BlockPos pos, SignBlockEntity oldSign) {
+		if (oldSign != null && level.getBlockEntity(pos) instanceof SignBlockEntity newSign) {
+			newSign.setText(oldSign.getText(true), true);
+			newSign.setText(oldSign.getText(false), false);
+			newSign.setAllowedPlayerEditor(oldSign.getPlayerWhoMayEdit());
+			newSign.setWaxed(oldSign.isWaxed());
 		}
 	}
 
@@ -496,7 +506,7 @@ public final class WorldHelper {
 	 * Breaks and "harvests" a block if the player has permission to break it or there is no player
 	 */
 	private static void harvestBlock(Level level, BlockPos pos, @Nullable Player player) {
-		if (!(player instanceof ServerPlayer serverPlayer) || PlayerHelper.hasBreakPermission(serverPlayer, pos)) {
+		if (!(player instanceof ServerPlayer serverPlayer) || PlayerHelper.hasBreakPermission(serverPlayer, level, pos)) {
 			level.destroyBlock(pos, true, player);
 		}
 	}
@@ -558,8 +568,8 @@ public final class WorldHelper {
 		return fallback;
 	}
 
-	private static <DATA> boolean validState(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, BlockPos pos, Player player) {
-		return stateChecker.test(state, data) && state.getDestroySpeed(player.level(), pos) != -1 && PlayerHelper.hasEditPermission(player, pos);
+	private static <DATA> boolean validState(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, Level level, BlockPos pos, Player player) {
+		return stateChecker.test(state, data) && state.getDestroySpeed(level, pos) != -1 && PlayerHelper.hasEditPermission(player, level, pos);
 	}
 
 	public static <DATA> int harvestVein(Level level, Player player, ItemStack stack, AABB area, List<ItemStack> currentDrops, DATA data,
@@ -575,13 +585,13 @@ public final class WorldHelper {
 			validState = WorldHelper::validState;
 		} else {
 			//If we are server side we want to perform an extra check to determine if the player can break the block
-			validState = (dat, checker, state, pos, p) ->
-					validState(dat, checker, state, pos, p) && PlayerHelper.checkBreakPermission((ServerPlayer) p, pos);
+			validState = (dat, checker, state, lvl, pos, p) ->
+					validState(dat, checker, state, lvl, pos, p) && PlayerHelper.checkBreakPermission((ServerPlayer) p, lvl, pos);
 		}
 
 		for (BlockPos pos : WorldHelper.getPositionsInBox(area)) {
 			BlockState state = level.getBlockState(pos);
-			if (validState.test(data, stateChecker, state, pos, player)) {
+			if (validState.test(data, stateChecker, state, level, pos, player)) {
 				if (level.isClientSide) {
 					return 1;
 				}
@@ -609,7 +619,7 @@ public final class WorldHelper {
 				nextPos = nextPos.immutable();
 				if (traversed.add(nextPos) && isBlockLoaded(level, nextPos)) {
 					BlockState nextState = level.getBlockState(nextPos);
-					if (validState.test(data, stateChecker, nextState, nextPos, player)) {
+					if (validState.test(data, stateChecker, nextState, level, nextPos, player)) {
 						frontier.add(new TargetInfo(nextPos, nextState));
 					}
 				}
@@ -621,7 +631,7 @@ public final class WorldHelper {
 	public static void igniteNearby(Level level, Player player) {
 		for (BlockPos pos : getPositionsInBox(player.getBoundingBox().inflate(8, 5, 8))) {
 			if (level.random.nextInt(128) == 0 && level.isEmptyBlock(pos)) {
-				PlayerHelper.checkedPlaceBlock(player, pos.immutable(), Blocks.FIRE.defaultBlockState());
+				PlayerHelper.checkedPlaceBlock(player, level, pos.immutable(), Blocks.FIRE.defaultBlockState());
 			}
 		}
 	}
@@ -690,14 +700,14 @@ public final class WorldHelper {
 		BlockPos pos = ctx.getClickedPos();
 		Direction side = ctx.getClickedFace();
 		if (BaseFireBlock.canBePlacedAt(level, pos, side)) {
-			if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+			if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, level, pos)) {
 				level.setBlockAndUpdate(pos, BaseFireBlock.getState(level, pos));
 				level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 			}
 		} else {
 			BlockState state = level.getBlockState(pos);
 			if (state.getToolModifiedState(ctx, ItemAbilities.FIRESTARTER_LIGHT, true) != null) {
-				if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+				if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, level, pos)) {
 					BlockState modifiedState = state.getToolModifiedState(ctx, ItemAbilities.FIRESTARTER_LIGHT, false);
 					if (modifiedState != null) {//Theoretically should not be null as we just simulated, but validate it just in case
 						level.setBlockAndUpdate(pos, modifiedState);
@@ -705,7 +715,7 @@ public final class WorldHelper {
 					}
 				}
 			} else if (state.isFlammable(level, pos, side)) {
-				if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+				if (!level.isClientSide && PlayerHelper.hasBreakPermission((ServerPlayer) player, level, pos)) {
 					// Ignite the block
 					state.onCaughtFire(level, pos, side, player);
 					if (state.getBlock() instanceof TntBlock) {
@@ -888,6 +898,6 @@ public final class WorldHelper {
 	@FunctionalInterface
 	private interface VeinStateChecker<DATA> {
 
-		boolean test(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, BlockPos pos, Player player);
+		boolean test(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, Level level, BlockPos pos, Player player);
 	}
 }

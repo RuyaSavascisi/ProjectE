@@ -49,6 +49,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -71,42 +73,61 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		return stack.copy();
 	}
 
-	public BlockHitResult getHitBlock(Player player) {
-		return getPlayerPOVHitResult(player.level(), player, player.isSecondaryUseActive() ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE);
+	public BlockHitResult getHitBlock(Level level, Player player, boolean isSneaking) {
+		return getPlayerPOVHitResult(level, player, isSneaking ? ClipContext.Fluid.SOURCE_ONLY : ClipContext.Fluid.NONE);
 	}
 
 	@NotNull
 	@Override
-	public InteractionResult useOn(UseOnContext ctx) {
-		Player player = ctx.getPlayer();
-		if (player == null) {
-			return InteractionResult.FAIL;
-		}
+	public InteractionResult onItemUseFirst(@NotNull ItemStack stack, @NotNull UseOnContext ctx) {
+		//Note: We use this instead of useOn so that we can support blocks that have right click interactions (for example signs)
 		Level level = ctx.getLevel();
+		Player player = ctx.getPlayer();
+		BlockPos pos = ctx.getClickedPos();
+		Direction sideHit = ctx.getClickedFace();
+		boolean isSneaking = ctx.isSecondaryUseActive();
+		if (isSneaking && player != null) {
+			//If the secondary use is active, see if we would hit a fluid before we get to the target
+			//Note: If player is null, secondary use should be false. But in case an implementation overrides it, we need to check the player isn't null
+			BlockHitResult rtr = getHitBlock(level, player, true);
+			if (rtr.getType() == HitResult.Type.BLOCK && !rtr.getBlockPos().equals(pos)) {
+				pos = rtr.getBlockPos();
+				sideHit = rtr.getDirection();
+			}
+		}
+
 		if (level.isClientSide) {
+			if (WorldTransmutationManager.INSTANCE.getWorldTransmutation(level.getBlockState(pos)) == null) {
+				//Pass if there is no world transmutation for the target block
+				return InteractionResult.PASS;
+			}
 			return InteractionResult.SUCCESS;
 		}
 
-		BlockPos pos = ctx.getClickedPos();
-		Direction sideHit = ctx.getClickedFace();
-		ItemStack stack = ctx.getItemInHand();
-		BlockHitResult rtr = getHitBlock(player);
-		if (rtr.getType() == HitResult.Type.BLOCK && !rtr.getBlockPos().equals(pos)) {
-			pos = rtr.getBlockPos();
-			sideHit = rtr.getDirection();
+		Object2ReferenceMap<BlockPos, BlockState> toChange = getChanges(level, pos, sideHit, ctx.getHorizontalDirection(), isSneaking, getMode(stack), getCharge(stack));
+		if (toChange.isEmpty()) {
+			return InteractionResult.PASS;
 		}
-		Object2ReferenceMap<BlockPos, BlockState> toChange = getChanges(level, pos, player, sideHit, getMode(stack), getCharge(stack));
-		if (!toChange.isEmpty()) {
-			for (Iterator<Object2ReferenceMap.Entry<BlockPos, BlockState>> iterator = Object2ReferenceMaps.fastIterator(toChange); iterator.hasNext(); ) {
-				Object2ReferenceMap.Entry<BlockPos, BlockState> entry = iterator.next();
-				BlockPos currentPos = entry.getKey();
-				PlayerHelper.checkedReplaceBlock((ServerPlayer) player, currentPos, entry.getValue());
-				if (level.random.nextInt(8) == 0) {
-					((ServerLevel) level).sendParticles(ParticleTypes.LARGE_SMOKE, currentPos.getX(), currentPos.getY() + 1, currentPos.getZ(), 2, 0, 0, 0, 0);
+		for (Iterator<Object2ReferenceMap.Entry<BlockPos, BlockState>> iterator = Object2ReferenceMaps.fastIterator(toChange); iterator.hasNext(); ) {
+			Object2ReferenceMap.Entry<BlockPos, BlockState> entry = iterator.next();
+			BlockPos currentPos = entry.getKey();
+			BlockState targetState = entry.getValue();
+			if (player == null) {
+				if (targetState.getBlock() instanceof SignBlock && level.getBlockEntity(currentPos) instanceof SignBlockEntity sign) {
+					level.setBlockAndUpdate(currentPos, targetState);
+					WorldHelper.copySignData(level, currentPos, sign);
+				} else {
+					level.setBlockAndUpdate(currentPos, targetState);
 				}
+			} else {
+				PlayerHelper.checkedReplaceBlock((ServerPlayer) player, level, currentPos, targetState);
 			}
-			level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.TRANSMUTE.get(), SoundSource.PLAYERS, 1, 1);
+			if (level.random.nextInt(8) == 0) {
+				((ServerLevel) level).sendParticles(ParticleTypes.LARGE_SMOKE, currentPos.getX(), currentPos.getY() + 1, currentPos.getZ(), 2, 0, 0, 0, 0);
+			}
 		}
+		BlockPos soundPos = player == null ? pos : player.blockPosition();
+		level.playSound(null, soundPos.getX(), soundPos.getY(), soundPos.getZ(), PESoundEvents.TRANSMUTE.get(), SoundSource.PLAYERS, 1, 1);
 		return InteractionResult.SUCCESS;
 	}
 
@@ -134,7 +155,8 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		tooltip.add(PELang.TOOLTIP_PHILOSTONE.translate(ClientKeyHelper.getKeyName(PEKeybind.EXTRA_FUNCTION)));
 	}
 
-	public static Object2ReferenceMap<BlockPos, BlockState> getChanges(Level level, BlockPos pos, Player player, Direction sideHit, PhilosophersStoneMode mode, int charge) {
+	public static Object2ReferenceMap<BlockPos, BlockState> getChanges(Level level, BlockPos pos, Direction sideHit, Direction horizontalDirection, boolean isSneaking,
+			PhilosophersStoneMode mode, int charge) {
 		IWorldTransmutation transmutation = WorldTransmutationManager.INSTANCE.getWorldTransmutation(level.getBlockState(pos));
 		if (transmutation == null) {
 			//Targeted block has no transmutations, no positions
@@ -147,7 +169,7 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 				case Y -> WorldHelper.horizontalPositionsAround(pos, charge);
 				case Z -> WorldHelper.positionsAround(pos, charge, charge, 0);
 			};
-			case LINE -> switch (player.getDirection().getAxis()) {
+			case LINE -> switch (horizontalDirection.getAxis()) {
 				case X -> WorldHelper.positionsAround(pos, charge, 0, 0);
 				case Y -> null;
 				case Z -> WorldHelper.positionsAround(pos, 0, 0, charge);
@@ -156,7 +178,6 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		if (targets == null) {
 			return Object2ReferenceMaps.emptyMap();
 		}
-		boolean isSneaking = player.isSecondaryUseActive();
 		Object2ReferenceMap<BlockPos, BlockState> changes = new Object2ReferenceOpenHashMap<>();
 		for (BlockPos currentPos : targets) {
 			BlockState actualResult = transmutation.result(level.getBlockState(currentPos), isSneaking);

@@ -163,18 +163,18 @@ public class Arcana extends ItemPE implements IItemMode<ArcanaMode>, IFireProtec
 		}
 		if (getMode(stack) == ArcanaMode.IGNITION) {
 			switch (player.getDirection()) {
-				case SOUTH, NORTH -> igniteNear(player, 30, 5, 3);
-				case WEST, EAST -> igniteNear(player, 3, 5, 30);
+				case SOUTH, NORTH -> igniteNear(player, level, 30, 5, 3);
+				case WEST, EAST -> igniteNear(player, level, 3, 5, 30);
 			}
 			level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.POWER.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 		}
 		return true;
 	}
 
-	private void igniteNear(Player player, int xOffset, int yOffset, int zOffset) {
+	private void igniteNear(Player player, Level level, int xOffset, int yOffset, int zOffset) {
 		for (BlockPos pos : WorldHelper.getPositionsInBox(player.getBoundingBox().inflate(xOffset, yOffset, zOffset))) {
-			if (player.level().isEmptyBlock(pos)) {
-				PlayerHelper.checkedPlaceBlock(player, pos.immutable(), Blocks.FIRE.defaultBlockState());
+			if (level.isEmptyBlock(pos)) {
+				PlayerHelper.checkedPlaceBlock(player, level, pos.immutable(), Blocks.FIRE.defaultBlockState());
 			}
 		}
 	}

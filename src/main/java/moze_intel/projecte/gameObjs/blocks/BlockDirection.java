@@ -35,10 +35,7 @@ public abstract class BlockDirection extends Block {
 	@NotNull
 	@Override
 	public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-		if (ctx.getPlayer() != null) {
-			return defaultBlockState().setValue(FACING, ctx.getPlayer().getDirection().getOpposite());
-		}
-		return defaultBlockState();
+		return defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
 	}
 
 	@Override

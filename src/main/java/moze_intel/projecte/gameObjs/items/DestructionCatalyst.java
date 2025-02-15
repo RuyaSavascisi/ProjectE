@@ -59,7 +59,7 @@ public class DestructionCatalyst extends ItemPE implements IItemCharge, IBarHelp
 			hasAction = true;
 			//Ensure we are immutable so that changing blocks doesn't act weird
 			pos = pos.immutable();
-			if (PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+			if (PlayerHelper.hasBreakPermission((ServerPlayer) player, level, pos)) {
 				List<ItemStack> list = Block.getDrops(state, (ServerLevel) level, pos, WorldHelper.getBlockEntity(level, pos), player, stack);
 				drops.addAll(list);
 				level.removeBlock(pos, false);

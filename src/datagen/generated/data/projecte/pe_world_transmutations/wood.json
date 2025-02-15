@@ -467,6 +467,321 @@
       "result": "minecraft:oak_pressure_plate"
     },
     {
+      "alt_result": "minecraft:bamboo_button",
+      "origin": "minecraft:oak_button",
+      "result": "minecraft:birch_button"
+    },
+    {
+      "alt_result": "minecraft:oak_button",
+      "origin": "minecraft:birch_button",
+      "result": "minecraft:spruce_button"
+    },
+    {
+      "alt_result": "minecraft:birch_button",
+      "origin": "minecraft:spruce_button",
+      "result": "minecraft:jungle_button"
+    },
+    {
+      "alt_result": "minecraft:spruce_button",
+      "origin": "minecraft:jungle_button",
+      "result": "minecraft:acacia_button"
+    },
+    {
+      "alt_result": "minecraft:jungle_button",
+      "origin": "minecraft:acacia_button",
+      "result": "minecraft:dark_oak_button"
+    },
+    {
+      "alt_result": "minecraft:acacia_button",
+      "origin": "minecraft:dark_oak_button",
+      "result": "minecraft:mangrove_button"
+    },
+    {
+      "alt_result": "minecraft:dark_oak_button",
+      "origin": "minecraft:mangrove_button",
+      "result": "minecraft:cherry_button"
+    },
+    {
+      "alt_result": "minecraft:mangrove_button",
+      "origin": "minecraft:cherry_button",
+      "result": "minecraft:bamboo_button"
+    },
+    {
+      "alt_result": "minecraft:cherry_button",
+      "origin": "minecraft:bamboo_button",
+      "result": "minecraft:oak_button"
+    },
+    {
+      "alt_result": "minecraft:bamboo_trapdoor",
+      "origin": "minecraft:oak_trapdoor",
+      "result": "minecraft:birch_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:oak_trapdoor",
+      "origin": "minecraft:birch_trapdoor",
+      "result": "minecraft:spruce_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:birch_trapdoor",
+      "origin": "minecraft:spruce_trapdoor",
+      "result": "minecraft:jungle_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:spruce_trapdoor",
+      "origin": "minecraft:jungle_trapdoor",
+      "result": "minecraft:acacia_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:jungle_trapdoor",
+      "origin": "minecraft:acacia_trapdoor",
+      "result": "minecraft:dark_oak_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:acacia_trapdoor",
+      "origin": "minecraft:dark_oak_trapdoor",
+      "result": "minecraft:mangrove_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:dark_oak_trapdoor",
+      "origin": "minecraft:mangrove_trapdoor",
+      "result": "minecraft:cherry_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:mangrove_trapdoor",
+      "origin": "minecraft:cherry_trapdoor",
+      "result": "minecraft:bamboo_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:cherry_trapdoor",
+      "origin": "minecraft:bamboo_trapdoor",
+      "result": "minecraft:oak_trapdoor"
+    },
+    {
+      "alt_result": "minecraft:bamboo_door",
+      "origin": "minecraft:oak_door",
+      "result": "minecraft:birch_door"
+    },
+    {
+      "alt_result": "minecraft:oak_door",
+      "origin": "minecraft:birch_door",
+      "result": "minecraft:spruce_door"
+    },
+    {
+      "alt_result": "minecraft:birch_door",
+      "origin": "minecraft:spruce_door",
+      "result": "minecraft:jungle_door"
+    },
+    {
+      "alt_result": "minecraft:spruce_door",
+      "origin": "minecraft:jungle_door",
+      "result": "minecraft:acacia_door"
+    },
+    {
+      "alt_result": "minecraft:jungle_door",
+      "origin": "minecraft:acacia_door",
+      "result": "minecraft:dark_oak_door"
+    },
+    {
+      "alt_result": "minecraft:acacia_door",
+      "origin": "minecraft:dark_oak_door",
+      "result": "minecraft:mangrove_door"
+    },
+    {
+      "alt_result": "minecraft:dark_oak_door",
+      "origin": "minecraft:mangrove_door",
+      "result": "minecraft:cherry_door"
+    },
+    {
+      "alt_result": "minecraft:mangrove_door",
+      "origin": "minecraft:cherry_door",
+      "result": "minecraft:bamboo_door"
+    },
+    {
+      "alt_result": "minecraft:cherry_door",
+      "origin": "minecraft:bamboo_door",
+      "result": "minecraft:oak_door"
+    },
+    {
+      "alt_result": "minecraft:bamboo_sign",
+      "origin": "minecraft:oak_sign",
+      "result": "minecraft:birch_sign"
+    },
+    {
+      "alt_result": "minecraft:oak_sign",
+      "origin": "minecraft:birch_sign",
+      "result": "minecraft:spruce_sign"
+    },
+    {
+      "alt_result": "minecraft:birch_sign",
+      "origin": "minecraft:spruce_sign",
+      "result": "minecraft:jungle_sign"
+    },
+    {
+      "alt_result": "minecraft:spruce_sign",
+      "origin": "minecraft:jungle_sign",
+      "result": "minecraft:acacia_sign"
+    },
+    {
+      "alt_result": "minecraft:jungle_sign",
+      "origin": "minecraft:acacia_sign",
+      "result": "minecraft:dark_oak_sign"
+    },
+    {
+      "alt_result": "minecraft:acacia_sign",
+      "origin": "minecraft:dark_oak_sign",
+      "result": "minecraft:mangrove_sign"
+    },
+    {
+      "alt_result": "minecraft:dark_oak_sign",
+      "origin": "minecraft:mangrove_sign",
+      "result": "minecraft:cherry_sign"
+    },
+    {
+      "alt_result": "minecraft:mangrove_sign",
+      "origin": "minecraft:cherry_sign",
+      "result": "minecraft:bamboo_sign"
+    },
+    {
+      "alt_result": "minecraft:cherry_sign",
+      "origin": "minecraft:bamboo_sign",
+      "result": "minecraft:oak_sign"
+    },
+    {
+      "alt_result": "minecraft:bamboo_wall_sign",
+      "origin": "minecraft:oak_wall_sign",
+      "result": "minecraft:birch_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:oak_wall_sign",
+      "origin": "minecraft:birch_wall_sign",
+      "result": "minecraft:spruce_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:birch_wall_sign",
+      "origin": "minecraft:spruce_wall_sign",
+      "result": "minecraft:jungle_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:spruce_wall_sign",
+      "origin": "minecraft:jungle_wall_sign",
+      "result": "minecraft:acacia_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:jungle_wall_sign",
+      "origin": "minecraft:acacia_wall_sign",
+      "result": "minecraft:dark_oak_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:acacia_wall_sign",
+      "origin": "minecraft:dark_oak_wall_sign",
+      "result": "minecraft:mangrove_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:dark_oak_wall_sign",
+      "origin": "minecraft:mangrove_wall_sign",
+      "result": "minecraft:cherry_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:mangrove_wall_sign",
+      "origin": "minecraft:cherry_wall_sign",
+      "result": "minecraft:bamboo_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:cherry_wall_sign",
+      "origin": "minecraft:bamboo_wall_sign",
+      "result": "minecraft:oak_wall_sign"
+    },
+    {
+      "alt_result": "minecraft:bamboo_hanging_sign",
+      "origin": "minecraft:oak_hanging_sign",
+      "result": "minecraft:birch_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:oak_hanging_sign",
+      "origin": "minecraft:birch_hanging_sign",
+      "result": "minecraft:spruce_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:birch_hanging_sign",
+      "origin": "minecraft:spruce_hanging_sign",
+      "result": "minecraft:jungle_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:spruce_hanging_sign",
+      "origin": "minecraft:jungle_hanging_sign",
+      "result": "minecraft:acacia_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:jungle_hanging_sign",
+      "origin": "minecraft:acacia_hanging_sign",
+      "result": "minecraft:dark_oak_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:acacia_hanging_sign",
+      "origin": "minecraft:dark_oak_hanging_sign",
+      "result": "minecraft:mangrove_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:dark_oak_hanging_sign",
+      "origin": "minecraft:mangrove_hanging_sign",
+      "result": "minecraft:cherry_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:mangrove_hanging_sign",
+      "origin": "minecraft:cherry_hanging_sign",
+      "result": "minecraft:bamboo_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:cherry_hanging_sign",
+      "origin": "minecraft:bamboo_hanging_sign",
+      "result": "minecraft:oak_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:bamboo_wall_hanging_sign",
+      "origin": "minecraft:oak_wall_hanging_sign",
+      "result": "minecraft:birch_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:oak_wall_hanging_sign",
+      "origin": "minecraft:birch_wall_hanging_sign",
+      "result": "minecraft:spruce_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:birch_wall_hanging_sign",
+      "origin": "minecraft:spruce_wall_hanging_sign",
+      "result": "minecraft:jungle_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:spruce_wall_hanging_sign",
+      "origin": "minecraft:jungle_wall_hanging_sign",
+      "result": "minecraft:acacia_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:jungle_wall_hanging_sign",
+      "origin": "minecraft:acacia_wall_hanging_sign",
+      "result": "minecraft:dark_oak_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:acacia_wall_hanging_sign",
+      "origin": "minecraft:dark_oak_wall_hanging_sign",
+      "result": "minecraft:mangrove_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:dark_oak_wall_hanging_sign",
+      "origin": "minecraft:mangrove_wall_hanging_sign",
+      "result": "minecraft:cherry_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:mangrove_wall_hanging_sign",
+      "origin": "minecraft:cherry_wall_hanging_sign",
+      "result": "minecraft:bamboo_wall_hanging_sign"
+    },
+    {
+      "alt_result": "minecraft:cherry_wall_hanging_sign",
+      "origin": "minecraft:bamboo_wall_hanging_sign",
+      "result": "minecraft:oak_wall_hanging_sign"
+    },
+    {
       "origin": "minecraft:crimson_stem",
       "result": "minecraft:warped_stem"
     },
@@ -537,6 +852,62 @@
     {
       "origin": "minecraft:warped_pressure_plate",
       "result": "minecraft:crimson_pressure_plate"
+    },
+    {
+      "origin": "minecraft:crimson_button",
+      "result": "minecraft:warped_button"
+    },
+    {
+      "origin": "minecraft:warped_button",
+      "result": "minecraft:crimson_button"
+    },
+    {
+      "origin": "minecraft:crimson_trapdoor",
+      "result": "minecraft:warped_trapdoor"
+    },
+    {
+      "origin": "minecraft:warped_trapdoor",
+      "result": "minecraft:crimson_trapdoor"
+    },
+    {
+      "origin": "minecraft:crimson_door",
+      "result": "minecraft:warped_door"
+    },
+    {
+      "origin": "minecraft:warped_door",
+      "result": "minecraft:crimson_door"
+    },
+    {
+      "origin": "minecraft:crimson_sign",
+      "result": "minecraft:warped_sign"
+    },
+    {
+      "origin": "minecraft:warped_sign",
+      "result": "minecraft:crimson_sign"
+    },
+    {
+      "origin": "minecraft:crimson_wall_sign",
+      "result": "minecraft:warped_wall_sign"
+    },
+    {
+      "origin": "minecraft:warped_wall_sign",
+      "result": "minecraft:crimson_wall_sign"
+    },
+    {
+      "origin": "minecraft:crimson_hanging_sign",
+      "result": "minecraft:warped_hanging_sign"
+    },
+    {
+      "origin": "minecraft:warped_hanging_sign",
+      "result": "minecraft:crimson_hanging_sign"
+    },
+    {
+      "origin": "minecraft:crimson_wall_hanging_sign",
+      "result": "minecraft:warped_wall_hanging_sign"
+    },
+    {
+      "origin": "minecraft:warped_wall_hanging_sign",
+      "result": "minecraft:crimson_wall_hanging_sign"
     }
   ]
 }

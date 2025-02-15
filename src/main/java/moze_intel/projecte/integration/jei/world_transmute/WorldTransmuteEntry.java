@@ -7,6 +7,7 @@ import java.util.Set;
 import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.SimpleWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.WorldTransmutation;
+import net.minecraft.core.Holder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LiquidBlock;
@@ -37,11 +38,11 @@ public class WorldTransmuteEntry {
 	private final StateInfo rightOutput;
 
 	public WorldTransmuteEntry(IWorldTransmutation transmutation) {
-		if (transmutation instanceof SimpleWorldTransmutation(Block origin, Block result, Block altResult)) {
-			input = createInfo(origin);
-			leftOutput = createInfo(result);
+		if (transmutation instanceof SimpleWorldTransmutation(Holder<Block> origin, Holder<Block> result, Holder<Block> altResult)) {
+			input = createInfo(origin.value());
+			leftOutput = createInfo(result.value());
 			if (transmutation.hasAlternate()) {
-				rightOutput = createInfo(altResult);
+				rightOutput = createInfo(altResult.value());
 			} else {
 				rightOutput = EMPTY;
 			}

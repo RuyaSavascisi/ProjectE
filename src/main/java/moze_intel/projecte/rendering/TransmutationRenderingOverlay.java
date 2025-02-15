@@ -78,8 +78,8 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 		if (!(activeRenderInfo.getEntity() instanceof Player player)) {
 			return;
 		}
-		lastGameTime = mc.level == null ? 0 : mc.level.getGameTime();
 		Level level = player.level();
+		lastGameTime = level.getGameTime();
 		ItemStack stack = player.getMainHandItem();
 		if (stack.isEmpty()) {
 			stack = player.getOffhandItem();
@@ -88,13 +88,15 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 			transmutationResult = null;
 			return;
 		}
+		boolean isSneaking = player.isSecondaryUseActive();
 		//Note: We use the philo stone's ray trace instead of the event's ray trace as we want to make sure that we
 		// can properly take fluid into account/ignore it when needed
-		BlockHitResult rtr = philoStone.getHitBlock(player);
+		BlockHitResult rtr = philoStone.getHitBlock(level, player, isSneaking);
 		if (rtr.getType() == HitResult.Type.BLOCK) {
 			int charge = philoStone.getCharge(stack);
 			PhilosophersStoneMode mode = philoStone.getMode(stack);
-			Object2ReferenceMap<BlockPos, BlockState> changes = PhilosophersStone.getChanges(level, rtr.getBlockPos(), player, rtr.getDirection(), mode, charge);
+			Object2ReferenceMap<BlockPos, BlockState> changes = PhilosophersStone.getChanges(level, rtr.getBlockPos(), rtr.getDirection(), player.getDirection(),
+					isSneaking, mode, charge);
 			if (changes.isEmpty()) {
 				transmutationResult = null;
 			} else {

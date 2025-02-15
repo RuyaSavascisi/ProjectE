@@ -66,7 +66,7 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IPede
 		Level level = ctx.getLevel();
 		BlockPos pos = ctx.getClickedPos();
 		ItemStack stack = ctx.getItemInHand();
-		if (!level.isClientSide && PlayerHelper.hasEditPermission(player, pos) && consumeFuel(player, stack, 32, true)) {
+		if (!level.isClientSide && PlayerHelper.hasEditPermission(player, level, pos) && consumeFuel(player, stack, 32, true)) {
 			Direction sideHit = ctx.getClickedFace();
 			IFluidHandler fluidHandler = WorldHelper.getCapability(level, FluidHandler.BLOCK, pos, sideHit);
 			if (fluidHandler != null) {

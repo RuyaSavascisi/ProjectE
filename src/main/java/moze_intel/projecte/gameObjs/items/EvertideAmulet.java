@@ -67,7 +67,7 @@ public class EvertideAmulet extends ItemPE implements IProjectileShooter, IPedes
 		}
 		Level level = ctx.getLevel();
 		BlockPos pos = ctx.getClickedPos();
-		if (!level.isClientSide && PlayerHelper.hasEditPermission(player, pos)) {
+		if (!level.isClientSide && PlayerHelper.hasEditPermission(player, level, pos)) {
 			Direction sideHit = ctx.getClickedFace();
 			IFluidHandler fluidHandler = WorldHelper.getCapability(level, FluidHandler.BLOCK, pos, sideHit);
 			if (fluidHandler != null) {

@@ -18,7 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-//TODO - 1.21: Add some tests that actually test serialization as all of these (and the ones for the other tests) only test deserialization
+//TODO: Add some tests that actually test serialization as all of these (and the ones for the other tests) only test deserialization
 @ExtendWith(EphemeralTestServerProvider.class)
 @DisplayName("Test Serialization of Normalized Simple Stacks")
 class SerializationTest {

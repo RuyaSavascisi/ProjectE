@@ -144,7 +144,7 @@ public class ToolHelper {
 				}
 				//Ensure we are immutable so that changing blocks doesn't act weird
 				pos = pos.immutable();
-				if (PlayerHelper.hasBreakPermission((ServerPlayer) player, pos)) {
+				if (PlayerHelper.hasBreakPermission((ServerPlayer) player, level, pos)) {
 					if (ItemPE.consumeFuel(player, stack, emcCost, true)) {
 						drops.addAll(Block.getDrops(state, (ServerLevel) level, pos, WorldHelper.getBlockEntity(level, pos), player, stack));
 						level.removeBlock(pos, false);
@@ -313,7 +313,7 @@ public class ToolHelper {
 			if (!state.isAir() && state.getDestroySpeed(level, digPos) != -1 && stack.isCorrectToolForDrops(state)) {
 				//Ensure we are immutable so that changing blocks doesn't act weird
 				digPos = digPos.immutable();
-				if (PlayerHelper.hasBreakPermission((ServerPlayer) player, digPos)) {
+				if (PlayerHelper.hasBreakPermission((ServerPlayer) player, level, digPos)) {
 					drops.addAll(Block.getDrops(state, (ServerLevel) level, digPos, WorldHelper.getBlockEntity(level, digPos), player, stack));
 					level.removeBlock(digPos, false);
 				}
@@ -358,7 +358,7 @@ public class ToolHelper {
 				}
 				//Ensure we are immutable so that changing blocks doesn't act weird
 				newPos = newPos.immutable();
-				if (PlayerHelper.hasBreakPermission((ServerPlayer) player, newPos)) {
+				if (PlayerHelper.hasBreakPermission((ServerPlayer) player, level, newPos)) {
 					if (ItemPE.consumeFuel(player, stack, emcCost, true)) {
 						drops.addAll(Block.getDrops(state, (ServerLevel) level, newPos, WorldHelper.getBlockEntity(level, newPos), player, stack));
 						level.removeBlock(newPos, false);
@@ -602,7 +602,7 @@ public class ToolHelper {
 			}
 			//Or it is a replaceable plant that is also not solid (such as tall grass)
 			//Note: This may not be the most optimal way of checking this, but it gives a decent enough estimate of it
-			//TODO - 1.21: Do we want to try and come up with a better tag or check for if it is a replaceable plant?
+			//TODO: Do we want to try and come up with a better tag or check for if it is a replaceable plant?
 			if (aboveState.is(PETags.Blocks.FARMING_OVERRIDE) || aboveState.canBeReplaced() && aboveState.is(BlockTags.REPLACEABLE_BY_TREES)) {
 				return aboveState.getFluidState().isEmpty() && !aboveState.isSolidRender(level, abovePos);
 			}

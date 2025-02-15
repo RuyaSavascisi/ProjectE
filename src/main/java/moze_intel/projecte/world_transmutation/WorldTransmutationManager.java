@@ -38,7 +38,8 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 	//Copy of gson settings from RecipeManager's gson instance
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 	public static final WorldTransmutationManager INSTANCE = new WorldTransmutationManager();
-	private static final Function<Block, SequencedSet<IWorldTransmutation>> SET_BUILDER = origin -> new LinkedHashSet<>();
+	//Note: Assume we will only have one element for it, but allow it to grow if need be
+	private static final Function<Block, SequencedSet<IWorldTransmutation>> SET_BUILDER = origin -> new LinkedHashSet<>(1);
 
 	private Reference2ObjectMap<Block, SequencedSet<IWorldTransmutation>> entries = Reference2ObjectMaps.emptyMap();
 	@Nullable
@@ -130,6 +131,9 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 
 	@Nullable
 	public IWorldTransmutation getWorldTransmutation(BlockState current) {
+		if (current.isAir()) {
+			return null;
+		}
 		//TODO - 1.21: if there is a state based one and we transmute in an AOE starting with one that doesn't have a state based one
 		// it will use that transmutation instead of the one that is defined for the explicit state. Do we care enough to fix this?
 		SequencedSet<IWorldTransmutation> transmutations = getWorldTransmutations().getOrDefault(current.getBlock(), Collections.emptySortedSet());

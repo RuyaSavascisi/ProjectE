@@ -60,9 +60,10 @@ public class EntityFireProjectile extends NoGravityThrowableProjectile {
 	}
 
 	private void placeAOE(Player player, BlockPos pos, int radius, BlockState newState, Predicate<BlockState> targetCheck) {
+		Level level = level();
 		for (BlockPos currentPos : WorldHelper.positionsAround(pos, radius)) {
-			if (targetCheck.test(level().getBlockState(currentPos))) {
-				PlayerHelper.checkedPlaceBlock(player, pos.immutable(), newState);
+			if (targetCheck.test(level.getBlockState(currentPos))) {
+				PlayerHelper.checkedPlaceBlock(player, level, pos.immutable(), newState);
 			}
 		}
 	}

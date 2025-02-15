@@ -73,7 +73,7 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 		if (level.isClientSide || player == null || !player.mayUseItemAt(pos, side, ctx.getItemInHand())) {
 			return InteractionResult.FAIL;
 		}
-		if (player.isSecondaryUseActive()) {
+		if (ctx.isSecondaryUseActive()) {
 			for (int i = 0; i < player.getInventory().items.size(); i++) {
 				ItemStack stack = player.getInventory().items.get(i);
 				if (!stack.isEmpty() && stack.getCount() >= 4 && stack.is(Items.BONE_MEAL)) {
