@@ -40,7 +40,6 @@ public class WaxableMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 						wax, 1
 				));
 				//Scraping the block does not return the wax
-				//TODO - 1.21: Test this makes sense
 				mapper.addConversion(1, base, EMCHelper.intMapOf(waxed, 1));
 				recipeCount += 2;
 			}

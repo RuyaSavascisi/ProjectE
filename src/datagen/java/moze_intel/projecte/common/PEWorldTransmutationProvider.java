@@ -1,12 +1,18 @@
 package moze_intel.projecte.common;
 
+import com.google.common.collect.BiMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.api.data.WorldTransmutationBuilder;
 import moze_intel.projecte.api.data.WorldTransmutationProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.IceBlock;
+import net.minecraft.world.level.block.WeatheringCopper;
 import org.jetbrains.annotations.NotNull;
 
 public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
@@ -18,7 +24,7 @@ public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
 	@Override
 	protected void addWorldTransmutations(@NotNull HolderLookup.Provider registries) {
 		createTransmutationBuilder(PECore.rl("defaults"))
-				//.comment("Default values for vanilla items.")
+				.comment("Default world transmutations for simple vanilla blocks.")
 				//TODO - 1.21: Test the behavior of how this now acts with snowy grass blocks
 				.register(Blocks.STONE, Blocks.COBBLESTONE, Blocks.GRASS_BLOCK)
 				.register(Blocks.COBBLESTONE, Blocks.STONE, Blocks.GRASS_BLOCK)
@@ -96,8 +102,7 @@ public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
 				.registerConsecutivePairs(Blocks.CRIMSON_WALL_SIGN, Blocks.WARPED_WALL_SIGN)
 				.registerConsecutivePairs(Blocks.CRIMSON_HANGING_SIGN, Blocks.WARPED_HANGING_SIGN)
 				.registerConsecutivePairs(Blocks.CRIMSON_WALL_HANGING_SIGN, Blocks.WARPED_WALL_HANGING_SIGN)
-				;
-
+		;
 
 		createTransmutationBuilder(PECore.rl("colors"))
 				.comment("Default world transmutations for various colored vanilla blocks.")
@@ -127,5 +132,29 @@ public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
 						Blocks.BLUE_STAINED_GLASS_PANE, Blocks.BROWN_STAINED_GLASS_PANE, Blocks.GREEN_STAINED_GLASS_PANE, Blocks.RED_STAINED_GLASS_PANE,
 						Blocks.BLACK_STAINED_GLASS_PANE)
 		;
+
+		WorldTransmutationBuilder oxidizationBuilder = createTransmutationBuilder(PECore.rl("oxidization"))
+				.comment("Default world transmutations for oxidized copper.");
+		//Note: We can't use the data map as that isn't populated yet
+		//TODO - 1.21.4: Do we want to try and somehow have a special case variant that loads some world transmutations from the data map?
+		// Maybe check for the existence of the file or some key? Wait until after 1.21.4 or whenever there are ordered reload listeners
+		// so that we can ensure we are after datamaps
+		BiMap<Block, Block> nextByBlock = WeatheringCopper.NEXT_BY_BLOCK.get();
+		BiMap<Block, Block> previousByBlock = WeatheringCopper.PREVIOUS_BY_BLOCK.get();
+		for (Block block : nextByBlock.keySet()) {
+			if (!previousByBlock.containsKey(block)) {
+				//We don't have a previous block for this one, it is the start of a chain
+				List<Block> blocks = new ArrayList<>();
+				blocks.add(block);
+				Block nextBlock;
+				while ((nextBlock = nextByBlock.get(block)) != null) {
+					blocks.add(nextBlock);
+					block = nextBlock;
+				}
+				if (blocks.size() > 1) {
+					oxidizationBuilder.registerConsecutivePairs(blocks.toArray(Block[]::new));
+				}
+			}
+		}
 	}
 }

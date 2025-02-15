@@ -1,4 +1,5 @@
 {
+  "comment": "Default world transmutations for simple vanilla blocks.",
   "transmutations": [
     {
       "alt_result": "minecraft:grass_block",
