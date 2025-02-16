@@ -2,9 +2,7 @@ package moze_intel.projecte.gameObjs.items.armor;
 
 import java.util.List;
 import moze_intel.projecte.config.ProjectEConfig;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
-import moze_intel.projecte.handlers.InternalTimers;
 import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.PlayerHelper;
@@ -63,8 +61,7 @@ public class GemHelmet extends GemArmorBase {
 	public void inventoryTick(@NotNull ItemStack stack, @NotNull Level level, @NotNull Entity entity, int slot, boolean isHeld) {
 		super.inventoryTick(stack, level, entity, slot, isHeld);
 		if (isArmorSlot(slot) && !level.isClientSide && entity instanceof Player player) {
-			InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-			if (timers.heal.activateAndCanFunction(player.getHealth() < player.getMaxHealth())) {
+			if (PlayerHelper.checkHealCooldown(player)) {
 				player.heal(2.0F);
 			}
 

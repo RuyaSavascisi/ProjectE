@@ -569,7 +569,7 @@ public final class WorldHelper {
 	}
 
 	private static <DATA> boolean validState(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, Level level, BlockPos pos, Player player) {
-		return stateChecker.test(state, data) && state.getDestroySpeed(level, pos) != -1 && PlayerHelper.hasEditPermission(player, level, pos);
+		return stateChecker.test(state, data) && state.getDestroySpeed(level, pos) != Block.INDESTRUCTIBLE && PlayerHelper.hasEditPermission(player, level, pos);
 	}
 
 	public static <DATA> int harvestVein(Level level, Player player, ItemStack stack, AABB area, List<ItemStack> currentDrops, DATA data,

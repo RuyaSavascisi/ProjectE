@@ -25,7 +25,6 @@ public class PEWorldTransmutationProvider extends WorldTransmutationProvider {
 	protected void addWorldTransmutations(@NotNull HolderLookup.Provider registries) {
 		createTransmutationBuilder(PECore.rl("defaults"))
 				.comment("Default world transmutations for simple vanilla blocks.")
-				//TODO - 1.21: Test the behavior of how this now acts with snowy grass blocks
 				.register(Blocks.STONE, Blocks.COBBLESTONE, Blocks.GRASS_BLOCK)
 				.register(Blocks.COBBLESTONE, Blocks.STONE, Blocks.GRASS_BLOCK)
 				.register(Blocks.GRASS_BLOCK, Blocks.SAND, Blocks.COBBLESTONE)

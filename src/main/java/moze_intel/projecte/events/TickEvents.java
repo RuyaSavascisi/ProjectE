@@ -9,7 +9,7 @@ import moze_intel.projecte.api.capabilities.item.IAlchBagItem;
 import moze_intel.projecte.gameObjs.container.AlchBagContainer;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
 import moze_intel.projecte.gameObjs.items.IFireProtector;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
+import moze_intel.projecte.handlers.InternalAbilities;
 import moze_intel.projecte.utils.PlayerHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -53,10 +53,8 @@ public class TickEvents {
 			}
 		}
 
-		player.getData(PEAttachmentTypes.COMMON_INTERNAL_ABILITIES).tick(player);
+		InternalAbilities.tick(player);
 		if (!player.level().isClientSide()) {
-			player.getData(PEAttachmentTypes.INTERNAL_ABILITIES).tick(player);
-			player.getData(PEAttachmentTypes.INTERNAL_TIMERS).tick();
 			if (player.isOnFire() && shouldPlayerResistFire(player)) {
 				player.clearFire();
 			}

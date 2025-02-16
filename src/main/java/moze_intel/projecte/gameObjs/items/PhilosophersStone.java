@@ -112,6 +112,8 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 			Object2ReferenceMap.Entry<BlockPos, BlockState> entry = iterator.next();
 			BlockPos currentPos = entry.getKey();
 			BlockState targetState = entry.getValue();
+			//TODO - 1.21: Figure out how to get it so that if we transmute something into grass and there is snow on top of that block
+			// that we will mark the grass as being snowy
 			if (player == null) {
 				if (targetState.getBlock() instanceof SignBlock && level.getBlockEntity(currentPos) instanceof SignBlockEntity sign) {
 					level.setBlockAndUpdate(currentPos, targetState);
@@ -180,11 +182,13 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		}
 		Object2ReferenceMap<BlockPos, BlockState> changes = new Object2ReferenceOpenHashMap<>();
 		for (BlockPos currentPos : targets) {
-			BlockState actualResult = transmutation.result(level.getBlockState(currentPos), isSneaking);
-			//We allow for null keys to avoid having to look it up again from the world transmutations
-			// which may be slightly slower, but we only add it as a position to change if we have a result
-			if (actualResult != null) {
-				changes.put(currentPos.immutable(), actualResult);
+			if (WorldHelper.isBlockLoaded(level, currentPos)) {
+				BlockState actualResult = transmutation.result(level.getBlockState(currentPos), isSneaking);
+				//We allow for null keys to avoid having to look it up again from the world transmutations
+				// which may be slightly slower, but we only add it as a position to change if we have a result
+				if (actualResult != null) {
+					changes.put(currentPos.immutable(), actualResult);
+				}
 			}
 		}
 		return changes;

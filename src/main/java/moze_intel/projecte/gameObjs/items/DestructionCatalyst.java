@@ -50,7 +50,7 @@ public class DestructionCatalyst extends ItemPE implements IItemCharge, IBarHelp
 				continue;
 			}
 			float hardness = state.getDestroySpeed(level, pos);
-			if (hardness == -1.0F || hardness >= 50.0F) {
+			if (hardness == Block.INDESTRUCTIBLE || hardness >= 50.0F) {
 				continue;
 			}
 			if (!consumeFuel(player, stack, 8, true)) {

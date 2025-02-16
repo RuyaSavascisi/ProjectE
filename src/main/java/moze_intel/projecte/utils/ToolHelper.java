@@ -310,7 +310,7 @@ public class ToolHelper {
 		List<ItemStack> drops = new ArrayList<>();
 		for (BlockPos digPos : getTargets(pos, player, result.getDirection(), mode)) {
 			BlockState state = level.getBlockState(digPos);
-			if (!state.isAir() && state.getDestroySpeed(level, digPos) != -1 && stack.isCorrectToolForDrops(state)) {
+			if (!state.isAir() && state.getDestroySpeed(level, digPos) != Block.INDESTRUCTIBLE && stack.isCorrectToolForDrops(state)) {
 				//Ensure we are immutable so that changing blocks doesn't act weird
 				digPos = digPos.immutable();
 				if (PlayerHelper.hasBreakPermission((ServerPlayer) player, level, digPos)) {
@@ -352,7 +352,7 @@ public class ToolHelper {
 		List<ItemStack> drops = new ArrayList<>();
 		for (BlockPos newPos : WorldHelper.getPositionsInBox(box)) {
 			BlockState state = level.getBlockState(newPos);
-			if (!state.isAir() && state.getDestroySpeed(level, newPos) != -1 && stack.isCorrectToolForDrops(state)) {
+			if (!state.isAir() && state.getDestroySpeed(level, newPos) != Block.INDESTRUCTIBLE && stack.isCorrectToolForDrops(state)) {
 				if (level.isClientSide) {
 					return InteractionResult.SUCCESS;
 				}
@@ -492,7 +492,7 @@ public class ToolHelper {
 		}
 		Level level = player.level();
 		BlockState target = level.getBlockState(pos);
-		if (target.getDestroySpeed(level, pos) <= -1 || !stack.isCorrectToolForDrops(target)) {
+		if (target.getDestroySpeed(level, pos) == Block.INDESTRUCTIBLE || !stack.isCorrectToolForDrops(target)) {
 			return InteractionResult.FAIL;
 		}
 		AABB area = WorldHelper.getBroadDeepBox(pos, sideHit, getCharge(stack));

@@ -28,6 +28,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 
 public class DumpMissingEmc {
@@ -40,7 +41,7 @@ public class DumpMissingEmc {
 	}
 
 	private static boolean expectedMissing(Item item) {
-		if (item instanceof BlockItem blockItem && blockItem.getBlock().defaultDestroyTime() == -1) {
+		if (item instanceof BlockItem blockItem && blockItem.getBlock().defaultDestroyTime() == Block.INDESTRUCTIBLE) {
 			//Assume unbreakable blocks won't have an EMC value by default
 			return true;
 		}

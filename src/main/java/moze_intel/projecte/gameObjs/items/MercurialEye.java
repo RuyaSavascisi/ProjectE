@@ -247,6 +247,9 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 		return InteractionResult.CONSUME;
 	}
 
+	//TODO - 1.21: Make this update the block's shape as when doing it for fences things get funky
+	// it either uses the wrong state for placement, or it isn't calling updateShape
+	// Also check if we are extending a fence to make sure both fences update to connect together instead of just the new one connecting to the old
 	private boolean doBlockPlace(Player player, Level level, BlockState oldState, BlockPos placePos, BlockState newState, ItemStack eye, long oldEMC, long newEMC,
 			NonNullList<ItemStack> drops) {
 		IItemHandler inventory = eye.getCapability(ItemHandler.ITEM);
@@ -271,7 +274,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 			return false;
 		}
 
-		if (oldEMC == 0 && oldState.getDestroySpeed(level, placePos) == -1.0F) {
+		if (oldEMC == 0 && oldState.getDestroySpeed(level, placePos) == Block.INDESTRUCTIBLE) {
 			//Don't allow replacing unbreakable blocks (unless they have an EMC value)
 			return false;
 		}

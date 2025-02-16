@@ -13,7 +13,6 @@ import moze_intel.projecte.gameObjs.items.armor.GemChest;
 import moze_intel.projecte.gameObjs.items.armor.GemFeet;
 import moze_intel.projecte.gameObjs.items.armor.GemHelmet;
 import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
-import moze_intel.projecte.handlers.InternalAbilities;
 import moze_intel.projecte.network.packets.IPEPacket;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.PlayerHelper;
@@ -59,7 +58,6 @@ public record KeyPressPKT(PEKeybind key) implements IPEPacket {
 			}
 			return;
 		}
-		InternalAbilities internalAbilities = player.getData(PEAttachmentTypes.INTERNAL_ABILITIES);
 		for (InteractionHand hand : InteractionHand.values()) {
 			ItemStack stack = player.getItemInHand(hand);
 			switch (key) {
@@ -67,8 +65,8 @@ public record KeyPressPKT(PEKeybind key) implements IPEPacket {
 					if (tryPerformCapability(player, stack, hand, PECapabilities.CHARGE_ITEM_CAPABILITY, IItemCharge::changeCharge)) {
 						return;
 					} else if (hand == InteractionHand.MAIN_HAND && isSafe(stack) && GemArmorBase.hasAnyPiece(player)) {
-						internalAbilities.toggleGemState();
-						ILangEntry langEntry = internalAbilities.getGemState() ? PELang.GEM_ACTIVATE : PELang.GEM_DEACTIVATE;
+						player.setData(PEAttachmentTypes.GEM_ARMOR_STATE, !player.getData(PEAttachmentTypes.GEM_ARMOR_STATE));
+						ILangEntry langEntry = player.getData(PEAttachmentTypes.GEM_ARMOR_STATE) ? PELang.GEM_ACTIVATE : PELang.GEM_DEACTIVATE;
 						player.sendSystemMessage(langEntry.translate());
 						return;
 					}
@@ -76,22 +74,20 @@ public record KeyPressPKT(PEKeybind key) implements IPEPacket {
 				case EXTRA_FUNCTION -> {
 					if (tryPerformCapability(player, stack, hand, PECapabilities.EXTRA_FUNCTION_ITEM_CAPABILITY, IExtraFunction::doExtraFunction)) {
 						return;
-					} else if (hand == InteractionHand.MAIN_HAND && isSafe(stack) && internalAbilities.getGemState()) {
+					} else if (hand == InteractionHand.MAIN_HAND && isSafe(stack) && player.getData(PEAttachmentTypes.GEM_ARMOR_STATE)) {
 						ItemStack chestplate = player.getItemBySlot(EquipmentSlot.CHEST);
-						if (!chestplate.isEmpty() && chestplate.getItem() instanceof GemChest chest && internalAbilities.getGemCooldown() == 0) {
+						if (!chestplate.isEmpty() && chestplate.getItem() instanceof GemChest chest && PlayerHelper.checkCooldown(player, chest, ProjectEConfig.server.cooldown.player.gemChest)) {
 							chest.doExplode(player);
-							internalAbilities.resetGemCooldown();
 							return;
 						}
 					}
 				}
 				case FIRE_PROJECTILE -> {
-					if (!stack.isEmpty() && internalAbilities.getProjectileCooldown() == 0 &&
-						tryPerformCapability(player, stack, hand, PECapabilities.PROJECTILE_SHOOTER_ITEM_CAPABILITY, IProjectileShooter::shootProjectile)) {
+					if (!stack.isEmpty() && PlayerHelper.checkCooldown(player, stack.getItem(), ProjectEConfig.server.cooldown.player.projectile)
+						&& tryPerformCapability(player, stack, hand, PECapabilities.PROJECTILE_SHOOTER_ITEM_CAPABILITY, IProjectileShooter::shootProjectile)) {
 						PlayerHelper.swingItem(player, hand);
-						internalAbilities.resetProjectileCooldown();
 					}
-					if (hand == InteractionHand.MAIN_HAND && isSafe(stack) && internalAbilities.getGemState()) {
+					if (hand == InteractionHand.MAIN_HAND && isSafe(stack) && player.getData(PEAttachmentTypes.GEM_ARMOR_STATE)) {
 						ItemStack helmet = player.getItemBySlot(EquipmentSlot.HEAD);
 						if (!helmet.isEmpty() && helmet.getItem() instanceof GemHelmet gemHelmet) {
 							gemHelmet.doZap(player);

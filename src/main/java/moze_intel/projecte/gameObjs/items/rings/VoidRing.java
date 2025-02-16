@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -51,7 +52,8 @@ public class VoidRing extends GemEternalDensity implements IPedestalItem, IExtra
 
 	@Override
 	public boolean doExtraFunction(@NotNull Player player, @NotNull ItemStack stack, InteractionHand hand) {
-		if (player.getCooldowns().isOnCooldown(this)) {
+		ItemCooldowns cooldowns = player.getCooldowns();
+		if (cooldowns.isOnCooldown(this)) {
 			return false;
 		}
 		BlockHitResult lookingAt = PlayerHelper.getBlockLookingAt(player, 64);
@@ -69,7 +71,7 @@ public class VoidRing extends GemEternalDensity implements IPedestalItem, IExtra
 			player.teleportTo(event.getTargetX(), event.getTargetY(), event.getTargetZ());
 			player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1, 1);
 			player.resetFallDistance();
-			player.getCooldowns().addCooldown(this, SharedConstants.TICKS_PER_SECOND / 2);
+			cooldowns.addCooldown(this, SharedConstants.TICKS_PER_SECOND / 2);
 			return true;
 		}
 		return false;

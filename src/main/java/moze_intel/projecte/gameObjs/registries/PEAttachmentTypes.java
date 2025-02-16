@@ -1,12 +1,10 @@
 package moze_intel.projecte.gameObjs.registries;
 
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.ints.Int2ObjectFunction;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.registration.PEDeferredHolder;
 import moze_intel.projecte.gameObjs.registration.PEDeferredRegister;
-import moze_intel.projecte.handlers.CommonInternalAbilities;
-import moze_intel.projecte.handlers.InternalAbilities;
-import moze_intel.projecte.handlers.InternalTimers;
 import moze_intel.projecte.impl.capability.AlchBagImpl.AlchemicalBagAttachment;
 import moze_intel.projecte.impl.capability.KnowledgeImpl.KnowledgeAttachment;
 import net.minecraft.world.item.ItemStack;
@@ -38,16 +36,12 @@ public class PEAttachmentTypes {
 					.build()
 	);
 
-	//Note: For current abilities we don't bother serializing them or copying on death
-	//TODO: Eventually we may want to evaluate this as it technically allows people to bypass timers, but for now we don't really care
-	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<CommonInternalAbilities>> COMMON_INTERNAL_ABILITIES = ATTACHMENT_TYPES.register("common_internal_abilities",
-			() -> AttachmentType.builder(CommonInternalAbilities::new).build()
-	);
-	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<InternalTimers>> INTERNAL_TIMERS = ATTACHMENT_TYPES.register("internal_timers",
-			() -> AttachmentType.builder(InternalTimers::new).build()
-	);
-	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<InternalAbilities>> INTERNAL_ABILITIES = ATTACHMENT_TYPES.register("internal_abilities",
-			() -> AttachmentType.builder(InternalAbilities::new).build()
+	public static final PEDeferredHolder<AttachmentType<?>, AttachmentType<Boolean>> GEM_ARMOR_STATE = ATTACHMENT_TYPES.register("gem_armor_state",
+			() -> AttachmentType.builder(holder -> false)
+					.serialize(Codec.BOOL, val -> val)
+					.copyHandler((attachment, holder, provider) -> attachment ? true : null)
+					.copyOnDeath()
+					.build()
 	);
 
 	public static <HANDLER extends IItemHandlerModifiable> HANDLER copyHandler(IItemHandler handler, Int2ObjectFunction<HANDLER> handlerCreator) {

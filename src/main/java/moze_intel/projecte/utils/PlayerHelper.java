@@ -3,7 +3,10 @@ package moze_intel.projecte.utils;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.function.BiPredicate;
+import java.util.function.IntSupplier;
 import moze_intel.projecte.PECore;
+import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.integration.IntegrationHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,6 +18,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemCooldowns;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -82,7 +86,7 @@ public final class PlayerHelper {
 				BlockState newBlock = level.getBlockState(snapPos);
 				newBlock.onPlace(level, snapPos, oldBlock, false);
 				level.markAndNotifyBlock(snapPos, level.getChunkAt(snapPos), oldBlock, newBlock, snap.getFlags(), Block.UPDATE_LIMIT);
-				if (oldSign != null && snapPos.equals(pos)) {
+				if (oldSign != null && snapPos.equals(pos) && newBlock.hasBlockEntity()) {
 					WorldHelper.copySignData(level, pos, oldSign);
 				}
 			}
@@ -176,5 +180,27 @@ public final class PlayerHelper {
 
 	public static void updateScore(ServerPlayer player, ObjectiveCriteria objective, int value) {
 		player.getScoreboard().forAllObjectives(objective, player, score -> score.set(value));
+	}
+
+	public static boolean checkFeedCooldown(Player player) {
+		return player.getFoodData().needsFood() && checkCooldown(player, PEItems.BODY_STONE.get(), ProjectEConfig.server.cooldown.player.feed);
+	}
+
+	public static boolean checkHealCooldown(Player player) {
+		return player.getHealth() < player.getMaxHealth() && checkCooldown(player, PEItems.SOUL_STONE.get(), ProjectEConfig.server.cooldown.player.heal);
+	}
+
+	public static boolean checkCooldown(Player player, Item item, IntSupplier cooldownSupplier) {
+		ItemCooldowns cooldowns = player.getCooldowns();
+		if (cooldowns.isOnCooldown(item)) {
+			return false;
+		}
+		int cooldown = cooldownSupplier.getAsInt();
+		if (cooldown == -1) {
+			return false;
+		} else if (cooldown > 0) {
+			cooldowns.addCooldown(item, cooldown);
+		}
+		return true;
 	}
 }

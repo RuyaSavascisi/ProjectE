@@ -6,12 +6,11 @@ import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.ICapabilityAware;
-import moze_intel.projecte.gameObjs.registries.PEAttachmentTypes;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
-import moze_intel.projecte.handlers.InternalTimers;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.MathUtils;
+import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -40,8 +39,7 @@ public class SoulStone extends PEToggleItem implements IPedestalItem, ICapabilit
 		}
 		if (stack.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 			if (consumeFuel(player, stack, 64, false)) {
-				InternalTimers timers = player.getData(PEAttachmentTypes.INTERNAL_TIMERS);
-				if (timers.heal.activateAndCanFunction(player.getHealth() < player.getMaxHealth())) {
+				if (PlayerHelper.checkHealCooldown(player)) {
 					level.playSound(null, player.getX(), player.getY(), player.getZ(), PESoundEvents.HEAL.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
 					player.heal(2.0F);
 					removeEmc(stack, 64);
