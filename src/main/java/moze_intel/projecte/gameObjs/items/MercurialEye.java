@@ -109,7 +109,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 			return InteractionResult.FAIL;
 		}
 		ItemStack klein = inventory.getStackInSlot(0);
-		if (klein.isEmpty() || klein.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY) == null) {
+		if (klein.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY) == null) {
 			playNoEMCSound(player);
 			return InteractionResult.FAIL;
 		}
@@ -159,10 +159,10 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 				}
 				long offsetBlockEmc = IEMCProxy.INSTANCE.getValue(offsetState.getBlock());
 				//Just in case it is not air but is a replaceable block like tall grass, get the proper EMC instead of just using 0
-				if (doBlockPlace(player, level, offsetState, offsetPos, newState, eye, offsetBlockEmc, newBlockEmc, drops)) {
+				if (doBlockPlace(player, level, offsetState, offsetPos, newState, eye, offsetBlockEmc, newBlockEmc, drops, context)) {
 					hitTargets++;
 				}
-			} else if (doBlockPlace(player, level, startingState, startingPos, newState, eye, startingBlockEmc, newBlockEmc, drops)) {
+			} else if (doBlockPlace(player, level, startingState, startingPos, newState, eye, startingBlockEmc, newBlockEmc, drops, context)) {
 				//Otherwise replace it (it may have been air), or it may have been something like tall grass
 				hitTargets++;
 			}
@@ -180,7 +180,7 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 			for (BlockPos pos : WorldHelper.getPositionsInBox(bounds)) {
 				BlockState placedState = level.getBlockState(pos);
 				//Ensure we are immutable so that removal/placing doesn't act weird
-				if (placedState == startingState && doBlockPlace(player, level, placedState, pos.immutable(), newState, eye, startingBlockEmc, newBlockEmc, drops)) {
+				if (placedState == startingState && doBlockPlace(player, level, placedState, pos.immutable(), newState, eye, startingBlockEmc, newBlockEmc, drops, context)) {
 					hitTargets++;
 				}
 			}
@@ -211,10 +211,10 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 						VoxelShape cbBox = startingState.getCollisionShape(level, offsetPos);
 						if (level.isUnobstructed(null, cbBox)) {
 							long offsetBlockEmc = IEMCProxy.INSTANCE.getValue(offsetState.getBlock());
-							hit = doBlockPlace(player, level, offsetState, offsetPos, newState, eye, offsetBlockEmc, newBlockEmc, drops);
+							hit = doBlockPlace(player, level, offsetState, offsetPos, newState, eye, offsetBlockEmc, newBlockEmc, drops, context);
 						}
 					} else if (mode == MercurialEyeMode.TRANSMUTATION) {
-						hit = doBlockPlace(player, level, checkState, pos, newState, eye, startingBlockEmc, newBlockEmc, drops);
+						hit = doBlockPlace(player, level, checkState, pos, newState, eye, startingBlockEmc, newBlockEmc, drops, context);
 					}
 
 					if (hit) {
@@ -247,47 +247,51 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 		return InteractionResult.CONSUME;
 	}
 
-	//TODO - 1.21: Make this update the block's shape as when doing it for fences things get funky
-	// it either uses the wrong state for placement, or it isn't calling updateShape
-	// Also check if we are extending a fence to make sure both fences update to connect together instead of just the new one connecting to the old
+	private boolean doBlockPlace(Player player, Level level, BlockState oldState, BlockPos placePos, BlockState newState, ItemStack eye, long oldEMC, long newEMC,
+			NonNullList<ItemStack> drops, BlockPlaceContext context) {
+		if (oldState.hasBlockEntity()) {
+			return false;
+		} else if (!newState.getValues().isEmpty()) {
+			//If the block has multiple states, make sure we update the state based on where we are placing it
+			BlockPlaceContext adjustedContext = BlockPlaceContext.at(context, placePos, context.getClickedFace());
+			//Ensure that the context returns the actual spot and knows we are replacing the existing state
+			adjustedContext.replaceClicked = true;
+			newState = newState.getBlock().getStateForPlacement(adjustedContext);
+			if (newState == null) {
+				return false;
+			}
+		}
+		return doBlockPlace(player, level, oldState, placePos, newState, eye, oldEMC, newEMC, drops);
+	}
+
 	private boolean doBlockPlace(Player player, Level level, BlockState oldState, BlockPos placePos, BlockState newState, ItemStack eye, long oldEMC, long newEMC,
 			NonNullList<ItemStack> drops) {
+		if (oldState == newState || oldState.hasBlockEntity()) {
+			return false;
+		}
 		IItemHandler inventory = eye.getCapability(ItemHandler.ITEM);
 		if (inventory == null) {
 			return false;
 		}
 		ItemStack klein = inventory.getStackInSlot(0);
-		if (klein.isEmpty()) {
-			playNoEMCSound(player);
-			return false;
-		}
 		IItemEmcHolder emcHolder = klein.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-		if (emcHolder == null) {
+		if (emcHolder == null || emcHolder.getStoredEmc(klein) < newEMC - oldEMC) {
 			playNoEMCSound(player);
 			return false;
-		} else if (oldState == newState) {
-			return false;
-		} else if (emcHolder.getStoredEmc(klein) < newEMC - oldEMC) {
-			playNoEMCSound(player);
-			return false;
-		} else if (WorldHelper.getBlockEntity(level, placePos) != null) {
-			return false;
-		}
-
-		if (oldEMC == 0 && oldState.getDestroySpeed(level, placePos) == Block.INDESTRUCTIBLE) {
+		} else if (oldEMC == 0 && oldState.getDestroySpeed(level, placePos) == Block.INDESTRUCTIBLE) {
 			//Don't allow replacing unbreakable blocks (unless they have an EMC value)
 			return false;
 		}
 
 		ServerPlayer serverPlayer = (ServerPlayer) player;
 		if (PlayerHelper.checkedReplaceBlock(serverPlayer, level, placePos, newState)) {
-			if (oldEMC == 0) {
-				//Drop the block because it doesn't have an emc value
-				drops.addAll(Block.getDrops(oldState, serverPlayer.serverLevel(), placePos, null, player, eye));
-				emcHolder.extractEmc(klein, newEMC, EmcAction.EXECUTE);
-			} else if (oldEMC > newEMC) {
+			if (oldEMC > newEMC) {
 				emcHolder.insertEmc(klein, oldEMC - newEMC, EmcAction.EXECUTE);
-			} else if (oldEMC < newEMC) {
+			} else if (oldEMC != newEMC) {
+				if (oldEMC == 0) {
+					//Drop the block because it doesn't have an emc value
+					drops.addAll(Block.getDrops(oldState, serverPlayer.serverLevel(), placePos, null, player, eye));
+				}
 				emcHolder.extractEmc(klein, newEMC - oldEMC, EmcAction.EXECUTE);
 			}
 			return true;
@@ -307,6 +311,13 @@ public class MercurialEye extends ItemMode<MercurialEyeMode> implements IExtraFu
 					//Only replace replaceable blocks
 					long placeBlockEmc = IEMCProxy.INSTANCE.getValue(placeState.getBlock());
 					//Ensure we are immutable so that changing blocks doesn't act weird
+					if (!newState.getValues().isEmpty()) {
+						//If the block has multiple states, make sure we update the state based on where we are placing it
+						BlockState forPlacement = newState.getBlock().getStateForPlacement(adjustedContext);
+						if (forPlacement == null) {
+							continue;
+						}
+					}
 					if (doBlockPlace(player, level, placeState, pos.immutable(), newState, eye, placeBlockEmc, newBlockEmc, drops)) {
 						hitTargets++;
 					}
