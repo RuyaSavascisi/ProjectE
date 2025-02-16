@@ -68,9 +68,9 @@ public class VoidRing extends GemEternalDensity implements IPedestalItem, IExtra
 			if (player.isPassenger()) {
 				player.stopRiding();
 			}
+			player.resetFallDistance();
 			player.teleportTo(event.getTargetX(), event.getTargetY(), event.getTargetZ());
 			player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1, 1);
-			player.resetFallDistance();
 			cooldowns.addCooldown(this, SharedConstants.TICKS_PER_SECOND / 2);
 			return true;
 		}

@@ -9,6 +9,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class BannerProcessor extends PersistentComponentProcessor<BannerPatternLayers> {
@@ -29,7 +30,8 @@ public class BannerProcessor extends PersistentComponentProcessor<BannerPatternL
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull BannerPatternLayers patternLayers) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC, @NotNull BannerPatternLayers patternLayers) throws ArithmeticException {
 		for (BannerPatternLayers.Layer layer : patternLayers.layers()) {
 			long dyeEmc = IComponentProcessorHelper.INSTANCE.getColorEmc(layer.color());
 			if (dyeEmc == 0) {//The dye doesn't have an EMC value so we can't get the emc value of the total thing

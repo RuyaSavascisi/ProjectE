@@ -18,6 +18,7 @@ import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.crafting.FireworkRocketRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class FireworkProcessor extends PersistentComponentProcessor<Fireworks> {
@@ -45,7 +46,8 @@ public class FireworkProcessor extends PersistentComponentProcessor<Fireworks> {
 	}
 
 	@Override
-	protected long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull Fireworks fireworks) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	protected long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC, @NotNull Fireworks fireworks) throws ArithmeticException {
 		int flightDuration = fireworks.flightDuration();
 		if (flightDuration > 1) {//Greater than default flight duration, factor in the extra pieces of gunpowder necessary
 			if (powderEmc == 0) {//No emc value for gunpowder

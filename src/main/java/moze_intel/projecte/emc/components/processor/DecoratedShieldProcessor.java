@@ -13,6 +13,7 @@ import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.neoforged.neoforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class DecoratedShieldProcessor implements IDataComponentProcessor {
@@ -41,7 +42,8 @@ public class DecoratedShieldProcessor implements IDataComponentProcessor {
 	}
 
 	@Override
-	public final long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public final long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC) throws ArithmeticException {
 		if (info.getItem().is(Tags.Items.TOOLS_SHIELD)) {
 			DyeColor baseColor = info.getOrNull(DataComponents.BASE_COLOR);
 			if (baseColor != null) {

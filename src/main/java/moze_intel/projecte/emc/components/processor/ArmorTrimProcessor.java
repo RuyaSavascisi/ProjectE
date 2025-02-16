@@ -11,6 +11,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class ArmorTrimProcessor extends PersistentComponentProcessor<ArmorTrim> {
@@ -31,7 +32,8 @@ public class ArmorTrimProcessor extends PersistentComponentProcessor<ArmorTrim> 
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull ArmorTrim trim) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC, @NotNull ArmorTrim trim) throws ArithmeticException {
 		Holder<Item> material = trim.material().value().ingredient();
 		long materialEmc = IEMCProxy.INSTANCE.getValue(material);
 		if (materialEmc == 0) {

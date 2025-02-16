@@ -6,6 +6,7 @@ import moze_intel.projecte.api.config.IConfigurableElement;
 import net.minecraft.core.component.DataComponentPatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 /**
  * Class used for processing what Data Components modifies the EMC value, and what Data Components are needed/should be saved when transmuting an item.
@@ -51,10 +52,11 @@ public interface IDataComponentProcessor extends IConfigurableElement {
 	 *
 	 * @return The EMC value after this {@link IDataComponentProcessor} has performed its calculations.
 	 *
-	 * @throws ArithmeticException If an overflow happened or some calculation went really bad and we should just hard exit and return the last successful EMC value
-	 *                             calculated.
+	 * @throws ArithmeticException If an overflow happened or some calculation went really bad and we should just hard exit and return that the item doesn't have an EMC
+	 *                             representation; for example if it would be worth more EMC than our max value.
 	 */
-	long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException;
+	@Range(from = 0, to = Long.MAX_VALUE)
+	long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC) throws ArithmeticException;
 
 	/**
 	 * Collects the minimum set of data components that are needed to recreate/get an EMC value from this {@link IDataComponentProcessor} for an {@link ItemInfo}. This is

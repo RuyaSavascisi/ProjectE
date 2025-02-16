@@ -30,8 +30,7 @@ public class DataComponentManager {
 	public static void updateCachedValues(@Nullable ToLongFunction<ItemInfo> emcLookup) {
 		ComponentProcessorHelper.instance().updateCachedValues(emcLookup);
 		for (IDataComponentProcessor processor : processors) {
-			//TODO - 1.21: Do we want to fire this even when the processor is disabled in case it gets enabled later?
-			// That or we need to add in some callbacks for when processor enabled state changes
+			//Note: We only have to update enabled processors, as when a processor gets enabled it will update the cached values
 			if (MappingConfig.isEnabled(processor)) {
 				processor.updateCachedValues(emcLookup);
 			}
@@ -77,10 +76,7 @@ public class DataComponentManager {
 				try {
 					emcValue = processor.recalculateEMC(info, emcValue);
 				} catch (ArithmeticException e) {
-					//Return the last successfully calculated EMC value
-					//TODO - 1.21: Given this likely means it overflowed, we probably want to instead return zero so that they don't get a loss of emc
-					// If we do decide to go with zero, we need to update the docs on recalculateEMC
-					//return emcValue;
+					//Exit with it not having an EMC value, as it most likely overflowed, and we don't want to allow wasting EMC
 					return 0;
 				}
 				if (emcValue <= 0) {

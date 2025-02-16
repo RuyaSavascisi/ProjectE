@@ -9,7 +9,7 @@ import moze_intel.projecte.utils.ClientKeyHelper;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -74,9 +74,9 @@ public class GemFeet extends GemArmorBase {
 		}
 	}
 
-	private static boolean isJumpPressed() {
-		if (FMLEnvironment.dist.isClient()) {
-			return Minecraft.getInstance().player != null && Minecraft.getInstance().player.input.jumping;
+	private static boolean isJumpPressed(Player player) {
+		if (FMLEnvironment.dist.isClient() && player instanceof LocalPlayer clientPlayer) {
+			return clientPlayer.input.jumping;
 		}
 		return false;
 	}
@@ -88,20 +88,22 @@ public class GemFeet extends GemArmorBase {
 			if (!level.isClientSide) {
 				player.resetFallDistance();
 			} else {
-				//TODO - 1.21: Do we want to try and make use of just applying Attributes.GRAVITY to the player instead? Default gravity is 0.08
+				//TODO: Do we want to try and make use of just applying Attributes.GRAVITY to the player instead? Default gravity is 0.08
+				// A modifier of -0.75, Operation.ADD_MULTIPLIED_TOTAL makes it so that we fall at about the same rate as what we do below
 				boolean flying = player.getAbilities().flying;
-				if (!flying && isJumpPressed()) {
+				if (!flying && isJumpPressed(player)) {
 					player.addDeltaMovement(VERTICAL_MOVEMENT);
 				}
 				if (!player.onGround()) {
-					if (player.getDeltaMovement().y() <= 0) {
-						player.setDeltaMovement(player.getDeltaMovement().multiply(1, 0.9, 1));
+					Vec3 deltaMovement = player.getDeltaMovement();
+					if (deltaMovement.y() <= 0) {
+						player.setDeltaMovement(deltaMovement = deltaMovement.multiply(1, 0.9, 1));
 					}
 					if (!flying) {
-						if (player.zza < 0) {
-							player.setDeltaMovement(player.getDeltaMovement().multiply(0.9, 1, 0.9));
-						} else if (player.zza > 0 && player.getDeltaMovement().lengthSqr() < 3) {
-							player.setDeltaMovement(player.getDeltaMovement().multiply(1.1, 1, 1.1));
+						if (player.zza < 0) {//Moving backwards
+							player.setDeltaMovement(deltaMovement.multiply(0.9, 1, 0.9));
+						} else if (player.zza > 0 && deltaMovement.lengthSqr() < 3) {//Moving forwards
+							player.setDeltaMovement(deltaMovement.multiply(1.1, 1, 1.1));
 						}
 					}
 				}

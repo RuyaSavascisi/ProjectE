@@ -72,7 +72,6 @@ public class EternalDensityInventory extends ItemStackHandler {
 				targets.add(stackInSlot.copyWithCount(1));
 			}
 		}
-		//TODO - 1.21: Test this works and that the stack is valid when we might be actively consuming dropped items
 		invItem.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, targets, GemData::withWhitelistSafe);
 	}
 }

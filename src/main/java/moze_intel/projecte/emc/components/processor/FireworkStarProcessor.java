@@ -26,6 +26,7 @@ import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.FireworkStarRecipe;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class FireworkStarProcessor extends PersistentComponentProcessor<FireworkExplosion> {
@@ -60,7 +61,8 @@ public class FireworkStarProcessor extends PersistentComponentProcessor<Firework
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull FireworkExplosion explosion) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC, @NotNull FireworkExplosion explosion) throws ArithmeticException {
 		if (explosion.hasTrail() && trailEmc == 0 || explosion.hasTwinkle() && twinkleEmc == 0) {
 			//No emc for certain ingredients that are present, which means we can't calculate an emc value overall
 			return 0;

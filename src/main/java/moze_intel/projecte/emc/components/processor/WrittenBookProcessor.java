@@ -7,6 +7,7 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.component.WrittenBookContent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class WrittenBookProcessor extends SimplePersistentComponentProcessor<WrittenBookContent> {
@@ -27,7 +28,8 @@ public class WrittenBookProcessor extends SimplePersistentComponentProcessor<Wri
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC) throws ArithmeticException {
 		//Contents of the written book do not change the calculated EMC
 		return currentEMC;
 	}

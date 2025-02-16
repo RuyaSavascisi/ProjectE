@@ -6,6 +6,7 @@ import moze_intel.projecte.api.components.IDataComponentProcessor;
 import moze_intel.projecte.config.PEConfigTranslations;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor(priority = Integer.MAX_VALUE)
 public class DamageProcessor implements IDataComponentProcessor {
@@ -29,7 +30,8 @@ public class DamageProcessor implements IDataComponentProcessor {
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC) throws ArithmeticException {
 		ItemStack fakeStack = info.createStack();
 		if (fakeStack.isDamaged()) {
 			int maxDamage = fakeStack.getMaxDamage();

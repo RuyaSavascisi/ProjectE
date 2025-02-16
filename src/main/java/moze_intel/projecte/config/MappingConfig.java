@@ -8,6 +8,7 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.components.IDataComponentProcessor;
 import moze_intel.projecte.api.mapper.IEMCMapper;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
+import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.value.CachedBooleanValue;
 import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.neoforge.common.ModConfigSpec;
@@ -171,6 +172,9 @@ public class MappingConfig extends BasePEConfig {
 					.translation(processor.getTranslationKey())
 					.push(processor.getConfigPath());
 			enabled = CachedBooleanValue.wrap(config, PEConfigTranslations.DCP_ENABLED.applyToBuilder(builder).define("enabled", processor.isAvailable()));
+			//If it is enabled and was previously disabled, update the processor data for it,
+			// otherwise if it was previously enabled and now is disabled we clear the cache for it
+			enabled.addInvalidationListener(() -> processor.updateCachedValues(enabled.get() ? IEMCProxy.INSTANCE : null));
 			if (processor.hasPersistentComponents()) {
 				persistent = CachedBooleanValue.wrap(config, PEConfigTranslations.DCP_PERSISTENT.applyToBuilder(builder).define("persistent", processor.usePersistentComponents()));
 			} else {

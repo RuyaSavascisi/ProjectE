@@ -75,8 +75,7 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	SERVER_DIFFICULTY("server.difficulty", "Difficulty Settings", "Settings for configuring Difficulty options provided by ProjectE.", true),
 	SERVER_DIFFICULTY_OFFENSIVE_ABILITIES("server.difficulty.offensive_abilities", "Offensive Abilities",
 			"Set to false to disable Gem Armor offensive abilities (helmet zap and chestplate explosion)."),
-	//TODO - 1.21: Reword this to not have to reference the default key
-	SERVER_DIFFICULTY_KATAR_DEATH_AURA("server.difficulty.katar_death_aura", "Katar Death Aura", "Amount of damage Katar 'C' key deals."),
+	SERVER_DIFFICULTY_KATAR_DEATH_AURA("server.difficulty.katar_death_aura", "Katar Death Aura", "Amount of damage the Katar's Extra Function deals."),
 
 	SERVER_DIFFICULTY_COVALENCE_LOSS("server.difficulty.covalence_loss", "Covalence Loss",
 			"Adjusting this ratio changes how much EMC is received when burning a item. For example setting this to 0.5 will return half of the EMC cost."),

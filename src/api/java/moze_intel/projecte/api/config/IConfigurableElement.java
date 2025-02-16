@@ -9,6 +9,8 @@ public interface IConfigurableElement {
 	 * A unique Name for the {@link IConfigurableElement}. This is used to identify the {@link IConfigurableElement}.
 	 *
 	 * @return A unique Name
+	 *
+	 * @implNote Dp not return "enabled" or it will conflict with the builtin value.
 	 */
 	String getName();
 
@@ -16,6 +18,8 @@ public interface IConfigurableElement {
 	 * A unique Name for the {@link IConfigurableElement}. This is used to identify the {@link IConfigurableElement} in the Configuration.
 	 *
 	 * @return A unique Name
+	 *
+	 * @implNote Dp not return "enabled" or it will conflict with the builtin value.
 	 */
 	default String getConfigPath() {
 		return getName().replace(' ', '-');

@@ -60,7 +60,6 @@ public class CraftingMapper implements IEMCMapper<NormalizedSimpleStack, Long> {
 	@Override
 	public void addConfigOptions(ModConfigSpec.Builder configBuilder) {
 		for (IRecipeTypeMapper recipeMapper : recipeMappers) {
-			//TODO - 1.21: Do we want to prepend this by recipe mapper or anything, or at least document that you shouldn't name a recipe mapper "enabled"
 			configBuilder.comment(recipeMapper.getDescription())
 					.translation(recipeMapper.getTranslationKey())
 					.push(recipeMapper.getConfigPath());

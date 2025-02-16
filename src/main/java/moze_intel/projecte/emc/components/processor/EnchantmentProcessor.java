@@ -16,6 +16,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEnchantments> {
@@ -59,7 +60,8 @@ public class EnchantmentProcessor extends PersistentComponentProcessor<ItemEncha
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull ItemEnchantments enchantments) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC, @NotNull ItemEnchantments enchantments) throws ArithmeticException {
 		long emcBonus = enchantmentEmcBonus.getAsLong();
 		for (Object2IntMap.Entry<Holder<Enchantment>> entry : enchantments.entrySet()) {
 			int rarityWeight = entry.getKey().value().definition().weight();

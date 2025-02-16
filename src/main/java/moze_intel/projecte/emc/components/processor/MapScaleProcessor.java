@@ -18,6 +18,7 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor(priority = Integer.MAX_VALUE)
 public class MapScaleProcessor implements IDataComponentProcessor {
@@ -43,7 +44,8 @@ public class MapScaleProcessor implements IDataComponentProcessor {
 	}
 
 	@Override
-	public long recalculateEMC(@NotNull ItemInfo info, long currentEMC) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	public long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC) throws ArithmeticException {
 		if (!(info.getItem().value() instanceof MapItem)) {//Not a map, skip trying to do anything
 			return currentEMC;
 		}

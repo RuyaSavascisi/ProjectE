@@ -14,6 +14,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.PotDecorations;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 @DataComponentProcessor
 public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecorations> {
@@ -40,7 +41,8 @@ public class DecoratedPotProcessor extends PersistentComponentProcessor<PotDecor
 	}
 
 	@Override
-	protected long recalculateEMC(@NotNull ItemInfo info, long currentEMC, @NotNull PotDecorations decorations) throws ArithmeticException {
+	@Range(from = 0, to = Long.MAX_VALUE)
+	protected long recalculateEMC(@NotNull ItemInfo info, @Range(from = 1, to = Long.MAX_VALUE) long currentEMC, @NotNull PotDecorations decorations) throws ArithmeticException {
 		long totalDecorationEmc = 0;
 		for (Item decoration : decorations.ordered()) {
 			long decorationEmc = IEMCProxy.INSTANCE.getValue(decoration);
