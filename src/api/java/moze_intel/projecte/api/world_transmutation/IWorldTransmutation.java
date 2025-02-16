@@ -6,7 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public sealed interface IWorldTransmutation permits SimpleWorldTransmutation, WorldTransmutation {
+public sealed interface IWorldTransmutation extends IWorldTransmutationFunction permits SimpleWorldTransmutation, WorldTransmutation {
 
 	/**
 	 * Gets the holder for the block that the origin is for. Used for grouping transmutations in order to prioritize state specific ones.
@@ -19,14 +19,12 @@ public sealed interface IWorldTransmutation permits SimpleWorldTransmutation, Wo
 	boolean hasAlternate();
 
 	/**
-	 * Gets the result of applying this world transmutation to a given state.
-	 *
-	 * @param state      Input state to try and match.
-	 * @param isSneaking Whether the player is sneaking and the alternate result should be used if present.
+	 * {@inheritDoc}
 	 *
 	 * @return The resulting state, or {@code null} if {@link #canTransmute(BlockState)} returns {@code false} for the input state.
 	 */
 	@Nullable
+	@Override
 	BlockState result(@NotNull BlockState state, boolean isSneaking);
 
 	/**

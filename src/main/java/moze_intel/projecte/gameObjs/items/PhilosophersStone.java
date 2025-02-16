@@ -11,7 +11,7 @@ import java.util.Locale;
 import java.util.function.IntFunction;
 import moze_intel.projecte.api.capabilities.item.IExtraFunction;
 import moze_intel.projecte.api.capabilities.item.IProjectileShooter;
-import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
+import moze_intel.projecte.api.world_transmutation.IWorldTransmutationFunction;
 import moze_intel.projecte.gameObjs.container.PhilosStoneContainer;
 import moze_intel.projecte.gameObjs.entity.EntityMobRandomizer;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone.PhilosophersStoneMode;
@@ -97,7 +97,7 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 		}
 
 		if (level.isClientSide) {
-			if (WorldTransmutationManager.INSTANCE.getWorldTransmutation(level.getBlockState(pos)) == null) {
+			if (WorldTransmutationManager.INSTANCE.getWorldTransmutation(level.getBlockState(pos), true) == null) {
 				//Pass if there is no world transmutation for the target block
 				return InteractionResult.PASS;
 			}
@@ -159,7 +159,7 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 
 	public static Object2ReferenceMap<BlockPos, BlockState> getChanges(Level level, BlockPos pos, Direction sideHit, Direction horizontalDirection, boolean isSneaking,
 			PhilosophersStoneMode mode, int charge) {
-		IWorldTransmutation transmutation = WorldTransmutationManager.INSTANCE.getWorldTransmutation(level.getBlockState(pos));
+		IWorldTransmutationFunction transmutation = WorldTransmutationManager.INSTANCE.getWorldTransmutation(level.getBlockState(pos));
 		if (transmutation == null) {
 			//Targeted block has no transmutations, no positions
 			return Object2ReferenceMaps.emptyMap();

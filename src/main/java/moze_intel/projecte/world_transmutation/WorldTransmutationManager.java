@@ -12,11 +12,13 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SequencedSet;
 import java.util.function.Function;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
+import moze_intel.projecte.api.world_transmutation.IWorldTransmutationFunction;
 import moze_intel.projecte.api.world_transmutation.SimpleWorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.WorldTransmutation;
 import moze_intel.projecte.api.world_transmutation.WorldTransmutationFile;
@@ -130,16 +132,39 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 	}
 
 	@Nullable
-	public IWorldTransmutation getWorldTransmutation(BlockState current) {
+	public IWorldTransmutationFunction getWorldTransmutation(BlockState current) {
+		return getWorldTransmutation(current, false);
+	}
+
+	@Nullable
+	public IWorldTransmutationFunction getWorldTransmutation(BlockState current, boolean findAny) {
 		if (current.isAir()) {
 			return null;
 		}
-		//TODO - 1.21: if there is a state based one and we transmute in an AOE starting with one that doesn't have a state based one
-		// it will use that transmutation instead of the one that is defined for the explicit state. Do we care enough to fix this?
 		SequencedSet<IWorldTransmutation> transmutations = getWorldTransmutations().getOrDefault(current.getBlock(), Collections.emptySortedSet());
+		boolean hasComplex = false;
 		for (IWorldTransmutation entry : transmutations) {
 			if (entry.canTransmute(current)) {
+				if (findAny) {
+					//Note: If we just want to validate to make sure some valid transmutation exists, we can short circuit checking more exact state versions
+					return entry;
+				}
+				if (hasComplex && entry instanceof SimpleWorldTransmutation) {
+					Map<BlockState, IWorldTransmutation> exactStates = new Reference2ObjectOpenHashMap<>();
+					for (IWorldTransmutation transmutation : transmutations) {
+						if (transmutation instanceof WorldTransmutation worldTransmutation) {
+							//TODO: Figure out how do we want to resolve conflicts when the input is exactly the same, be it states or blocks
+							exactStates.putIfAbsent(worldTransmutation.originState(), transmutation);
+						} else {
+							break;
+						}
+					}
+					//Note: exactStates should never be empty here
+					return (input, isSneaking) -> Objects.requireNonNullElse(exactStates.get(input), entry).result(input, isSneaking);
+				}
 				return entry;
+			} else if (entry instanceof WorldTransmutation) {
+				hasComplex = true;
 			}
 		}
 		return null;
