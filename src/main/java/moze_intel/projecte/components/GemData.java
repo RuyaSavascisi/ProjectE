@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import moze_intel.projecte.PECore;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -20,7 +21,7 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 
 	public static final Codec<GemData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Codec.BOOL.fieldOf("isWhitelist").forGetter(GemData::isWhitelist),
-			ItemStack.CODEC.sizeLimitedListOf(9).<Set<ItemStack>>xmap(list -> {
+			ItemStack.SINGLE_ITEM_CODEC.sizeLimitedListOf(9).promotePartial(error -> PECore.LOGGER.error("Failed to load gem whitelist: {}", error)).<Set<ItemStack>>xmap(list -> {
 				if (list.isEmpty()) {
 					return Collections.emptySet();
 				}
@@ -29,7 +30,7 @@ public record GemData(boolean isWhitelist, Set<ItemStack> whitelist, List<ItemSt
 				whitelist.addAll(list);
 				return whitelist;
 			}, List::copyOf).fieldOf("whitelist").forGetter(GemData::whitelist),
-			ItemStack.CODEC.listOf().fieldOf("consumed").forGetter(GemData::consumed)
+			ItemStack.CODEC.listOf().promotePartial(error -> PECore.LOGGER.error("Failed to load gem consumed contents: {}", error)).fieldOf("consumed").forGetter(GemData::consumed)
 	).apply(instance, GemData::new));
 	//TODO: Theoretically it will work as is because neo has builtin packet splitting for everything now
 	// but we may want to evaluate moving this off to world save data (and also removing the ItemHelper method)

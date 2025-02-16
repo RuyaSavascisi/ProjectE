@@ -37,6 +37,7 @@ import moze_intel.projecte.api.nss.NormalizedSimpleStack;
 import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
@@ -54,8 +55,14 @@ public class PECodecHelper implements IPECodecHelper {
 		}
 	});
 
-	//TODO - 1.21: How do codec and optional codec handle this if an item was removed and is no longer registered
-	public static final Codec<ItemStackHandler> MUTABLE_HANDLER_CODEC = ItemStack.OPTIONAL_CODEC.listOf().flatComapMap(
+	private static final Codec<ItemStack> LENIENT_STACK_CODEC = ItemStack.CODEC.promotePartial(error -> PECore.LOGGER.error("Tried to load invalid item: '{}'", error));
+	//Based off of ItemStack#OPTIONAL_CODEC
+	private static final Codec<ItemStack> LENIENT_OPTIONAL_STACK_CODEC = ExtraCodecs.optionalEmptyMap(LENIENT_STACK_CODEC.orElse(ItemStack.EMPTY)).xmap(
+			stack -> stack.orElse(ItemStack.EMPTY),
+			stack -> stack.isEmpty() ? Optional.empty() : Optional.of(stack)
+	);
+
+	public static final Codec<ItemStackHandler> MUTABLE_HANDLER_CODEC = LENIENT_OPTIONAL_STACK_CODEC.listOf().flatComapMap(
 			list -> {
 				NonNullList<ItemStack> itemList = NonNullList.createWithCapacity(list.size());
 				itemList.addAll(list);
