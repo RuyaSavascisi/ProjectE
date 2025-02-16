@@ -26,6 +26,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
@@ -574,7 +575,13 @@ public final class WorldHelper {
 
 	public static <DATA> int harvestVein(Level level, Player player, ItemStack stack, AABB area, List<ItemStack> currentDrops, DATA data,
 			BiPredicate<BlockState, DATA> stateChecker) {
-		record TargetInfo(BlockPos pos, BlockState state) {
+		record TargetInfo(BlockPos pos, BlockState state, @Nullable BlockEntity blockEntity) {
+
+			public static TargetInfo create(Level level, BlockPos pos, BlockState state, Player player) {
+				//Note: Similar to vanilla we query the block entity before calling playerWillDestroy
+				BlockEntity blockEntity = state.hasBlockEntity() ? getBlockEntity(level, pos) : null;
+				return new TargetInfo(pos, state.getBlock().playerWillDestroy(level, pos, state, player), blockEntity);
+			}
 		}
 		int numMined = 0;
 		Set<BlockPos> traversed = new HashSet<>();
@@ -596,7 +603,7 @@ public final class WorldHelper {
 					return 1;
 				}
 				pos = pos.immutable();
-				frontier.add(new TargetInfo(pos, state));
+				frontier.add(TargetInfo.create(level, pos, state, player));
 			}
 			//Regardless of if it is valid or not mark it as  having been traversed
 			traversed.add(pos.immutable());
@@ -606,21 +613,23 @@ public final class WorldHelper {
 			TargetInfo targetInfo = frontier.poll();
 			BlockPos pos = targetInfo.pos();
 			BlockState state = targetInfo.state();
-			BlockEntity blockEntity = state.hasBlockEntity() ? getBlockEntity(level, pos) : null;
-			//TODO - 1.21: Decide if we want to call onDestroyedByPlayer etc??
-			currentDrops.addAll(Block.getDrops(state, (ServerLevel) level, pos, blockEntity, player, stack));
-			level.removeBlock(pos, false);
-			if (++numMined >= Constants.MAX_VEIN_SIZE) {
-				break;
-			}
+			if (state.onDestroyedByPlayer(level, pos, player, true, level.getFluidState(pos))) {
+				Block block = state.getBlock();
+				block.destroy(level, pos, state);
+				player.awardStat(Stats.BLOCK_MINED.get(block));
+				currentDrops.addAll(Block.getDrops(state, (ServerLevel) level, pos, targetInfo.blockEntity(), player, stack));
+				if (++numMined >= Constants.MAX_VEIN_SIZE) {
+					break;
+				}
 
-			for (BlockPos nextPos : positionsAround(pos, 1)) {
-				//Ensure the position is immutable before we add it to what positions we have traversed
-				nextPos = nextPos.immutable();
-				if (traversed.add(nextPos) && isBlockLoaded(level, nextPos)) {
-					BlockState nextState = level.getBlockState(nextPos);
-					if (validState.test(data, stateChecker, nextState, level, nextPos, player)) {
-						frontier.add(new TargetInfo(nextPos, nextState));
+				for (BlockPos nextPos : positionsAround(pos, 1)) {
+					//Ensure the position is immutable before we add it to what positions we have traversed
+					nextPos = nextPos.immutable();
+					if (traversed.add(nextPos) && isBlockLoaded(level, nextPos)) {
+						BlockState nextState = level.getBlockState(nextPos);
+						if (validState.test(data, stateChecker, nextState, level, nextPos, player)) {
+							frontier.add(TargetInfo.create(level, nextPos, nextState, player));
+						}
 					}
 				}
 			}

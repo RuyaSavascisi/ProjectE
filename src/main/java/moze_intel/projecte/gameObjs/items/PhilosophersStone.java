@@ -112,7 +112,7 @@ public class PhilosophersStone extends ItemMode<PhilosophersStoneMode> implement
 			Object2ReferenceMap.Entry<BlockPos, BlockState> entry = iterator.next();
 			BlockPos currentPos = entry.getKey();
 			BlockState targetState = entry.getValue();
-			//TODO - 1.21: Figure out how to get it so that if we transmute something into grass and there is snow on top of that block
+			//TODO: Figure out how to get it so that if we transmute something into grass and there is snow on top of that block
 			// that we will mark the grass as being snowy
 			if (player == null) {
 				if (targetState.getBlock() instanceof SignBlock && level.getBlockEntity(currentPos) instanceof SignBlockEntity sign) {

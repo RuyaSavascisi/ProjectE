@@ -95,7 +95,7 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 				iterator.remove();
 			} else if (elements > 1) {//Multiple elements, so may not already be in the proper order
 				SequencedSet<IWorldTransmutation> setBuilder = new LinkedHashSet<>(elements);
-				//TODO - 1.21: How do we want to resolve conflicts when the input is exactly the same, be it states or blocks
+				//TODO: Figure out how do we want to resolve conflicts when the input is exactly the same, be it states or blocks
 				boolean hasSimple = false;
 				boolean hasComplex = false;
 				for (IWorldTransmutation transmutation : entry.getValue()) {
