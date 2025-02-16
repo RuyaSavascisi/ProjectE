@@ -160,7 +160,7 @@ public class GemEternalDensity extends ItemPE implements IAlchBagItem, IAlchChes
 				//Update the stored emc if it changed
 				gem.set(PEDataComponentTypes.STORED_EMC, gemEmc);
 				// and update the data to represent we no longer have any items that were consumed
-				//TODO - 1.21: Re-evaluate this, as if some of the stored emc can still be distributed between the items that were consumed,
+				//TODO: Re-evaluate this, as if some of the stored emc can still be distributed between the items that were consumed,
 				// then realistically we don't want to clear them from the consumed list
 				gem.update(PEDataComponentTypes.GEM_DATA, GemData.EMPTY, GemData::clearConsumed);
 				return true;

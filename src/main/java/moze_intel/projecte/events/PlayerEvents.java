@@ -12,15 +12,13 @@ import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -28,6 +26,7 @@ import net.neoforged.fml.util.thread.EffectiveSide;
 import net.neoforged.neoforge.common.damagesource.DamageContainer;
 import net.neoforged.neoforge.common.damagesource.DamageContainer.Reduction;
 import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.neoforge.event.entity.EntityEvent;
 import net.neoforged.neoforge.event.entity.EntityInvulnerabilityCheckEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
@@ -109,32 +108,33 @@ public class PlayerEvents {
 
 	@SubscribeEvent(priority = EventPriority.LOW)
 	public static void pickupItem(ItemEntityPickupEvent.Pre event) {
+		ItemEntity itemEntity = event.getItemEntity();
 		Player player = event.getPlayer();
-		Level level = player.level();
-		if (level.isClientSide) {
+		if (itemEntity.level().isClientSide || itemEntity.hasPickUpDelay() || itemEntity.getTarget() != null && !player.getUUID().equals(itemEntity.getTarget())) {
 			return;
 		}
 		ItemStack bag = AlchemicalBag.getFirstBagWithSuctionItem(player, player.getInventory().items);
-		if (bag.isEmpty()) {
-			return;
+		if (!bag.isEmpty()) {
+			IAlchBagProvider bagProvider = player.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
+			if (bagProvider != null) {
+				ItemStack stack = itemEntity.getItem();
+				IItemHandler handler = bagProvider.getBag(((AlchemicalBag) bag.getItem()).color);
+				ItemStack remainder = ItemHandlerHelper.insertItemStacked(handler, stack, false);
+
+				int pickedUpCount = stack.getCount() - remainder.getCount();
+				if (pickedUpCount > 0) {
+					event.setCanPickup(TriState.FALSE);
+					player.take(itemEntity, pickedUpCount);
+					if (remainder.isEmpty()) {
+						itemEntity.discard();
+						//Update to the picked up count so that onItemPickup knows how much got picked up
+						stack.setCount(pickedUpCount);
+					}
+					player.awardStat(Stats.ITEM_PICKED_UP.get(stack.getItem()), pickedUpCount);
+					player.onItemPickup(itemEntity);
+				}
+			}
 		}
-		IAlchBagProvider bagProvider = player.getCapability(PECapabilities.ALCH_BAG_CAPABILITY);
-		if (bagProvider == null) {
-			return;
-		}
-		IItemHandler handler = bagProvider.getBag(((AlchemicalBag) bag.getItem()).color);
-		ItemStack remainder = ItemHandlerHelper.insertItemStacked(handler, event.getItemEntity().getItem(), false);
-		if (remainder.isEmpty()) {
-			event.getItemEntity().discard();
-			level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.2F, ((level.random.nextFloat() - level.random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-			((ServerPlayer) player).connection.send(new ClientboundTakeItemEntityPacket(event.getItemEntity().getId(), player.getId(), 1));
-			//TODO - 1.21: Force allow the pickup? Though that doesn't change the fact vanilla tries to add it to the player's inventory
-			//event.setCanPickup(TriState.TRUE);
-		} else {
-			event.getItemEntity().setItem(remainder);
-		}
-		//TODO - 1.21: Figure this out and if we should be using the pre or post event
-		//event.setCanceled(true);
 	}
 
 	@SubscribeEvent

@@ -108,12 +108,19 @@ public final class PlayerHelper {
 		return ItemStack.EMPTY;
 	}
 
-	public static boolean checkHotbarCurios(Player player, BiPredicate<Player, ItemStack> checker) {
+	public static boolean checkHotbar(Player player, BiPredicate<Player, ItemStack> checker) {
 		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
 			ItemStack stack = player.getInventory().getItem(i);
 			if (!stack.isEmpty() && checker.test(player, stack)) {
 				return true;
 			}
+		}
+		return false;
+	}
+
+	public static boolean checkHotbarCurios(Player player, BiPredicate<Player, ItemStack> checker) {
+		if (checkHotbar(player, checker)) {
+			return true;
 		}
 		ItemStack offhand = player.getOffhandItem();
 		if (!offhand.isEmpty() && checker.test(player, offhand)) {

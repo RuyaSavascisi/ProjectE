@@ -102,27 +102,24 @@ public final class EMCHelper {
 				if (actualExtracted > 0) { //Prioritize extracting from emc storage items
 					player.containerMenu.broadcastChanges();
 					return actualExtracted;
-				} else if (!metRequirement) {
-					//TODO - 1.21: Should we be validating we simulate that we will be able to extract the stack and how much of it?
-					if (FuelMapper.isStackFuel(stack)) {
-						long emc = IEMCProxy.INSTANCE.getValue(stack);
-						int toRemove = Mth.ceil((double) (minFuel - emcConsumed) / emc);
-						int actualRemoved = Math.min(stack.getCount(), toRemove);
-						if (actualRemoved > 0) {
-							map.put(i, actualRemoved);
-							emcConsumed += emc * actualRemoved;
-							metRequirement = emcConsumed >= minFuel;
-						}
+				} else if (!metRequirement && FuelMapper.isStackFuel(stack)) {
+					//TODO: Should we be validating we simulate that we will be able to extract the stack and how much of it?
+					long emc = IEMCProxy.INSTANCE.getValue(stack);
+					int toRemove = Mth.ceil((double) (minFuel - emcConsumed) / emc);
+					int actualRemoved = Math.min(stack.getCount(), toRemove);
+					if (actualRemoved > 0) {
+						map.put(i, actualRemoved);
+						emcConsumed += emc * actualRemoved;
+						metRequirement = emcConsumed >= minFuel;
 					}
 				}
 			}
 			if (metRequirement) {
 				for (Iterator<Int2IntMap.Entry> iterator = Int2IntMaps.fastIterator(map); iterator.hasNext(); ) {
 					Int2IntMap.Entry entry = iterator.next();
-					//TODO - 1.21: Should we be validating we were able to actually extract the items?
+					//TODO: Should we be validating we were able to actually extract the items?
 					inv.extractItem(entry.getIntKey(), entry.getIntValue(), false);
 				}
-				//TODO - 1.21: Does this update offhand if we are in a block's gui?
 				player.containerMenu.broadcastChanges();
 				return emcConsumed;
 			}

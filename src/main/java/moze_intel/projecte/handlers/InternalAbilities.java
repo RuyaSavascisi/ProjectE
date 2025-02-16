@@ -56,7 +56,6 @@ public class InternalAbilities {
 		if (!player.level().isClientSide) {
 			updateAttribute(player, Attributes.MOVEMENT_SPEED, WATER_SPEED_BOOST, applyWaterSpeed);
 			updateAttribute(player, Attributes.MOVEMENT_SPEED, LAVA_SPEED_BOOST, applyLavaSpeed);
-			//TODO - 1.21: Is it possible to make the swrg attribute apply via the stack in the inventory?
 			updateAttribute(player, NeoForgeMod.CREATIVE_FLIGHT, FLIGHT, InternalAbilities::shouldPlayerFly);
 		}
 	}
@@ -79,14 +78,10 @@ public class InternalAbilities {
 	}
 
 	private static boolean shouldPlayerFly(Player player) {
-		return PlayerHelper.checkHotbarCurios(player, (p, stack) -> {
-			if (stack.is(PEItems.SWIFTWOLF_RENDING_GALE)) {
-				return ItemPE.hasEmc(p, stack, 64, true);
-			} /*else if (stack.is(PEItems.ARCANA_RING)) {
-				return true;
-			}*/
-			return false;
-		});
+		return PlayerHelper.checkHotbarCurios(player, (p, stack) -> stack.is(PEItems.SWIFTWOLF_RENDING_GALE) && ItemPE.hasEmc(p, stack, 64, true))
+			   //Note: Curios, and the offhand are handled by the attribute on the arcana ring. We want it to provide flight in other slots on the hotbar as well
+			   // so we have to do it here. We do this rather than only doing a hotbar curios check with no attribute, so that the tooltip shows it provides flight
+			   || PlayerHelper.checkHotbar(player, (p, stack) -> stack.is(PEItems.ARCANA_RING));
 	}
 
 	private static WalkOnType canWalkOnWater(Player player) {
