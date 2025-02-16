@@ -78,14 +78,9 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 			@Override
 			public ItemStack extractItem(int slot, int amount, boolean simulate) {
 				ItemStack stack = getStackInSlot(slot);
-				if (!stack.isEmpty()) {
-					IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-					if (emcHolder != null) {
-						if (emcHolder.getNeededEmc(stack) == 0) {
-							return super.extractItem(slot, amount, simulate);
-						}
-						return ItemStack.EMPTY;
-					}
+				IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+				if (emcHolder != null && emcHolder.getNeededEmc(stack) > 0) {
+					return ItemStack.EMPTY;
 				}
 				return super.extractItem(slot, amount, simulate);
 			}
@@ -140,8 +135,8 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 				}
 			}
 		}
-		ItemStack chargeable = relay.getCharging();
-		if (!chargeable.isEmpty() && relay.getStoredEmc() > 0) {
+		if (relay.getStoredEmc() > 0) {
+			ItemStack chargeable = relay.getCharging();
 			IItemEmcHolder emcHolder = chargeable.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
 			if (emcHolder != null) {
 				long actualSent = emcHolder.insertEmc(chargeable, relay.getAvailableCharge(), EmcAction.EXECUTE);
@@ -157,11 +152,9 @@ public class RelayMK1BlockEntity extends EmcBlockEntity implements MenuProvider 
 
 	public double getItemChargeProportion() {
 		ItemStack charging = getCharging();
-		if (!charging.isEmpty()) {
-			IItemEmcHolder emcHolder = charging.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-			if (emcHolder != null) {
-				return (double) emcHolder.getStoredEmc(charging) / emcHolder.getMaximumEmc(charging);
-			}
+		IItemEmcHolder emcHolder = charging.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+		if (emcHolder != null) {
+			return (double) emcHolder.getStoredEmc(charging) / emcHolder.getMaximumEmc(charging);
 		}
 		return 0;
 	}

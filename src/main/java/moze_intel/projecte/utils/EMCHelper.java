@@ -131,13 +131,11 @@ public final class EMCHelper {
 	}
 
 	private static long tryExtract(@NotNull ItemStack stack, long minFuel) {
-		if (!stack.isEmpty()) {
-			IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-			if (emcHolder != null) {
-				long simulatedExtraction = emcHolder.extractEmc(stack, minFuel, EmcAction.SIMULATE);
-				if (simulatedExtraction >= minFuel) {
-					return emcHolder.extractEmc(stack, simulatedExtraction, EmcAction.EXECUTE);
-				}
+		IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+		if (emcHolder != null) {
+			long simulatedExtraction = emcHolder.extractEmc(stack, minFuel, EmcAction.SIMULATE);
+			if (simulatedExtraction >= minFuel) {
+				return emcHolder.extractEmc(stack, simulatedExtraction, EmcAction.EXECUTE);
 			}
 		}
 		return 0;

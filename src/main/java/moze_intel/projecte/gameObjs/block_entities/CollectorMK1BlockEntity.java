@@ -253,30 +253,28 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 
 	public long getItemCharge() {
 		ItemStack upgrading = getUpgrading();
-		if (!upgrading.isEmpty()) {
-			IItemEmcHolder emcHolder = upgrading.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-			if (emcHolder != null) {
-				return emcHolder.getStoredEmc(upgrading);
-			}
+		IItemEmcHolder emcHolder = upgrading.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+		if (emcHolder != null) {
+			return emcHolder.getStoredEmc(upgrading);
 		}
 		return -1;
 	}
 
 	public double getItemChargeProportion() {
-		ItemStack upgrading = getUpgrading();
 		long charge = getItemCharge();
-		if (upgrading.isEmpty() || charge <= 0) {
+		if (charge <= 0) {
 			return -1;
 		}
+		ItemStack upgrading = getUpgrading();
 		IItemEmcHolder emcHolder = upgrading.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-		if (emcHolder != null) {
-			long max = emcHolder.getMaximumEmc(upgrading);
-			if (charge >= max) {
-				return 1;
-			}
-			return (double) charge / max;
+		if (emcHolder == null) {
+			return -1;
 		}
-		return -1;
+		long max = emcHolder.getMaximumEmc(upgrading);
+		if (charge >= max) {
+			return 1;
+		}
+		return (double) charge / max;
 	}
 
 	public int getSunLevel() {

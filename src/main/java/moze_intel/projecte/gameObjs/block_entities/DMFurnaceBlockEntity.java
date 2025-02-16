@@ -240,7 +240,7 @@ public class DMFurnaceBlockEntity extends EmcBlockEntity implements MenuProvider
 		RecipeResult recipeResult = furnace.getSmeltingRecipe(level, furnace.getItemToSmelt());
 		boolean canSmelt = furnace.canSmelt(recipeResult);
 		ItemStack fuelItem = furnace.getFuelItem();
-		if (canSmelt && !fuelItem.isEmpty()) {
+		if (canSmelt) {
 			IItemEmcHolder emcHolder = fuelItem.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
 			if (emcHolder != null) {
 				long simulatedExtraction = emcHolder.extractEmc(fuelItem, EMC_CONSUMPTION, EmcAction.SIMULATE);

@@ -439,19 +439,17 @@ public class TransmutationInventory extends CombinedInvWrapper {
 				continue;
 			}
 			ItemStack stack = inputLocks.getStackInSlot(slotIndex);
-			if (!stack.isEmpty()) {
-				IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-				if (emcHolder != null) {
-					long shrunkenValue = MathUtils.clampToLong(value);
-					long actualInserted = emcHolder.insertEmc(stack, shrunkenValue, EmcAction.EXECUTE);
-					if (actualInserted > 0) {
-						inputLocksChanged.add(slotIndex);
-						value = value.subtract(BigInteger.valueOf(actualInserted));
-						if (value.signum() == 0) {//value == 0
-							//If we fit it all then sync the changes to the client and exit
-							syncChangedSlots(inputLocksChanged, TargetUpdateType.ALL);
-							return;
-						}
+			IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+			if (emcHolder != null) {
+				long shrunkenValue = MathUtils.clampToLong(value);
+				long actualInserted = emcHolder.insertEmc(stack, shrunkenValue, EmcAction.EXECUTE);
+				if (actualInserted > 0) {
+					inputLocksChanged.add(slotIndex);
+					value = value.subtract(BigInteger.valueOf(actualInserted));
+					if (value.signum() == 0) {//value == 0
+						//If we fit it all then sync the changes to the client and exit
+						syncChangedSlots(inputLocksChanged, TargetUpdateType.ALL);
+						return;
 					}
 				}
 			}
@@ -489,23 +487,21 @@ public class TransmutationInventory extends CombinedInvWrapper {
 					continue;
 				}
 				ItemStack stack = inputLocks.getStackInSlot(slotIndex);
-				if (!stack.isEmpty()) {
-					IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-					if (emcHolder != null) {
-						long shrunkenToRemove = MathUtils.clampToLong(toRemove);
-						long actualExtracted = emcHolder.extractEmc(stack, shrunkenToRemove, EmcAction.EXECUTE);
-						if (actualExtracted > 0) {
-							inputLocksChanged.add(slotIndex);
-							toRemove = toRemove.subtract(BigInteger.valueOf(actualExtracted));
-							if (toRemove.signum() == 0) {//toRemove == 0
-								//The EMC that is being removed that the provider does not contain is satisfied by this IItemEMC
-								//Remove it and then stop checking other input slots as we were able to provide all that was needed
-								syncChangedSlots(inputLocksChanged, TargetUpdateType.IF_NEEDED);
-								if (currentEmc.signum() == 1) {//currentEmc > 0
-									updateEmcAndSync(BigInteger.ZERO);
-								}
-								return;
+				IItemEmcHolder emcHolder = stack.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+				if (emcHolder != null) {
+					long shrunkenToRemove = MathUtils.clampToLong(toRemove);
+					long actualExtracted = emcHolder.extractEmc(stack, shrunkenToRemove, EmcAction.EXECUTE);
+					if (actualExtracted > 0) {
+						inputLocksChanged.add(slotIndex);
+						toRemove = toRemove.subtract(BigInteger.valueOf(actualExtracted));
+						if (toRemove.signum() == 0) {//toRemove == 0
+							//The EMC that is being removed that the provider does not contain is satisfied by this IItemEMC
+							//Remove it and then stop checking other input slots as we were able to provide all that was needed
+							syncChangedSlots(inputLocksChanged, TargetUpdateType.IF_NEEDED);
+							if (currentEmc.signum() == 1) {//currentEmc > 0
+								updateEmcAndSync(BigInteger.ZERO);
 							}
+							return;
 						}
 					}
 				}

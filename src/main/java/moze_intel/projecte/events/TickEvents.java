@@ -34,11 +34,9 @@ public class TickEvents {
 				IItemHandler inv = provider.getBag(color);
 				for (int i = 0, slots = inv.getSlots(); i < slots; i++) {
 					ItemStack current = inv.getStackInSlot(i);
-					if (!current.isEmpty()) {
-						IAlchBagItem alchBagItem = current.getCapability(PECapabilities.ALCH_BAG_ITEM_CAPABILITY);
-						if (alchBagItem != null && alchBagItem.updateInAlchBag(inv, player, current)) {
-							colorsChanged.add(color);
-						}
+					IAlchBagItem alchBagItem = current.getCapability(PECapabilities.ALCH_BAG_ITEM_CAPABILITY);
+					if (alchBagItem != null && alchBagItem.updateInAlchBag(inv, player, current)) {
+						colorsChanged.add(color);
 					}
 				}
 			}

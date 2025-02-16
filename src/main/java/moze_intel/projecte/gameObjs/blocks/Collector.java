@@ -102,14 +102,14 @@ public class Collector extends BlockDirection implements PEEntityBlock<Collector
 			return super.getAnalogOutputSignal(state, level, pos);
 		}
 		ItemStack charging = handler.getStackInSlot(CollectorMK1BlockEntity.UPGRADING_SLOT);
-		if (!charging.isEmpty()) {
-			IItemEmcHolder emcHolder = charging.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
-			if (emcHolder != null) {
-				return MathUtils.scaleToRedstone(emcHolder.getStoredEmc(charging), emcHolder.getMaximumEmc(charging));
-			}
-			return MathUtils.scaleToRedstone(collector.getStoredEmc(), collector.getEmcToNextGoal());
+		if (charging.isEmpty()) {
+			return MathUtils.scaleToRedstone(collector.getStoredEmc(), collector.getMaximumEmc());
 		}
-		return MathUtils.scaleToRedstone(collector.getStoredEmc(), collector.getMaximumEmc());
+		IItemEmcHolder emcHolder = charging.getCapability(PECapabilities.EMC_HOLDER_ITEM_CAPABILITY);
+		if (emcHolder != null) {
+			return MathUtils.scaleToRedstone(emcHolder.getStoredEmc(charging), emcHolder.getMaximumEmc(charging));
+		}
+		return MathUtils.scaleToRedstone(collector.getStoredEmc(), collector.getEmcToNextGoal());
 	}
 
 	@Override

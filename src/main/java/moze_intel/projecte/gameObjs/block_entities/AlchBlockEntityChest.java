@@ -57,11 +57,9 @@ public class AlchBlockEntityChest extends EmcChestBlockEntity {
 	public static void tickClient(Level level, BlockPos pos, BlockState state, AlchBlockEntityChest alchChest) {
 		for (int i = 0, slots = alchChest.inventory.getSlots(); i < slots; i++) {
 			ItemStack stack = alchChest.inventory.getStackInSlot(i);
-			if (!stack.isEmpty()) {
-				IAlchChestItem alchChestItem = stack.getCapability(PECapabilities.ALCH_CHEST_ITEM_CAPABILITY);
-				if (alchChestItem != null) {
-					alchChestItem.updateInAlchChest(level, pos, stack);
-				}
+			IAlchChestItem alchChestItem = stack.getCapability(PECapabilities.ALCH_CHEST_ITEM_CAPABILITY);
+			if (alchChestItem != null) {
+				alchChestItem.updateInAlchChest(level, pos, stack);
 			}
 		}
 		EmcChestBlockEntity.lidAnimateTick(level, pos, state, alchChest);
@@ -71,11 +69,9 @@ public class AlchBlockEntityChest extends EmcChestBlockEntity {
 		StackHandler inventory = alchChest.inventory;
 		for (int i = 0, slots = inventory.getSlots(); i < slots; i++) {
 			ItemStack stack = inventory.getStackInSlot(i);
-			if (!stack.isEmpty()) {
-				IAlchChestItem alchChestItem = stack.getCapability(PECapabilities.ALCH_CHEST_ITEM_CAPABILITY);
-				if (alchChestItem != null && alchChestItem.updateInAlchChest(level, pos, stack)) {
-					inventory.onContentsChanged(i);
-				}
+			IAlchChestItem alchChestItem = stack.getCapability(PECapabilities.ALCH_CHEST_ITEM_CAPABILITY);
+			if (alchChestItem != null && alchChestItem.updateInAlchChest(level, pos, stack)) {
+				inventory.onContentsChanged(i);
 			}
 		}
 		if (alchChest.inventoryChanged) {
