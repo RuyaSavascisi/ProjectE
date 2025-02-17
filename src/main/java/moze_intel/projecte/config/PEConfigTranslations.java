@@ -5,14 +5,13 @@ import net.minecraft.Util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-//TODO - 1.21: Re-evaluate all these translations as well as how they look in the config gui
+//TODO: Re-evaluate all these translations
 public enum PEConfigTranslations implements IConfigTranslation {
 	//Client Config
 	CLIENT_PHILO_OVERLAY("client.philo_overlay", "Pulsating Overlay", "The Philosopher's Stone overlay softly pulsates."),
 
 	CLIENT_TOOLTIPS("client.tooltips", "Tooltip Settings", "Settings for configuring Tooltips provided by ProjectE.", true),
 
-	//TODO - 1.21: Do we want a section for emc tooltips and then enabled, and require holding shift?
 	CLIENT_TOOLTIPS_EMC("client.tooltips.emc", "EMC Tooltips", "Show the EMC value as a tooltip on items and blocks."),
 	CLIENT_TOOLTIPS_EMC_SHIFT("client.tooltips.emc.shift", "Shift EMC Tooltips",
 			"Requires holding shift to display the EMC value as a tooltip on items and blocks. Note: this does nothing if EMC Tooltips are disabled."),
@@ -37,7 +36,7 @@ public enum PEConfigTranslations implements IConfigTranslation {
 			+ "Use caution as a very low value on features that run automatically could cause TPS issues.", true),
 
 	SERVER_COOLDOWN_PEDESTAL("server.cooldown.pedestal", "Pedestal Cooldown Settings",
-			"Cooldown settings for various items within Dark Matter Pedestals.", true),
+			"Cooldown settings for various items within Dark Matter Pedestals.", "Edit Pedestal Cooldowns"),
 	SERVER_COOLDOWN_PEDESTAL_ARCHANGEL("server.cooldown.pedestal.archangel", "Archangel",
 			"Delay between Archangel Smite shooting arrows while in the pedestal."),
 	SERVER_COOLDOWN_PEDESTAL_BODY_STONE("server.cooldown.pedestal.body_stone", "Body Stone",
@@ -61,7 +60,8 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	SERVER_COOLDOWN_PEDESTAL_ZERO("server.cooldown.pedestal.zero", "SWRG",
 			"Delay between Zero Ring trying to extinguish entities and freezing ground while in the pedestal."),
 
-	SERVER_COOLDOWN_PLAYER("server.cooldown.player", "Player Cooldown Settings", "Cooldown settings for various items when being used by a player.", true),
+	SERVER_COOLDOWN_PLAYER("server.cooldown.player", "Player Cooldown Settings", "Cooldown settings for various items when being used by a player.",
+			"Edit Player Cooldowns"),
 	SERVER_COOLDOWN_PLAYER_PROJECTILE("server.cooldown.player.projectile", "Projectile", "A cooldown for firing projectiles."),
 	SERVER_COOLDOWN_PLAYER_GEM_CHESTPLATE("server.cooldown.player.gem_chestplate", "Gem Chestplate", "A cooldown for Gem Chestplate explosion."),
 	SERVER_COOLDOWN_PLAYER_REPAIR("server.cooldown.player.repair", "Repair",
@@ -124,20 +124,24 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	MAPPING_BREWING_MAPPER("mapping.mapper.brewing", "Brewing Mapper", "Add Conversions for Brewing Recipes.", true),
 	MAPPING_OXIDATION_MAPPER("mapping.mapper.oxidation", "Oxidization Mapper", "Add Conversions for all oxidizable blocks.", true),
 	MAPPING_TAG_MAPPER("mapping.mapper.tag", "Tag Mapper",
-			"Adds back and forth conversions of objects and their Tag variant. (EMC values assigned to tags will not behave properly if this mapper is disabled)", true),
+			"Adds back and forth conversions of objects and their Tag variant. (EMC values assigned to tags will not behave properly if this mapper is disabled)",
+			"Edit Tags"),
 	MAPPING_WAXABLE_MAPPER("mapping.mapper.waxable", "Waxable Mapper", "Add Conversions for all waxable blocks", true),
 
 	MAPPING_CUSTOM_CONVERSION_MAPPER("mapping.mapper.custom.conversion", "Custom Conversion Mapper",
-			"Loads json files within datapacks (data/<domain>/pe_custom_conversions/*.json) to add values and conversions.", true),
-	MAPPING_CUSTOM_EMC_MAPPER("mapping.mapper.custom.emc", "Custom EMC Mapper", "Uses the `custom_emc.json` File to add EMC values.", true),
+			"Loads json files within datapacks (data/<domain>/pe_custom_conversions/*.json) to add values and conversions.", "Edit Custom Conversions"),
+	MAPPING_CUSTOM_EMC_MAPPER("mapping.mapper.custom.emc", "Custom EMC Mapper", "Uses the `custom_emc.json` File to add EMC values.", "Edit Custom EMC"),
 
-	MAPPING_CRT_CONVERSION_MAPPER("mapping.mapper.crt.conversion", "CraftTweaker Conversion EMC Mapper",
-			"Allows adding custom conversions through CraftTweaker. This behaves similarly to if someone used a custom conversion file instead.", true),
-	MAPPING_CRT_EMC_MAPPER("mapping.mapper.crt.emc", "CraftTweaker Custom EMC Mapper",
-			"Allows setting EMC values through CraftTweaker. This behaves similarly to if someone used the custom emc file instead.", true),
+	MAPPING_CRT_CONVERSION_MAPPER("mapping.mapper.crt.conversion", "CrT Conversion EMC Mapper",
+			"Allows adding custom conversions through CraftTweaker. This behaves similarly to if someone used a custom conversion file instead.",
+			"Edit CrT Conversion"),
+	MAPPING_CRT_EMC_MAPPER("mapping.mapper.crt.emc", "CrT Custom EMC Mapper",
+			"Allows setting EMC values through CraftTweaker. This behaves similarly to if someone used the custom emc file instead.", "Edit CrT Custom EMC"),
 
-	MAPPING_BLACKLIST_ORE_MAPPER("mapping.mapper.blacklist.ore", "Ore Blacklist Mapper", "Set EMC=0 for everything in the c:ores tag.", true),
-	MAPPING_BLACKLIST_RAW_ORE_MAPPER("mapping.mapper.blacklist.raw_ore", "Raw Materials Blacklist Mapper", "Set EMC=0 for everything in the c:raw_materials tag.", true),
+	MAPPING_BLACKLIST_ORE_MAPPER("mapping.mapper.blacklist.ore", "Ore Blacklist Mapper", "Set EMC=0 for everything in the c:ores tag.",
+			"Edit Ore Blacklist"),
+	MAPPING_BLACKLIST_RAW_ORE_MAPPER("mapping.mapper.blacklist.raw_ore", "Raw Ore Blacklist Mapper",
+			"Set EMC=0 for everything in the c:raw_materials tag.", "Edit Raw Ores Blacklist"),
 
 	MAPPING_CRAFTING_MAPPER("mapping.mapper.crafting", "Crafting Mapper",
 			"Add Conversions for Crafting Recipes gathered from net.minecraft.world.item.crafting.RecipeManager", true),
@@ -150,15 +154,15 @@ public enum PEConfigTranslations implements IConfigTranslation {
 
 	MAPPING_CRAFTING_MAPPER_MARK_HANDLED("mapping.mapper.crafting.mark_handled", "Mark Special Recipes Handled",
 			"This mapper does not actually map anything, but instead just marks recipe classes as having been handled, if we either expose a processor for them, "
-			+ "or they are self referencing (for example map cloning recipes).", true),
+			+ "or they are self referencing (for example map cloning recipes).", "Edit Special Recipes"),
 	MAPPING_CRAFTING_MAPPER_SHULKER_RECOLORING("mapping.mapper.crafting.shulker_recoloring", "Shulker Recoloring Mapper",
-			"Propagates shulker box values to colored variants.", true),
+			"Propagates shulker box values to colored variants.", "Edit Shulker Recoloring"),
 	MAPPING_CRAFTING_MAPPER_TIPPED_ARROW("mapping.mapper.crafting.tipped_arrow", "Tipped Arrow Mapper",
-			"Add conversions for all lingering potions to arrow recipes.", true),
+			"Add conversions for all lingering potions to arrow recipes.", "Edit Tipped Arrows"),
 	MAPPING_CRAFTING_MAPPER_DECORATED_POT("mapping.mapper.crafting.decorated_pot", "Decorated Pot Mapper",
-			"Adds conversions for all the different decorated pot combinations.", true),
+			"Adds conversions for all the different decorated pot combinations.", "Edit Decorated Pots"),
 	MAPPING_CRAFTING_MAPPER_SUSPICIOUS_STEW("mapping.mapper.crafting.suspicious_stew", "Suspicious Stew Mapper",
-			"Adds conversions for all the different types of suspicious stews.", true),
+			"Adds conversions for all the different types of suspicious stews.", "Edit Suspicious Stew"),
 
 	MAPPING_MAPPER_ENABLED("mapping.mapper.enabled", "Enabled", "Determines whether this EMC Mapper is enabled."),
 	MAPPING_RECIPE_TYPE_MAPPER_ENABLED("mapping.mapper.recipe_type.enabled", "Enabled", "Determines whether this Recipe Type Mapper is enabled."),
@@ -173,8 +177,9 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	DCP_CONTAINER("processing.data_component_processor.container", "Container Processor", "Calculates EMC value of items stored in vanilla's container component. For example shulker boxes.", true),
 	DCP_DAMAGE("processing.data_component_processor.damage", "Damage Processor", "Reduces the EMC value the more damaged an item is.", true),
 	DCP_DECORATED_POT("processing.data_component_processor.decorated_pot", "Decorated Pot Processor",
-			"Takes the different sherds into account for each decorated pot.", true),
-	DCP_DECORATED_SHIELD("processing.data_component_processor.decorated_shield", "Decorated Shield Processor", "Calculates EMC value of decorated shield.", true),
+			"Takes the different sherds into account for each decorated pot.", "Edit Pot Processor"),
+	DCP_DECORATED_SHIELD("processing.data_component_processor.decorated_shield", "Decorated Shield Processor", "Calculates EMC value of decorated shield.",
+			"Edit Shield Processor"),
 	DCP_ENCHANTMENT("processing.data_component_processor.enchantment", "Enchantment Processor",
 			"Increases the EMC value to take into account any enchantments on an item.", true),
 	DCP_ENCHANTMENT_EMC_BONUS("processing.data_component_processor.enchantment.emc_bonus", "Enchantment EMC Bonus",
@@ -182,15 +187,15 @@ public enum PEConfigTranslations implements IConfigTranslation {
 
 	DCP_FIREWORK("processing.data_component_processor.firework", "Firework Processor", "Calculates EMC value of fireworks.", true),
 	DCP_FIREWORK_STAR("processing.data_component_processor.firework_star", "Firework Star Processor",
-			"Calculates the EMC value of Firework Stars, based on what was required to craft them.", true),
+			"Calculates the EMC value of Firework Stars, based on what was required to craft them.", "Edit Star Processor"),
 	DCP_MAP_EXTENSION("processing.data_component_processor.map_extension", "Map Extension Processor",
-			"Increases the EMC value of maps that have had their range extended.", true),
+			"Increases the EMC value of maps that have had their range extended.", "Edit Map Ext. Processor"),
 	DCP_MERCURIAL_EYE("processing.data_component_processor.mercurial_eye", "Mercurial Eye Processor",
-			"Factors in the EMC value of Klein Stars stored in Mercurial eyes.", true),
+			"Factors in the EMC value of Klein Stars stored in Mercurial eyes.", "Edit Eye Processor"),
 	DCP_STORED_EMC("processing.data_component_processor.stored_emc", "Stored EMC Processor",
 			"Increases the EMC value of the item to take into account any EMC the item has stored.", true),
 	DCP_WRITABLE_BOOK("processing.data_component_processor.writable_book", "Writable Book Processor",
-			"Allows persisting the contents of writable books. Does not change the EMC value.", true),
+			"Allows persisting the contents of writable books. Does not change the EMC value.", "Edit Writable Books"),
 	DCP_WRITTEN_BOOK("processing.data_component_processor.written_book", "Written Book Processor",
 			"Allows persisting the contents of written books. Does not change the EMC value.", true),
 
