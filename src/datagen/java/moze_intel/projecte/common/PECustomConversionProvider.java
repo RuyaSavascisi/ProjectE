@@ -66,7 +66,6 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.conversion(Items.IRON_HORSE_ARMOR).ingredient(Tags.Items.INGOTS_IRON, 8).end()
 				.conversion(Items.GOLDEN_HORSE_ARMOR).ingredient(Tags.Items.INGOTS_GOLD, 8).end()
 				.conversion(Items.DIAMOND_HORSE_ARMOR).ingredient(Tags.Items.GEMS_DIAMOND, 8).end()
-				.conversion(Items.DISC_FRAGMENT_5, 9).ingredient(Items.MUSIC_DISC_5).end()
 				.conversion(Items.CARVED_PUMPKIN).ingredient(Items.PUMPKIN).end()
 				.conversion(Items.TORCHFLOWER_SEEDS).ingredient(Items.TORCHFLOWER).end()
 				.conversion(Items.PITCHER_POD).ingredient(Items.PITCHER_PLANT).end()
@@ -75,6 +74,11 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.conversion(Items.ENCHANTED_GOLDEN_APPLE).ingredient(Items.APPLE).ingredient(Tags.Items.STORAGE_BLOCKS_GOLD, 8).end()
 				.conversion(Items.STRIPPED_BAMBOO_BLOCK).ingredient(Items.BAMBOO_BLOCK).end()
 				.conversion(Items.GLOBE_BANNER_PATTERN).ingredient(Tags.Items.GEMS_EMERALD, 3).end()
+				.conversion(Items.SKULL_BANNER_PATTERN, 3)
+				.ingredient(Items.PAPER, 3)
+				.ingredient(Items.NETHER_STAR)
+				.ingredient(Items.SOUL_SAND, -4)
+				.end()
 				//Basic default firework/firework star calculations
 				//Note: We don't use tags here as the recipes themselves don't use tags
 				// A star with no color and default shape would line up to just being gunpowder
@@ -305,22 +309,30 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.CREEPER_HEAD, 256)
 				.before(Items.PIGLIN_HEAD, 256)
 				.before(Items.PIGLIN_BANNER_PATTERN, 512)
+				.before(Items.FLOW_BANNER_PATTERN, 20_480)
+				.before(Items.GUSTER_BANNER_PATTERN, 12_224)
 				.before(Items.ENDER_PEARL, 1_024)
 				.before(Items.NAUTILUS_SHELL, 1_024)
 				.before(Tags.Items.RODS_BLAZE, 1_536)
-				//TODO - 1.21: Re-evaluate this value
 				.before(Tags.Items.RODS_BREEZE, 2_304)
 				.before(Items.SHULKER_SHELL, 2_048)
 				.before(Items.SNIFFER_EGG, 2_048)
 				.before(Items.GHAST_TEAR, 4_096)
 				.before(Items.TRIDENT, 16_398)
 				.before(Items.HEART_OF_THE_SEA, 32_768)
+				.before(Items.HEAVY_CORE, 40_960)
 				.before(Items.DRAGON_EGG, 262_144)
 				.before(Items.SADDLE, 192)
 				.before(Items.ECHO_SHARD, 192)
 				.before(Items.NAME_TAG, 192)
-				//TODO - 1.21: Re-evaluate, should this be ItemTags.CREEPER_DROP_MUSIC_DISCS
-				.before(Tags.Items.MUSIC_DISCS, 2_048)
+				.before(ItemTags.CREEPER_DROP_MUSIC_DISCS, 2_048)
+				.before(Items.DISC_FRAGMENT_5, 192)
+				.before(Items.MUSIC_DISC_CREATOR, 40_960)
+				.before(Items.MUSIC_DISC_CREATOR_MUSIC_BOX, 8_192)
+				.before(Items.MUSIC_DISC_OTHERSIDE, 6_144)
+				.before(Items.MUSIC_DISC_PIGSTEP, 8_192)
+				.before(Items.MUSIC_DISC_PRECIPICE, 12_224)
+				.before(Items.MUSIC_DISC_RELIC, 10_176)
 				.before(Items.FLINT, 4)
 				.before(Items.COAL, 128)
 				.before(Tags.Items.GEMS_QUARTZ, 256)
@@ -368,9 +380,9 @@ public class PECustomConversionProvider extends CustomConversionProvider {
 				.before(Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, 10_176)
 				.before(Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, 10_176)
 				.before(Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, 7_533)
-				//TODO - 1.21: Figure out how we actually calculated the above ones in terms of an equation
-				//.before(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, 7_533)
-				//.before(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, 7_533)
+				//TODO: Figure out how we actually calculated the above ones in terms of an equation
+				.before(Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, 30_528)
+				.before(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, 10_176)
 				;
 	}
 

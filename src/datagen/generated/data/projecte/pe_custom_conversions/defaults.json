@@ -434,19 +434,6 @@
           }
         },
         {
-          "count": 9,
-          "ingredients": [
-            {
-              "type": "projecte:item",
-              "id": "minecraft:music_disc_5"
-            }
-          ],
-          "output": {
-            "type": "projecte:item",
-            "id": "minecraft:disc_fragment_5"
-          }
-        },
-        {
           "ingredients": [
             {
               "type": "projecte:item",
@@ -546,6 +533,29 @@
           "output": {
             "type": "projecte:item",
             "id": "minecraft:globe_banner_pattern"
+          }
+        },
+        {
+          "count": 3,
+          "ingredients": [
+            {
+              "type": "projecte:item",
+              "amount": 3,
+              "id": "minecraft:paper"
+            },
+            {
+              "type": "projecte:item",
+              "id": "minecraft:nether_star"
+            },
+            {
+              "type": "projecte:item",
+              "amount": -4,
+              "id": "minecraft:soul_sand"
+            }
+          ],
+          "output": {
+            "type": "projecte:item",
+            "id": "minecraft:skull_banner_pattern"
           }
         },
         {
@@ -1800,6 +1810,16 @@
       },
       {
         "type": "projecte:item",
+        "emc_value": 20480,
+        "id": "minecraft:flow_banner_pattern"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 12224,
+        "id": "minecraft:guster_banner_pattern"
+      },
+      {
+        "type": "projecte:item",
         "emc_value": 1024,
         "id": "minecraft:ender_pearl"
       },
@@ -1845,6 +1865,11 @@
       },
       {
         "type": "projecte:item",
+        "emc_value": 40960,
+        "id": "minecraft:heavy_core"
+      },
+      {
+        "type": "projecte:item",
         "emc_value": 262144,
         "id": "minecraft:dragon_egg"
       },
@@ -1866,7 +1891,42 @@
       {
         "type": "projecte:item",
         "emc_value": 2048,
-        "tag": "c:music_discs"
+        "tag": "minecraft:creeper_drop_music_discs"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 192,
+        "id": "minecraft:disc_fragment_5"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 40960,
+        "id": "minecraft:music_disc_creator"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 8192,
+        "id": "minecraft:music_disc_creator_music_box"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 6144,
+        "id": "minecraft:music_disc_otherside"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 8192,
+        "id": "minecraft:music_disc_pigstep"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 12224,
+        "id": "minecraft:music_disc_precipice"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 10176,
+        "id": "minecraft:music_disc_relic"
       },
       {
         "type": "projecte:item",
@@ -2087,6 +2147,16 @@
         "type": "projecte:item",
         "emc_value": 7533,
         "id": "minecraft:snout_armor_trim_smithing_template"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 30528,
+        "id": "minecraft:flow_armor_trim_smithing_template"
+      },
+      {
+        "type": "projecte:item",
+        "emc_value": 10176,
+        "id": "minecraft:bolt_armor_trim_smithing_template"
       }
     ]
   }

@@ -21,6 +21,7 @@ import moze_intel.projecte.common.tag.PEBlockTagsProvider;
 import moze_intel.projecte.common.tag.PEDamageTypeTagsProvider;
 import moze_intel.projecte.common.tag.PEEntityTypeTagsProvider;
 import moze_intel.projecte.common.tag.PEItemTagsProvider;
+import moze_intel.projecte.common.tag.PEPotionsTagsProvider;
 import moze_intel.projecte.emc.EMCMappingHandler;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.HolderLookup.Provider;
@@ -64,6 +65,7 @@ public class ProjectEDataGenerator {
 		gen.addProvider(event.includeServer(), new PEEntityTypeTagsProvider(output, lookupProvider, existingFileHelper));
 		gen.addProvider(event.includeServer(), new PEBlockEntityTypeTagsProvider(output, lookupProvider, existingFileHelper));
 		gen.addProvider(event.includeServer(), new PEDamageTypeTagsProvider(output, lookupProvider, existingFileHelper));
+		gen.addProvider(event.includeServer(), new PEPotionsTagsProvider(output, lookupProvider, existingFileHelper));
 		//Other generators (after tags in case we need them to exist)
 		gen.addProvider(event.includeServer(), new AdvancementProvider(output, lookupProvider, existingFileHelper, List.of(new PEAdvancementsGenerator())));
 		gen.addProvider(event.includeServer(), new LootTableProvider(output, Collections.emptySet(), List.of(

@@ -9,6 +9,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
@@ -144,6 +145,21 @@ public class PETags {
 
 		private static TagKey<BlockEntityType<?>> tag(String name) {
 			return TagKey.create(Registries.BLOCK_ENTITY_TYPE, PECore.rl(name));
+		}
+	}
+
+	public static class Potions {
+
+		private Potions() {
+		}
+
+		/**
+		 * Items that contain potions in this tag won't be listed by the dump missing emc command even if they are missing emc.
+		 */
+		public static final TagKey<Potion> IGNORE_MISSING_EMC = tag("ignore_missing_emc");
+
+		private static TagKey<Potion> tag(String name) {
+			return TagKey.create(Registries.POTION, PECore.rl(name));
 		}
 	}
 }

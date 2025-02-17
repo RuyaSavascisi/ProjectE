@@ -157,6 +157,7 @@ neoForge.runs {
             // or eclipse's plugin that adds support for ansi escape in console
             systemProperties.put('terminal.ansi', (String) property('forge_force_ansi'))
         }
+        systemProperties.put('projecte.skip_top', "true")
 
         //if the selected toolchain is a JBR, enable DCEVM
         if (javaToolchains.launcherFor(java.toolchain).map { it.metadata.vendor }.getOrElse('').contains('JetBrains')) {

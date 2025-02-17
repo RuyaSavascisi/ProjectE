@@ -9,29 +9,38 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.ItemInfo;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.config.MappingConfig;
+import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.emc.mappers.OreBlacklistMapper;
 import moze_intel.projecte.emc.mappers.RawMaterialsBlacklistMapper;
 import moze_intel.projecte.gameObjs.PETags;
+import moze_intel.projecte.gameObjs.items.Tome;
+import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.Holder.Reference;
+import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.block.Block;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.Tags;
 
 public class DumpMissingEmc {
+
+	private static final boolean SKIP_TOP = Boolean.parseBoolean(System.getProperties().getProperty("projecte.skip_top"));
 
 	public static ArgumentBuilder<CommandSourceStack, ?> register(CommandBuildContext context) {
 		return Commands.literal("dumpmissingemc")
@@ -40,15 +49,26 @@ public class DumpMissingEmc {
 				).executes(ctx -> execute(ctx, false));
 	}
 
-	private static boolean expectedMissing(Item item) {
-		if (item instanceof BlockItem blockItem && blockItem.getBlock().defaultDestroyTime() == Block.INDESTRUCTIBLE) {
-			//Assume unbreakable blocks won't have an EMC value by default
+	private static boolean expectedMissing(FeatureFlagSet enabledFeatures, ItemInfo info) {
+		Holder<Item> holder = info.getItem();
+		if (holder.is(PETags.Items.IGNORE_MISSING_EMC)) {
 			return true;
 		}
-		//noinspection deprecation
-		Reference<Item> holder = item.builtInRegistryHolder();
+		if (switch (holder.value()) {
+			//Assume unbreakable blocks won't have an EMC value by default
+			case BlockItem blockItem when blockItem.getBlock().defaultDestroyTime() == Block.INDESTRUCTIBLE -> true;
+			case Tome tome when !ProjectEConfig.common.craftableTome.get() -> true;
+			case BundleItem bundleItem when !enabledFeatures.contains(FeatureFlags.BUNDLE) -> true;
+			default -> false;
+		}) {
+			return true;
+		} else if (!FMLEnvironment.production && SKIP_TOP &&
+				   holder.unwrapKey().map(key -> key.location().getNamespace().equals(IntegrationHelper.TOP_MODID)).orElse(false)) {
+			//Skip TOP items in dev
+			return true;
+		}
 		if (MappingConfig.isEnabled(OreBlacklistMapper.INSTANCE)) {
-			if (holder.is(Tags.Items.ORES) || item == Items.GILDED_BLACKSTONE) {
+			if (holder.is(Tags.Items.ORES) || holder.value() == Items.GILDED_BLACKSTONE) {
 				return true;
 			}
 		}
@@ -58,18 +78,8 @@ public class DumpMissingEmc {
 				return true;
 			}
 		}
-		return holder.is(PETags.Items.IGNORE_MISSING_EMC);
-		//TODO - 1.21: Add values for or mark as ignored
-		// minecraft:bolt_armor_trim_smithing_template
-		// minecraft:flow_armor_trim_smithing_template
-		// minecraft:flow_banner_pattern
-		// minecraft:guster_banner_pattern
-		// minecraft:heavy_core // minecraft:mace
-		// minecraft:ominous_bottle
-		// minecraft:ominous_bottle {minecraft:ominous_bottle_amplifier=>1}
-		// minecraft:ominous_bottle {minecraft:ominous_bottle_amplifier=>2}
-		// minecraft:ominous_bottle {minecraft:ominous_bottle_amplifier=>3}
-		// minecraft:ominous_bottle {minecraft:ominous_bottle_amplifier=>4}
+		PotionContents potionContents = info.getOrNull(DataComponents.POTION_CONTENTS);
+		return potionContents != null && potionContents.potion().isPresent() && potionContents.potion().get().is(PETags.Potions.IGNORE_MISSING_EMC);
 	}
 
 	private static int execute(CommandContext<CommandSourceStack> ctx, boolean skipExpectedMissing) {
@@ -101,12 +111,12 @@ public class DumpMissingEmc {
 		for (Item item : registryAccess.registryOrThrow(Registries.ITEM)) {
 			//Skip air, and skip any items that are not currently enabled in the world
 			if (item != Items.AIR && item.isEnabled(features)) {
-				if (skipExpectedMissing && expectedMissing(item)) {
+				//Note: This is intentionally not using Item#getDefaultInstance as data component based variants should be based on the creative mode tabs
+				ItemInfo itemInfo = ItemInfo.fromItem(item);
+				if (skipExpectedMissing && expectedMissing(features, itemInfo)) {
 					//Skip any items that we expected to be missing (for example ores)
 					continue;
 				}
-				//Note: This is intentionally not using Item#getDefaultInstance as data component based variants should be based on the creative mode tabs
-				ItemInfo itemInfo = ItemInfo.fromItem(item);
 				if (!IEMCProxy.INSTANCE.hasValue(itemInfo)) {
 					//If the item doesn't have EMC add it to the list of items we haven't addressed yet
 					missing.add(itemInfo);
@@ -121,7 +131,7 @@ public class DumpMissingEmc {
 				if (IEMCProxy.INSTANCE.hasValue(itemInfo)) {
 					//If it does, remove the default variant from missing if it was missing
 					missing.remove(itemInfo.itemOnly());
-				} else {
+				} else if (!skipExpectedMissing || !expectedMissing(features, itemInfo)) {
 					//If it doesn't, add it to the set of items that are missing an EMC value
 					missing.add(itemInfo);
 				}
