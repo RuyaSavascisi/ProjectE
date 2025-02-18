@@ -66,7 +66,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		//JEI
 		add(PELang.JEI_COLLECTOR, "Collector Fuel Upgrades");
 		add(PELang.WORLD_TRANSMUTE, "World Transmutation");
-		add(PELang.WORLD_TRANSMUTE_DESCRIPTION, "Click in world, shift click for second output");
+		add(PELang.WORLD_TRANSMUTE_DESCRIPTION, "Right click in world, shift right click for alternate output");
 		//Curios
 		add(PELang.CURIOS_KLEIN_STAR, "Klein Star");
 		//Gem Armor
@@ -257,11 +257,15 @@ public class PELangProvider extends BaseLanguageProvider {
 	}
 
 	private void addTags() {
+		add(PETags.Items.CURIOS_KLEIN_STAR, "Klein Stars");
 		add(PETags.Items.ALCHEMICAL_BAGS, "Alchemical Bags");
 		add(PETags.Items.COLLECTOR_FUEL, "Collector Fuels");
 		add(PETags.Items.DATA_COMPONENT_WHITELIST, "Data Component Whitelist");
 		add(PETags.Items.COVALENCE_DUST, "Covalence Dusts");
 		add(PETags.Items.IGNORE_MISSING_EMC, "Ignore Missing EMC");
+		add(PETags.Items.COLLECTORS, "Energy Collectors");
+		add(PETags.Items.RELAYS, "Anti-Matter Relays");
+		add(PETags.Items.MATTER_FURNACES, "Matter Furnaces");
 		add(PETags.Items.TOOLS_HAMMERS, "Hammers");
 		add(PETags.Items.TOOLS_KATARS, "Katars");
 		add(PETags.Items.TOOLS_MORNING_STARS, "Morning Stars");

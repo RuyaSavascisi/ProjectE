@@ -1,4 +1,4 @@
-// 1.21.1	2025-02-17T11:50:21.0208208	Tags for minecraft:item mod id projecte
+// 1.21.1	2025-02-17T17:35:51.1673222	Tags for minecraft:item mod id projecte
 b3907f1aa02b78471363a02cc94dc9569664a81d data/curios/tags/item/belt.json
 9090bbbb09865a842a67d6a0c05eaf72df3720f7 data/curios/tags/item/klein_star.json
 58753d63ef9f09a75ea529395bb7c6d282310f2b data/curios/tags/item/necklace.json
@@ -52,7 +52,10 @@ a3612c0c6ac88b4f7d308e2e6959db0e60844f29 data/minecraft/tags/item/head_armor.jso
 9ae97ede3f5cb1da48ae0afdfb3e9f08eee6583a data/minecraft/tags/item/shovels.json
 ef5522fcafe54247070253f636dc82439aefb8dd data/minecraft/tags/item/swords.json
 823df3f383ec8da9f84db57523a1d8ee863903b7 data/projecte/tags/item/alchemical_bags.json
+a4365b08d9870277b9f477c6e6b1ca58906552e6 data/projecte/tags/item/collectors.json
 e4725bb8b1976c0a55fd0ced5bb9741612220299 data/projecte/tags/item/collector_fuel.json
 fd5806da7a4775edf3b8f6520ee2bdd6d4068164 data/projecte/tags/item/covalence_dust.json
 35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/projecte/tags/item/data_component_whitelist.json
 b9eb1cdf8769847aebf675cd8fd2a17897d13723 data/projecte/tags/item/ignore_missing_emc.json
+484813f35095aea461e7bfeb89ac684052131339 data/projecte/tags/item/matter_furnaces.json
+441a38e41d07edb43dfdc1ab0ad1c2a00732a28a data/projecte/tags/item/relays.json

@@ -206,12 +206,13 @@ public class CollectorMK1BlockEntity extends EmcBlockEntity implements MenuProvi
 					forceExtractEmc(actualInserted, EmcAction.EXECUTE);
 				}
 			} else if (hasFuel) {
-				if (FuelMapper.getFuelUpgrade(upgrading).isEmpty()) {
+				ItemStack fuelUpgrade = FuelMapper.getFuelUpgrade(upgrading);
+				if (fuelUpgrade.isEmpty()) {
 					auxSlots.setStackInSlot(UPGRADING_SLOT, ItemStack.EMPTY);
 				}
 
 				ItemStack lock = getLock();
-				ItemStack result = lock.isEmpty() ? FuelMapper.getFuelUpgrade(upgrading) : lock.copy();
+				ItemStack result = lock.isEmpty() ? fuelUpgrade : lock.copy();
 
 				long upgradeCost = IEMCProxy.INSTANCE.getValue(result) - IEMCProxy.INSTANCE.getValue(upgrading);
 

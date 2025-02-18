@@ -13,6 +13,7 @@ import net.neoforged.neoforge.items.IItemHandler;
 public class IntegrationHelper {
 
 	public static final String CURIO_MODID = "curios";
+	public static final String EMI_MODID = "emi";
 	public static final String TOP_MODID = "theoneprobe";
 
 	public static final EntityCapability<IItemHandler, Void> CURIO_ITEM_HANDLER = EntityCapability.createVoid(ResourceLocation.fromNamespaceAndPath(CURIO_MODID, "item_handler"), IItemHandler.class);

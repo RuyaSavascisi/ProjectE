@@ -213,6 +213,7 @@ repositories { RepositoryHandler handler ->
         filter.includeGroup('mezz.jei')
         filter.includeGroup('org.openzen.zencode')
     })
+    exclusiveRepo(handler, 'https://maven.terraformersmc.com/', 'dev.emi')
     exclusiveRepo(handler, 'https://maven.octo-studios.com/releases/', 'top.theillusivec4.curios')
     exclusiveRepo(handler, 'https://maven2.bai.lol', 'lol.bai', 'mcp.mobius.waila')//WTHIT
     exclusiveRepo(handler, 'https://modmaven.dev/', 'mcjty.theoneprobe')
@@ -228,9 +229,23 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junit_version}")
     testImplementation("net.neoforged:testframework:${neo_version}")
 
-    compileOnly("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
-    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    if (recipe_viewer == 'jei' || recipe_viewer == 'hybrid') {
+        runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+    }
+
+    compileOnly("dev.emi:emi-neoforge:${emi_version}+${minecraft_version}:api")
+    def emi = "dev.emi:emi-neoforge:${emi_version}+${minecraft_version}"
+    //TODO: Re-evaluate (https://github.com/emilyploszaj/emi/issues/537) might allow us to not have to do this
+    //Compile against full emi in datagen
+    datagenCompileOnly(emi)
+    if (recipe_viewer == 'emi' || recipe_viewer == 'hybrid') {
+        runtimeOnly(emi)
+    } else {
+        //We still need it to load in datagen regardless of if we are using emi or a different viewer so that we can access EMI related objects
+        datagenRuntimeOnly(emi)
+    }
+
 
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
     runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")

@@ -1,8 +1,8 @@
 package moze_intel.projecte.network.packets.to_client;
 
 import io.netty.handler.codec.EncoderException;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.LinkedHashSet;
 import java.util.SequencedSet;
 import moze_intel.projecte.PECore;
@@ -25,7 +25,7 @@ public record SyncWorldTransmutations(Reference2ObjectMap<Block, SequencedSet<IW
 	public static final Type<SyncWorldTransmutations> TYPE = new Type<>(PECore.rl("sync_world_transmutations"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, SyncWorldTransmutations> STREAM_CODEC =
 			ByteBufCodecs.<RegistryFriendlyByteBuf, Block, SequencedSet<IWorldTransmutation>, Reference2ObjectMap<Block, SequencedSet<IWorldTransmutation>>>
-					map(Reference2ObjectOpenHashMap::new, ByteBufCodecs.registry(Registries.BLOCK),
+					map(Reference2ObjectLinkedOpenHashMap::new, ByteBufCodecs.registry(Registries.BLOCK),
 					ByteBufCodecs.collection(LinkedHashSet::new, new StreamCodec<>() {
 						@Override
 						public void encode(@NotNull RegistryFriendlyByteBuf buffer, @NotNull IWorldTransmutation value) {

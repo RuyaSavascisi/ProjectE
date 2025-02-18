@@ -72,6 +72,20 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				PEItems.REPAIR_TALISMAN.get(),
 				PEItems.WATCH_OF_FLOWING_TIME.get()
 		);
+		tag(PETags.Items.RELAYS).add(
+				PEBlocks.RELAY.asItem(),
+				PEBlocks.RELAY_MK2.asItem(),
+				PEBlocks.RELAY_MK3.asItem()
+		);
+		tag(PETags.Items.COLLECTORS).add(
+				PEBlocks.COLLECTOR.asItem(),
+				PEBlocks.COLLECTOR_MK2.asItem(),
+				PEBlocks.COLLECTOR_MK3.asItem()
+		);
+		tag(PETags.Items.MATTER_FURNACES).add(
+				PEBlocks.DARK_MATTER_FURNACE.asItem(),
+				PEBlocks.RED_MATTER_FURNACE.asItem()
+		);
 		IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item> kleinStarBuilder = tag(PETags.Items.CURIOS_KLEIN_STAR);
 		for (EnumKleinTier tier : EnumKleinTier.values()) {
 			kleinStarBuilder.add(PEItems.getStar(tier).value());

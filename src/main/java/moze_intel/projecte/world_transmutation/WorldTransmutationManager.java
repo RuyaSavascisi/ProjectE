@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.serialization.DataResult;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
@@ -65,7 +66,7 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 	protected void apply(@NotNull Map<ResourceLocation, JsonElement> object, @NotNull ResourceManager resourceManager, @NotNull ProfilerFiller profiler) {
 		//Ensure we are interacting with the condition context
 		RegistryOps<JsonElement> registryOps = makeConditionalOps();
-		Reference2ObjectMap<Block, SequencedSet<IWorldTransmutation>> builder = new Reference2ObjectOpenHashMap<>();
+		Reference2ObjectMap<Block, SequencedSet<IWorldTransmutation>> builder = new Reference2ObjectLinkedOpenHashMap<>();
 
 		// Find all data/<domain>/pe_world_transmutations/foo/bar.json
 		for (Entry<ResourceLocation, JsonElement> entry : object.entrySet()) {
@@ -189,7 +190,7 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 			makeEntriesMutable();
 		} else if (modifiedEntries == Reference2ObjectMaps.<Block, SequencedSet<IWorldTransmutation>>emptyMap()) {
 			//If we have no entries and the set we used was immutable, we need to switch to using a mutable one
-			modifiedEntries = new Reference2ObjectOpenHashMap<>();
+			modifiedEntries = new Reference2ObjectLinkedOpenHashMap<>();
 		}
 		//Try to add the transmutation
 		modifiedEntries.computeIfAbsent(transmutation.origin().value(), origin -> new LinkedHashSet<>()).add(transmutation);
@@ -219,7 +220,7 @@ public class WorldTransmutationManager extends SimpleJsonResourceReloadListener 
 	}
 
 	private void makeEntriesMutable() {
-		modifiedEntries = new Reference2ObjectOpenHashMap<>(entries.size());
+		modifiedEntries = new Reference2ObjectLinkedOpenHashMap<>(entries.size());
 		for (Map.Entry<Block, SequencedSet<IWorldTransmutation>> entry : entries.entrySet()) {
 			modifiedEntries.put(entry.getKey(), new LinkedHashSet<>(entry.getValue()));
 		}

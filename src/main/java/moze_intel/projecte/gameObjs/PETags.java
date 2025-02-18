@@ -40,6 +40,10 @@ public class PETags {
 		 * Items in this tag won't be listed by the dump missing emc command even if they are missing emc.
 		 */
 		public static final TagKey<Item> IGNORE_MISSING_EMC = tag("ignore_missing_emc");
+		//Tags for EMI catalysts
+		public static final TagKey<Item> RELAYS = tag("relays");
+		public static final TagKey<Item> COLLECTORS = tag("collectors");
+		public static final TagKey<Item> MATTER_FURNACES = tag("matter_furnaces");
 		//Curios tags
 		public static final TagKey<Item> CURIOS_BELT = curiosTag("belt");
 		public static final TagKey<Item> CURIOS_KLEIN_STAR = curiosTag("klein_star");

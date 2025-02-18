@@ -1,29 +1,29 @@
-package moze_intel.projecte.integration.jei.world_transmute;
+package moze_intel.projecte.integration.recipe_viewer.jei;
 
 import com.mojang.datafixers.util.Either;
-import java.util.ArrayList;
-import java.util.List;
+import com.mojang.serialization.Codec;
 import java.util.Optional;
-import java.util.SequencedSet;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
+import mezz.jei.api.helpers.ICodecHelper;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.neoforge.NeoForgeTypes;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.api.world_transmutation.IWorldTransmutation;
 import moze_intel.projecte.gameObjs.registries.PEItems;
+import moze_intel.projecte.integration.recipe_viewer.WorldTransmuteEntry;
 import moze_intel.projecte.utils.text.PELang;
-import moze_intel.projecte.world_transmutation.WorldTransmutationManager;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -32,11 +32,9 @@ import org.jetbrains.annotations.NotNull;
 public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransmuteEntry> {
 
 	public static final RecipeType<WorldTransmuteEntry> RECIPE_TYPE = new RecipeType<>(PECore.rl("world_transmutation"), WorldTransmuteEntry.class);
-	private final IDrawable arrow;
 	private final IDrawable icon;
 
 	public WorldTransmuteRecipeCategory(IGuiHelper guiHelper) {
-		arrow = guiHelper.drawableBuilder(PECore.rl("textures/gui/arrow.png"), 0, 0, 22, 15).setTextureSize(32, 32).build();
 		icon = guiHelper.createDrawableIngredient(VanillaTypes.ITEM_STACK, PEItems.PHILOSOPHERS_STONE.asStack());
 	}
 
@@ -53,13 +51,18 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 	}
 
 	@Override
+	public ResourceLocation getRegistryName(WorldTransmuteEntry recipe) {
+		return recipe.syntheticId();
+	}
+
+	@Override
 	public int getWidth() {
-		return 135;
+		return 90;
 	}
 
 	@Override
 	public int getHeight() {
-		return 48;
+		return 26;
 	}
 
 	@NotNull
@@ -69,24 +72,21 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 	}
 
 	@Override
-	public void draw(@NotNull WorldTransmuteEntry recipe, @NotNull IRecipeSlotsView recipeSlotsView, @NotNull GuiGraphics graphics, double mouseX, double mouseY) {
-		arrow.draw(graphics, 55, 18);
+	public void createRecipeExtras(@NotNull IRecipeExtrasBuilder builder, @NotNull WorldTransmuteEntry recipe, @NotNull IFocusGroup focuses) {
+		builder.addRecipeArrow().setPosition(25, 5);
 	}
 
 	@Override
 	public void setRecipe(@NotNull IRecipeLayoutBuilder builder, @NotNull WorldTransmuteEntry recipe, @NotNull IFocusGroup focuses) {
-		if (recipe.hasInput()) {
-			addIngredient(builder, RecipeIngredientRole.INPUT, 16, recipe.getInput());
-		}
-		int xPos = 96;
-		for (Either<ItemStack, FluidStack> output : recipe.getOutput()) {
-			addIngredient(builder, RecipeIngredientRole.OUTPUT, xPos, output);
-			xPos += 16;
+		addIngredient(builder, RecipeIngredientRole.INPUT, 5, recipe.input());
+		addIngredient(builder, RecipeIngredientRole.OUTPUT, 51, recipe.output());
+		if (recipe.altOutput() != null) {
+			addIngredient(builder, RecipeIngredientRole.OUTPUT, 68, recipe.altOutput());
 		}
 	}
 
 	private void addIngredient(IRecipeLayoutBuilder builder, RecipeIngredientRole role, int xPos, Either<ItemStack, FluidStack> ingredient) {
-		IRecipeSlotBuilder slot = builder.addSlot(role, xPos, 16);
+		IRecipeSlotBuilder slot = builder.addSlot(role, xPos, 5);
 		ingredient.ifLeft(slot::addItemStack);
 		Optional<FluidStack> right = ingredient.right();
 		//noinspection OptionalIsPresent - Capturing lambda
@@ -98,21 +98,14 @@ public class WorldTransmuteRecipeCategory implements IRecipeCategory<WorldTransm
 
 	@Override
 	public void getTooltip(@NotNull ITooltipBuilder tooltip, @NotNull WorldTransmuteEntry recipe, @NotNull IRecipeSlotsView recipeSlotsView, double mouseX, double mouseY) {
-		if (mouseX > 67 && mouseX < 107 && mouseY > 18 && mouseY < 38) {
+		if (mouseX >= 25 && mouseX < 49 && mouseY >= 5 && mouseY < 21) {
 			tooltip.add(PELang.WORLD_TRANSMUTE_DESCRIPTION.translate());
 		}
 	}
 
-	public static List<WorldTransmuteEntry> getAllTransmutations() {
-		List<WorldTransmuteEntry> visible = new ArrayList<>();
-		for (SequencedSet<IWorldTransmutation> transmutationsForBlock : WorldTransmutationManager.INSTANCE.getWorldTransmutations().values()) {
-			for (IWorldTransmutation transmutation : transmutationsForBlock) {
-				WorldTransmuteEntry entry = new WorldTransmuteEntry(transmutation);
-				if (entry.isRenderable()) {
-					visible.add(entry);
-				}
-			}
-		}
-		return visible;
+	@NotNull
+	@Override
+	public Codec<WorldTransmuteEntry> getCodec(@NotNull ICodecHelper codecHelper, @NotNull IRecipeManager recipeManager) {
+		return WorldTransmuteEntry.CODEC;
 	}
 }

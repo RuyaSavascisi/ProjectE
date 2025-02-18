@@ -5,10 +5,12 @@ import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.network.packets.to_client.SyncFuelMapperPKT;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 public final class FuelMapper {
 
@@ -49,19 +51,25 @@ public final class FuelMapper {
 	}
 
 	public static ItemStack getFuelUpgrade(ItemStack stack) {
-		if (stack.is(PETags.Items.COLLECTOR_FUEL)) {
+		Holder<Item> fuelUpgrade = getFuelUpgrade(stack.getItemHolder());
+		return fuelUpgrade == null ? ItemStack.EMPTY : new ItemStack(fuelUpgrade);
+	}
+
+	@Nullable
+	public static Holder<Item> getFuelUpgrade(Holder<Item> holder) {
+		if (holder.is(PETags.Items.COLLECTOR_FUEL)) {
 			for (int i = 0, elements = FUEL_MAP.size(); i < elements; i++) {
-				if (stack.is(FUEL_MAP.get(i))) {
+				if (holder.is(FUEL_MAP.get(i))) {
 					if (i + 1 == elements) {
 						//No upgrade for items already at the highest tier
-						return ItemStack.EMPTY;
+						return null;
 					}
-					return new ItemStack(FUEL_MAP.get(i + 1));
+					return FUEL_MAP.get(i + 1);
 				}
 			}
 		}
-		PECore.LOGGER.warn("Tried to upgrade invalid fuel: {}", stack.getItem());
-		return ItemStack.EMPTY;
+		PECore.LOGGER.warn("Tried to upgrade invalid fuel: {}", holder.getRegisteredName());
+		return null;
 	}
 
 	/**
