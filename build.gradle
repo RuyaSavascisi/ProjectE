@@ -113,6 +113,7 @@ java {
         languageVersion.set(JavaLanguageVersion.of(21))
         vendor.set(JvmVendorSpec.JETBRAINS)
     }
+    withSourcesJar()
 }
 
 neoForge {
@@ -300,6 +301,14 @@ tasks.named('jar', Jar) {
     from([sourceSets.api.output, sourceSets.main.output])
     manifest.attributes(getManifestAttributes())
     finalizedBy(shadowJar)
+}
+
+tasks.named('sourcesJar', Jar) {
+    dependsOn(classes, apiClasses)
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    //Note: Already contains main source set's sources by default
+    from(sourceSets.api.allJava)
+    manifest.attributes(getManifestAttributes())
 }
 
 def apiJar = tasks.register('apiJar', Jar) {
