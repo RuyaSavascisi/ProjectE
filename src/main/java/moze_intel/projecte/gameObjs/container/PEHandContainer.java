@@ -2,6 +2,7 @@ package moze_intel.projecte.gameObjs.container;
 
 import moze_intel.projecte.gameObjs.container.slots.HotBarSlot;
 import moze_intel.projecte.gameObjs.registration.impl.ContainerTypeRegistryObject;
+import moze_intel.projecte.network.packets.to_client.container.SyncOffhandPkt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -14,6 +15,8 @@ public class PEHandContainer extends PEContainer {
 	public final InteractionHand hand;
 	private final int selected;
 	protected final ItemStack stack;
+	//Note: Only used if the hand is the offhand
+	private ItemStack remoteOffHand = ItemStack.EMPTY;
 
 	protected PEHandContainer(ContainerTypeRegistryObject<? extends PEHandContainer> typeRO, int windowId, Inventory playerInv, InteractionHand hand, int selected) {
 		super(typeRO, windowId, playerInv);
@@ -31,6 +34,18 @@ public class PEHandContainer extends PEContainer {
 			return ItemStack.EMPTY;
 		}
 		return hand == InteractionHand.OFF_HAND ? playerInv.player.getOffhandItem() : playerInv.getItem(selected);
+	}
+
+	@Override
+	protected void broadcastPE(boolean all) {
+		super.broadcastPE(all);
+		if (hand == InteractionHand.OFF_HAND) {
+			ItemStack offhandStack = getStack();
+			if (!ItemStack.matches(offhandStack, remoteOffHand)) {
+				remoteOffHand = offhandStack.copy();
+				syncDataChange(new SyncOffhandPkt((short) containerId, remoteOffHand));
+			}
+		}
 	}
 
 	@Override

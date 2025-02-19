@@ -40,7 +40,6 @@ public class EternalDensityContainer extends PEHandContainer {
 	}
 
 	public boolean isWhitelistMode() {
-		//TODO  1.21: Fix that this doesn't work properly after the first update as the offhand isn't synced to the client when a container is open
 		return getStack().getOrDefault(PEDataComponentTypes.GEM_DATA, GemData.EMPTY).isWhitelist();
 	}
 

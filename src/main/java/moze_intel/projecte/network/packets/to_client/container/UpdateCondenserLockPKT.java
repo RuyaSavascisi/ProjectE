@@ -1,4 +1,4 @@
-package moze_intel.projecte.network.packets.to_client;
+package moze_intel.projecte.network.packets.to_client.container;
 
 import java.util.Optional;
 import moze_intel.projecte.PECore;

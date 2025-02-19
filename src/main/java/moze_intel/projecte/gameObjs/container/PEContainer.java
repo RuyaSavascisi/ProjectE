@@ -8,7 +8,7 @@ import moze_intel.projecte.gameObjs.container.slots.InventoryContainerSlot;
 import moze_intel.projecte.gameObjs.container.slots.MainInventorySlot;
 import moze_intel.projecte.gameObjs.registration.impl.ContainerTypeRegistryObject;
 import moze_intel.projecte.network.packets.IPEPacket;
-import moze_intel.projecte.network.packets.to_client.UpdateWindowLongPKT;
+import moze_intel.projecte.network.packets.to_client.container.UpdateWindowLongPKT;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
