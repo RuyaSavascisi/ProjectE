@@ -335,7 +335,7 @@ def shadowJar = tasks.named('shadowJar', ShadowJar) {
     // the things to get "added" twice but it is filtered separately by the shadow
     // plugin anyways
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    archiveClassifier.set("universal") // Replace the default JAR
+    archiveClassifier.set('') // Replace the default JAR
 
     configurations = [project.configurations.shadow]
     exclude('assets/org/**')
