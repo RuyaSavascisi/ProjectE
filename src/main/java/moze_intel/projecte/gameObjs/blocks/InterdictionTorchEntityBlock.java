@@ -1,6 +1,6 @@
 package moze_intel.projecte.gameObjs.blocks;
 
-import moze_intel.projecte.gameObjs.block_entities.InterdictionTorchBlockEntity;
+import moze_intel.projecte.gameObjs.block_entities.InterdictionBlockEntity;
 import moze_intel.projecte.gameObjs.registration.impl.BlockEntityTypeRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlockEntityTypes;
 import net.minecraft.core.BlockPos;
@@ -12,11 +12,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public interface InterdictionTorchEntityBlock extends PEEntityBlock<InterdictionTorchBlockEntity> {
+public interface InterdictionTorchEntityBlock extends PEEntityBlock<InterdictionBlockEntity> {
 
 	@Nullable
 	@Override
-	default BlockEntityTypeRegistryObject<InterdictionTorchBlockEntity> getType() {
+	default BlockEntityTypeRegistryObject<InterdictionBlockEntity> getType() {
 		return PEBlockEntityTypes.INTERDICTION_TORCH;
 	}
 

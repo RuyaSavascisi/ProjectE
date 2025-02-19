@@ -22,4 +22,13 @@ public class CataliticLens extends DestructionCatalyst implements IProjectileSho
 	public int getNumCharges(@NotNull ItemStack stack) {
 		return 7;
 	}
+
+	@Override
+	protected int calculateDepthFromCharge(ItemStack stack) {
+		int charge = getCharge(stack);
+		if (charge == 0) {
+			return 1;
+		}
+		return 8 + 8 * charge;
+	}
 }

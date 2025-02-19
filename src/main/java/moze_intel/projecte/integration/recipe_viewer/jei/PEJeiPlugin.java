@@ -25,6 +25,7 @@ import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.integration.IntegrationHelper;
 import moze_intel.projecte.integration.recipe_viewer.RecipeViewerHelper;
+import moze_intel.projecte.integration.recipe_viewer.alias.ProjectEAliasMapping;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
@@ -141,7 +142,7 @@ public class PEJeiPlugin implements IModPlugin {
 
 	@Override
 	public void registerIngredientAliases(@NotNull IIngredientAliasRegistration registration) {
-		//new MekanismAliasMapping().addAliases(new JEIAliasHelper(registration));
+		new ProjectEAliasMapping().addAliases(new JEIAliasHelper(registration));
 	}
 
 	@Override

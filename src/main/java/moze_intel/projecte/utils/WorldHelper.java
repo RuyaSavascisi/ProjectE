@@ -37,7 +37,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
@@ -97,10 +96,6 @@ import org.jetbrains.annotations.Nullable;
 public final class WorldHelper {
 
 	private static final Predicate<Entity> SWRG_REPEL_PREDICATE = entity -> validRepelEntity(entity, PETags.Entities.BLACKLIST_SWRG);
-	private static final Predicate<Entity> INTERDICTION_REPEL_PREDICATE = entity -> validRepelEntity(entity, PETags.Entities.BLACKLIST_INTERDICTION);
-	//Note: We don't need to check if the projectile entity is on the ground here or not, as if it is we would not get past validRepelEntity
-	private static final Predicate<Entity> INTERDICTION_REPEL_HOSTILE_PREDICATE = entity -> validRepelEntity(entity, PETags.Entities.BLACKLIST_INTERDICTION) &&
-																							(entity instanceof Enemy || entity instanceof Projectile);
 
 	/**
 	 * Drops all the items in the list at the given location compacting as much as possible.
@@ -645,7 +640,7 @@ public final class WorldHelper {
 		}
 	}
 
-	private static boolean validRepelEntity(Entity entity, TagKey<EntityType<?>> blacklistTag) {
+	public static boolean validRepelEntity(Entity entity, TagKey<EntityType<?>> blacklistTag) {
 		if (!entity.isSpectator() && !entity.getType().is(blacklistTag)) {
 			if (entity instanceof Projectile) {
 				//Accept any projectile's that are not in the ground, but fail for ones that are in the ground
@@ -654,23 +649,6 @@ public final class WorldHelper {
 			return entity instanceof Mob;
 		}
 		return false;
-	}
-
-	/**
-	 * Repels projectiles and mobs in the given AABB away from the center
-	 */
-	public static void repelEntitiesInterdiction(Level level, AABB effectBounds) {
-		repelEntitiesInterdiction(level, effectBounds, effectBounds.getCenter());
-	}
-
-	/**
-	 * Repels projectiles and mobs in the given AABB away from a given point
-	 */
-	public static void repelEntitiesInterdiction(Level level, AABB effectBounds, Vec3 point) {
-		Predicate<Entity> repelPredicate = ProjectEConfig.server.effects.interdictionMode.get() ? INTERDICTION_REPEL_HOSTILE_PREDICATE : INTERDICTION_REPEL_PREDICATE;
-		for (Entity ent : level.getEntitiesOfClass(Entity.class, effectBounds, repelPredicate)) {
-			repelEntity(point, ent);
-		}
 	}
 
 	/**
@@ -692,7 +670,7 @@ public final class WorldHelper {
 		}
 	}
 
-	private static void repelEntity(Vec3 vec, Entity entity) {
+	public static void repelEntity(Vec3 vec, Entity entity) {
 		double distance = vec.distanceTo(entity.position()) + 0.1;
 		entity.push(entity.position()
 				.subtract(vec)

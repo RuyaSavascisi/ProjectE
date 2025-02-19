@@ -1,6 +1,6 @@
 package moze_intel.projecte.gameObjs.blocks;
 
-import moze_intel.projecte.gameObjs.items.PhilosophersStone;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
@@ -53,7 +53,7 @@ public abstract class BlockDirection extends Block {
 	public void attack(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player) {
 		if (!level.isClientSide) {
 			ItemStack stack = player.getMainHandItem();
-			if (!stack.isEmpty() && stack.getItem() instanceof PhilosophersStone) {
+			if (!stack.isEmpty() && stack.is(PEItems.PHILOSOPHERS_STONE)) {
 				level.setBlockAndUpdate(pos, level.getBlockState(pos).setValue(FACING, player.getDirection().getOpposite()));
 			}
 		}

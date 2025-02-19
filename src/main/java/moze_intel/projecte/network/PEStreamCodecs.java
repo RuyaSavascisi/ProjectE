@@ -6,6 +6,7 @@ import java.util.function.IntFunction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -19,6 +20,11 @@ public final class PEStreamCodecs {
 	public static final StreamCodec<ByteBuf, BigInteger> EMC_VALUE = ByteBufCodecs.STRING_UTF8.map(
 			emc -> emc.isEmpty() ? BigInteger.ZERO : new BigInteger(emc),
 			BigInteger::toString
+	);
+
+	public static final StreamCodec<ByteBuf, InteractionHand> INTERACTION_HAND = ByteBufCodecs.BOOL.map(
+			bool -> bool ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND,
+			hand -> hand == InteractionHand.MAIN_HAND
 	);
 
 	public static final StreamCodec<ByteBuf, Vec3> VEC_3 = StreamCodec.composite(

@@ -9,6 +9,7 @@ import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.integration.jade.PEJadeConstants;
+import moze_intel.projecte.integration.recipe_viewer.alias.ProjectEAliases;
 import moze_intel.projecte.utils.PEKeybind;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.Util;
@@ -24,6 +25,7 @@ public class PELangProvider extends BaseLanguageProvider {
 	@Override
 	protected void addTranslations() {
 		addAdvancements();
+		addAliases(ProjectEAliases.values());
 		addBlocks();
 		addCommands();
 		addConfigs();
@@ -263,6 +265,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PETags.Items.DATA_COMPONENT_WHITELIST, "Data Component Whitelist");
 		add(PETags.Items.COVALENCE_DUST, "Covalence Dusts");
 		add(PETags.Items.IGNORE_MISSING_EMC, "Ignore Missing EMC");
+		add(PETags.Items.KLEIN_STARS, "Klein Stars");
 		add(PETags.Items.COLLECTORS, "Energy Collectors");
 		add(PETags.Items.RELAYS, "Anti-Matter Relays");
 		add(PETags.Items.MATTER_FURNACES, "Matter Furnaces");

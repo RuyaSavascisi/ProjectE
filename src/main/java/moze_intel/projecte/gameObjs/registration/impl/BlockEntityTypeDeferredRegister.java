@@ -13,6 +13,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BlockEntityType.BlockEntitySupplier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -28,7 +29,7 @@ public class BlockEntityTypeDeferredRegister extends PEDeferredRegister<BlockEnt
 		super(Registries.BLOCK_ENTITY_TYPE, modid, BlockEntityTypeRegistryObject::new);
 	}
 
-	public <BE extends BlockEntity> BlockEntityTypeBuilder<BE> builder(BlockRegistryObject<?, ?> block, BlockEntityType.BlockEntitySupplier<? extends BE> factory) {
+	public <BE extends BlockEntity> BlockEntityTypeBuilder<BE> builder(BlockRegistryObject<?, ?> block, BlockEntitySupplier<? extends BE> factory) {
 		return new BlockEntityTypeBuilder<>(block, factory);
 	}
 
@@ -59,14 +60,14 @@ public class BlockEntityTypeDeferredRegister extends PEDeferredRegister<BlockEnt
 		private static final ICapabilityProvider<?, ?, ?> SIMPLE_PROVIDER = (obj, context) -> obj;
 
 		private final BlockRegistryObject<?, ?> block;
-		private final BlockEntityType.BlockEntitySupplier<? extends BE> factory;
+		private final BlockEntitySupplier<? extends BE> factory;
 		private final List<CapabilityData<BE, ?, ?>> capabilityProviders = new ArrayList<>();
 		@Nullable
 		private BlockEntityTicker<BE> clientTicker;
 		@Nullable
 		private BlockEntityTicker<BE> serverTicker;
 
-		BlockEntityTypeBuilder(BlockRegistryObject<?, ?> block, BlockEntityType.BlockEntitySupplier<? extends BE> factory) {
+		BlockEntityTypeBuilder(BlockRegistryObject<?, ?> block, BlockEntitySupplier<? extends BE> factory) {
 			this.block = block;
 			this.factory = factory;
 		}

@@ -128,11 +128,6 @@ public class VolcaniteAmulet extends ItemPE implements IProjectileShooter, IPede
 	}
 
 	@Override
-	public boolean canProtectAgainstFire(ItemStack stack, Player player) {
-		return true;
-	}
-
-	@Override
 	public void attachCapabilities(RegisterCapabilitiesEvent event) {
 		IntegrationHelper.registerCuriosCapability(event, this);
 	}

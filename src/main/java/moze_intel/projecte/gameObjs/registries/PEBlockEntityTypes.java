@@ -3,15 +3,15 @@ package moze_intel.projecte.gameObjs.registries;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.gameObjs.block_entities.AlchBlockEntityChest;
-import moze_intel.projecte.gameObjs.block_entities.EmcChestBlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.CollectorMK1BlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.CollectorMK2BlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.CollectorMK3BlockEntity;
-import moze_intel.projecte.gameObjs.block_entities.CondenserMK2BlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.CondenserBlockEntity;
+import moze_intel.projecte.gameObjs.block_entities.CondenserMK2BlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.DMFurnaceBlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.DMPedestalBlockEntity;
-import moze_intel.projecte.gameObjs.block_entities.InterdictionTorchBlockEntity;
+import moze_intel.projecte.gameObjs.block_entities.EmcChestBlockEntity;
+import moze_intel.projecte.gameObjs.block_entities.InterdictionBlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.RMFurnaceBlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.RelayMK1BlockEntity;
 import moze_intel.projecte.gameObjs.block_entities.RelayMK2BlockEntity;
@@ -82,8 +82,8 @@ public class PEBlockEntityTypes {
 			.with(PECapabilities.EMC_STORAGE_CAPABILITY, (be, side) -> be)
 			.with(ItemHandler.BLOCK, DMFurnaceBlockEntity.INVENTORY_PROVIDER)
 			.build();
-	public static final BlockEntityTypeRegistryObject<InterdictionTorchBlockEntity> INTERDICTION_TORCH = BLOCK_ENTITY_TYPES.builder(PEBlocks.INTERDICTION_TORCH, InterdictionTorchBlockEntity::new)
-			.commonTicker(InterdictionTorchBlockEntity::tick)
+	public static final BlockEntityTypeRegistryObject<InterdictionBlockEntity> INTERDICTION_TORCH = BLOCK_ENTITY_TYPES.builder(PEBlocks.INTERDICTION_TORCH, InterdictionBlockEntity::new)
+			.commonTicker(InterdictionBlockEntity::tick)
 			.build();
 	public static final BlockEntityTypeRegistryObject<DMPedestalBlockEntity> DARK_MATTER_PEDESTAL = BLOCK_ENTITY_TYPES.builder(PEBlocks.DARK_MATTER_PEDESTAL, DMPedestalBlockEntity::new)
 			.clientTicker(DMPedestalBlockEntity::tickClient)

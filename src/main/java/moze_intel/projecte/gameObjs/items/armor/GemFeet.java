@@ -58,20 +58,13 @@ public class GemFeet extends GemArmorBase {
 	@NotNull
 	@Override
 	public ItemAttributeModifiers getDefaultAttributeModifiers(@NotNull ItemStack stack) {
-		if (stack.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT)) {
-			return this.defaultWithStepAssistModifiers.get();
-		}
-		return super.getDefaultAttributeModifiers(stack);
+		return isStepAssist(stack) ? this.defaultWithStepAssistModifiers.get() : super.getDefaultAttributeModifiers(stack);
 	}
 
-	public void toggleStepAssist(ItemStack boots, Player player) {
-		boolean oldValue = boots.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT);
+	public static void toggleStepAssist(ItemStack boots, Player player) {
+		boolean oldValue = isStepAssist(boots);
 		boots.set(PEDataComponentTypes.STEP_ASSIST, !oldValue);
-		if (oldValue) {
-			player.sendSystemMessage(PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
-		} else {
-			player.sendSystemMessage(PELang.STEP_ASSIST.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
-		}
+		player.sendSystemMessage(getComponent(!oldValue));
 	}
 
 	private static boolean isJumpPressed(Player player) {
@@ -116,10 +109,17 @@ public class GemFeet extends GemArmorBase {
 		super.appendHoverText(stack, context, tooltip, flags);
 		tooltip.add(PELang.GEM_LORE_FEET.translate());
 		tooltip.add(PELang.STEP_ASSIST_PROMPT.translate(ClientKeyHelper.getKeyName(PEKeybind.BOOTS_TOGGLE)));
-		if (stack.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT)) {
-			tooltip.add(PELang.STEP_ASSIST.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
-		} else {
-			tooltip.add(PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
+		tooltip.add(getComponent(isStepAssist(stack)));
+	}
+
+	private static boolean isStepAssist(ItemStack stack) {
+		return stack.getOrDefault(PEDataComponentTypes.STEP_ASSIST, STEP_ASSIST_DEFAULT);
+	}
+
+	private static Component getComponent(boolean enabled) {
+		if (enabled) {
+			return PELang.STEP_ASSIST.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED);
 		}
+		return PELang.STEP_ASSIST.translate(ChatFormatting.RED, PELang.GEM_DISABLED);
 	}
 }

@@ -28,7 +28,7 @@ public class GUIEternalDensity extends PEContainerScreen<EternalDensityContainer
 		addRenderableWidget(Button.builder((menu.isWhitelistMode() ? PELang.WHITELIST : PELang.BLACKLIST).translate(), b -> {
 					//Toggle the mode
 					boolean isWhitelistMode = !menu.isWhitelistMode();
-					PacketDistributor.sendToServer(new UpdateGemModePKT(isWhitelistMode));
+					PacketDistributor.sendToServer(new UpdateGemModePKT(menu.hand, isWhitelistMode));
 					b.setMessage(isWhitelistMode ? PELang.WHITELIST.translate() : PELang.BLACKLIST.translate());
 				}).pos(leftPos + 62, topPos + 4)
 				.size(52, 20)

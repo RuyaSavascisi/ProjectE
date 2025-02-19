@@ -15,9 +15,9 @@ public final class Constants {
 	/**
 	 * @apiNote DO NOT MODIFY THE BACKING ARRAY
 	 */
-	public static final Direction[] DIRECTIONS = Direction.values();
+	public static final DyeColor[] COLORS = DyeColor.values();
 	/**
 	 * @apiNote DO NOT MODIFY THE BACKING ARRAY
 	 */
-	public static final DyeColor[] COLORS = DyeColor.values();
+	public static final Direction[] DIRECTIONS = Direction.values();
 }

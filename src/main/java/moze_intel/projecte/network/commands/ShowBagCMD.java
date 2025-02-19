@@ -89,13 +89,11 @@ public class ShowBagCMD {
 	private static MenuProvider createContainer(MinecraftServer server, ServerPlayer sender, UUID target, DyeColor color) throws CommandSyntaxException {
 		//Try to get the bag
 		IItemHandlerModifiable inv = loadOfflineBag(server, target, color);
-		Component name;
+		Component name = PEItems.getBag(color).getDescription();
 		Optional<GameProfile> profileByUUID = server.getProfileCache() == null ? Optional.empty() : server.getProfileCache().get(target);
 		if (profileByUUID.isPresent()) {
 			//If we have a cache of the player, include their last known name in the name of the bag
-			name = PELang.SHOWBAG_NAMED.translate(PEItems.getBag(color), profileByUUID.get().getName());
-		} else {
-			name = PEItems.getBag(color).getDescription();
+			name = PELang.SHOWBAG_NAMED.translate(name, profileByUUID.get().getName());
 		}
 		return getContainer(sender, name, inv, true, () -> true);
 	}

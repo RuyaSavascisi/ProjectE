@@ -16,9 +16,9 @@ import org.jetbrains.annotations.Range;
 
 public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICapabilityAware {
 
-	public final EnumKleinTier tier;
+	public final KleinTier tier;
 
-	public KleinStar(Properties props, EnumKleinTier tier) {
+	public KleinStar(Properties props, KleinTier tier) {
 		super(props.component(PEDataComponentTypes.STORED_EMC, 0L));
 		this.tier = tier;
 	}
@@ -58,7 +58,7 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 		return InteractionResultHolder.pass(stack);
 	}
 
-	public enum EnumKleinTier {
+	public enum KleinTier {
 		EIN("ein", 50_000),
 		ZWEI("zwei", 200_000),
 		DREI("drei", 800_000),
@@ -69,7 +69,7 @@ public class KleinStar extends ItemPE implements IItemEmcHolder, IBarHelper, ICa
 		public final String name;
 		public final long maxEmc;
 
-		EnumKleinTier(String name, long maxEmc) {
+		KleinTier(String name, long maxEmc) {
 			this.name = name;
 			this.maxEmc = maxEmc;
 		}

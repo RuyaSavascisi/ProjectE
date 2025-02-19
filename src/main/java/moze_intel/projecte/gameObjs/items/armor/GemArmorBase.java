@@ -1,8 +1,10 @@
 package moze_intel.projecte.gameObjs.items.armor;
 
 import moze_intel.projecte.gameObjs.registries.PEArmorMaterials;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 
@@ -38,10 +40,16 @@ public abstract class GemArmorBase extends PEArmor {
 	}
 
 	public static boolean hasAnyPiece(Player player) {
-		return player.getInventory().armor.stream().anyMatch(i -> !i.isEmpty() && i.getItem() instanceof GemArmorBase);
+		return player.getItemBySlot(EquipmentSlot.HEAD).is(PEItems.GEM_HELMET) ||
+			   player.getItemBySlot(EquipmentSlot.CHEST).is(PEItems.GEM_CHESTPLATE) ||
+			   player.getItemBySlot(EquipmentSlot.LEGS).is(PEItems.GEM_LEGGINGS) ||
+			   player.getItemBySlot(EquipmentSlot.FEET).is(PEItems.GEM_BOOTS);
 	}
 
 	public static boolean hasFullSet(Player player) {
-		return player.getInventory().armor.stream().noneMatch(i -> i.isEmpty() || !(i.getItem() instanceof GemArmorBase));
+		return player.getItemBySlot(EquipmentSlot.HEAD).is(PEItems.GEM_HELMET) &&
+			   player.getItemBySlot(EquipmentSlot.CHEST).is(PEItems.GEM_CHESTPLATE) &&
+			   player.getItemBySlot(EquipmentSlot.LEGS).is(PEItems.GEM_LEGGINGS) &&
+			   player.getItemBySlot(EquipmentSlot.FEET).is(PEItems.GEM_BOOTS);
 	}
 }

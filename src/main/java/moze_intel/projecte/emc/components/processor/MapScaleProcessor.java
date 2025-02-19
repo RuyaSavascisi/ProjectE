@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
-@DataComponentProcessor(priority = Integer.MAX_VALUE)
+@DataComponentProcessor
 public class MapScaleProcessor implements IDataComponentProcessor {
 
 	@DataComponentProcessor.Instance

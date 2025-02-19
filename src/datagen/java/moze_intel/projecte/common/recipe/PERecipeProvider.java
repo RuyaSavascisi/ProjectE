@@ -2,16 +2,14 @@ package moze_intel.projecte.common.recipe;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.customRecipes.FullKleinStarsCondition;
 import moze_intel.projecte.gameObjs.customRecipes.PhiloStoneSmeltingRecipe;
-import moze_intel.projecte.gameObjs.customRecipes.RecipeShapelessKleinStar;
 import moze_intel.projecte.gameObjs.customRecipes.RecipesCovalenceRepair;
 import moze_intel.projecte.gameObjs.customRecipes.TomeEnabledCondition;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
-import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
+import moze_intel.projecte.gameObjs.items.KleinStar.KleinTier;
 import moze_intel.projecte.gameObjs.registration.impl.ItemRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
@@ -32,6 +30,7 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.DyeColor;
@@ -40,23 +39,42 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.conditions.ICondition;
 import net.neoforged.neoforge.common.conditions.NotCondition;
 import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PERecipeProvider extends RecipeProvider {
 
-	public PERecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+	private final ExistingFileHelper existingFileHelper;
+
+	public PERecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries, ExistingFileHelper existingFileHelper) {
 		super(output, registries);
+		this.existingFileHelper = existingFileHelper;
 	}
 
 	@Override
 	protected void buildRecipes(@NotNull RecipeOutput recipeOutput) {
+		buildRecipesInternal(new RecipeOutput() {
+			@NotNull
+			@Override
+			public Advancement.Builder advancement() {
+				return recipeOutput.advancement();
+			}
+
+			@Override
+			public void accept(@NotNull ResourceLocation recipeId, @NotNull Recipe<?> recipe, @Nullable AdvancementHolder advancementHolder, ICondition @NotNull ... conditions) {
+				recipeOutput.accept(recipeId, recipe, advancementHolder, conditions);
+				existingFileHelper.trackGenerated(recipeId, PackType.SERVER_DATA, ".json", "recipes");
+			}
+		});
+	}
+
+	private void buildRecipesInternal(@NotNull RecipeOutput recipeOutput) {
 		SpecialRecipeBuilder.special(RecipesCovalenceRepair::new)
 				.save(recipeOutput, PECore.rl("covalence_repair"));
 		SpecialRecipeBuilder.special(PhiloStoneSmeltingRecipe::new)
@@ -115,7 +133,7 @@ public class PERecipeProvider extends RecipeProvider {
 		ResourceLocation name = PECore.rl(alternate ? "tome_alt" : "tome");
 		//Tome is enabled and should use full stars
 		baseTomeRecipe(alternate)
-				.define('K', getFullKleinStarIngredient(EnumKleinTier.OMEGA))
+				.define('K', getFullKleinStarIngredient(KleinTier.OMEGA))
 				.save(recipeOutput.withConditions(TomeEnabledCondition.INSTANCE, FullKleinStarsCondition.INSTANCE), name.withPrefix("full_star_"));
 		//Tome enabled but should not use full stars
 		baseTomeRecipe(alternate)
@@ -442,7 +460,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.unlockedBy("has_boots", has(PEItems.RED_MATTER_BOOTS)), PEItems.GEM_BOOTS);
 	}
 
-	private static Ingredient getFullKleinStarIngredient(EnumKleinTier tier) {
+	private static Ingredient getFullKleinStarIngredient(KleinTier tier) {
 		ItemStack star = PEItems.getStar(tier).asStack(1);
 		star.set(PEDataComponentTypes.STORED_EMC, tier.maxEmc);
 		return DataComponentIngredient.of(false, star);
@@ -451,7 +469,7 @@ public class PERecipeProvider extends RecipeProvider {
 	private static void gemArmorRecipe(RecipeOutput recipeOutput, Supplier<ShapelessRecipeBuilder> builder, ItemRegistryObject<?> result) {
 		//Full stars should be used
 		builder.get()
-				.requires(getFullKleinStarIngredient(EnumKleinTier.OMEGA))
+				.requires(getFullKleinStarIngredient(KleinTier.OMEGA))
 				.save(recipeOutput.withConditions(FullKleinStarsCondition.INSTANCE), result.getId().withPrefix("full_star_"));
 		//Full stars should not be used
 		builder.get()
@@ -601,7 +619,7 @@ public class PERecipeProvider extends RecipeProvider {
 				.define('D', Tags.Items.GEMS_DIAMOND)
 				.unlockedBy("has_components", hasItems(PEItems.MOBIUS_FUEL, Tags.Items.GEMS_DIAMOND))
 				.save(recipeOutput);
-		EnumKleinTier[] tiers = EnumKleinTier.values();
+		KleinTier[] tiers = KleinTier.values();
 		for (int tier = 1; tier < tiers.length; tier++) {
 			kleinStarUpgrade(recipeOutput, PEItems.getStar(tiers[tier]), PEItems.getStar(tiers[tier - 1]));
 		}
@@ -611,8 +629,7 @@ public class PERecipeProvider extends RecipeProvider {
 		ShapelessRecipeBuilder.shapeless(RecipeCategory.TOOLS, star)
 				.requires(previous, 4)
 				.unlockedBy("has_components", has(previous))
-				//Wrap the recipeOutput so that we can replace it with the proper serializer
-				.save(new WrappingRecipeOutput(recipeOutput, recipe -> new RecipeShapelessKleinStar((ShapelessRecipe) recipe)));
+				.save(recipeOutput);
 	}
 
 	private static void addRingRecipes(RecipeOutput recipeOutput) {
@@ -1108,19 +1125,5 @@ public class PERecipeProvider extends RecipeProvider {
 			predicates[items.length + i] = ItemPredicate.Builder.item().of(tags[i]).build();
 		}
 		return inventoryTrigger(predicates);
-	}
-
-	private record WrappingRecipeOutput(RecipeOutput parent, UnaryOperator<Recipe<?>> recipeWrapper) implements RecipeOutput {
-
-		@Override
-		public void accept(@NotNull ResourceLocation recipeId, @NotNull Recipe<?> recipe, @Nullable AdvancementHolder advancementHolder, ICondition @NotNull ... conditions) {
-			parent.accept(recipeId, recipe, advancementHolder, conditions);
-		}
-
-		@NotNull
-		@Override
-		public Advancement.Builder advancement() {
-			return parent.advancement();
-		}
 	}
 }

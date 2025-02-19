@@ -41,7 +41,7 @@ public class ArchangelSmite extends PEToggleItem implements IPedestalItem {
 		NeoForge.EVENT_BUS.addListener(this::leftClickBlock);
 	}
 
-	public void fireVolley(ItemStack stack, Player player) {
+	public static void fireVolley(ItemStack stack, Player player) {
 		for (int i = 0; i < 10; i++) {
 			fireArrow(stack, player.level(), player, 4F);
 		}
@@ -82,7 +82,7 @@ public class ArchangelSmite extends PEToggleItem implements IPedestalItem {
 		return InteractionResultHolder.success(player.getItemInHand(hand));
 	}
 
-	private void fireArrow(ItemStack ring, Level level, LivingEntity shooter, float inaccuracy) {
+	private static void fireArrow(ItemStack ring, Level level, LivingEntity shooter, float inaccuracy) {
 		EntityHomingArrow arrow = new EntityHomingArrow(level, shooter, 2.0F);
 		if (!(shooter instanceof Player player) || consumeFuel(player, ring, IEMCProxy.INSTANCE.getValue(Items.ARROW), true)) {
 			arrow.shootFromRotation(shooter, shooter.getXRot(), shooter.getYRot(), 0.0F, 3.0F, inaccuracy);

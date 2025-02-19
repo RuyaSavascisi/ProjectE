@@ -11,5 +11,7 @@ public interface IFireProtector {
 	/**
 	 * @return If this stack currently should protect the bearer from fire
 	 */
-	boolean canProtectAgainstFire(ItemStack stack, Player player);
+	default boolean canProtectAgainstFire(ItemStack stack, Player player) {
+		return true;
+	}
 }

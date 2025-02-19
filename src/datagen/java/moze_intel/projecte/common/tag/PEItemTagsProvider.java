@@ -4,7 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.items.AlchemicalBag;
-import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
+import moze_intel.projecte.gameObjs.items.KleinStar.KleinTier;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
 import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.Constants;
@@ -86,10 +86,11 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				PEBlocks.DARK_MATTER_FURNACE.asItem(),
 				PEBlocks.RED_MATTER_FURNACE.asItem()
 		);
-		IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item> kleinStarBuilder = tag(PETags.Items.CURIOS_KLEIN_STAR);
-		for (EnumKleinTier tier : EnumKleinTier.values()) {
+		IntrinsicHolderTagsProvider.IntrinsicTagAppender<Item> kleinStarBuilder = tag(PETags.Items.KLEIN_STARS);
+		for (KleinTier tier : KleinTier.values()) {
 			kleinStarBuilder.add(PEItems.getStar(tier).value());
 		}
+		tag(PETags.Items.CURIOS_KLEIN_STAR).addTag(PETags.Items.KLEIN_STARS);
 		tag(PETags.Items.CURIOS_NECKLACE).add(
 				PEItems.BODY_STONE.get(),
 				PEItems.EVERTIDE_AMULET.get(),
@@ -240,8 +241,6 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 	@SafeVarargs
 	private void addTool(TagKey<Item> toolTag, ItemLike[] items, TagKey<Item>... enchantableTags) {
 		IntrinsicTagAppender<Item> toolBuilder = tag(toolTag);
-		//IntrinsicTagAppender<Item> durabilityEnchantable = tag(ItemTags.DURABILITY_ENCHANTABLE);
-		//IntrinsicTagAppender<Item> equippableEnchantable = tag(ItemTags.EQUIPPABLE_ENCHANTABLE);
 		for (ItemLike itemLike : items) {
 			Item item = itemLike.asItem();
 			toolBuilder.add(item);

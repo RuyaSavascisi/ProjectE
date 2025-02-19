@@ -10,7 +10,7 @@ import moze_intel.projecte.gameObjs.items.EvertideAmulet;
 import moze_intel.projecte.gameObjs.items.GemEternalDensity;
 import moze_intel.projecte.gameObjs.items.HyperkineticLens;
 import moze_intel.projecte.gameObjs.items.KleinStar;
-import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
+import moze_intel.projecte.gameObjs.items.KleinStar.KleinTier;
 import moze_intel.projecte.gameObjs.items.MercurialEye;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone;
 import moze_intel.projecte.gameObjs.items.RepairTalisman;
@@ -80,12 +80,12 @@ public class PEItems {
 	public static final ItemRegistryObject<AlchemicalBag> RED_ALCHEMICAL_BAG = registerBag(DyeColor.RED);
 	public static final ItemRegistryObject<AlchemicalBag> BLACK_ALCHEMICAL_BAG = registerBag(DyeColor.BLACK);
 
-	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_EIN = registerKleinStar(EnumKleinTier.EIN);
-	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_ZWEI = registerKleinStar(EnumKleinTier.ZWEI);
-	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_DREI = registerKleinStar(EnumKleinTier.DREI);
-	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_VIER = registerKleinStar(EnumKleinTier.VIER);
-	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_SPHERE = registerKleinStar(EnumKleinTier.SPHERE);
-	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_OMEGA = registerKleinStar(EnumKleinTier.OMEGA);
+	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_EIN = registerKleinStar(KleinTier.EIN);
+	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_ZWEI = registerKleinStar(KleinTier.ZWEI);
+	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_DREI = registerKleinStar(KleinTier.DREI);
+	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_VIER = registerKleinStar(KleinTier.VIER);
+	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_SPHERE = registerKleinStar(KleinTier.SPHERE);
+	public static final ItemRegistryObject<KleinStar> KLEIN_STAR_OMEGA = registerKleinStar(KleinTier.OMEGA);
 
 	public static final ItemRegistryObject<Item> ALCHEMICAL_COAL = ITEMS.register("alchemical_coal");
 	public static final ItemRegistryObject<Item> MOBIUS_FUEL = ITEMS.register("mobius_fuel");
@@ -160,9 +160,9 @@ public class PEItems {
 		return ITEMS.registerNoStack(color.getName() + "_alchemical_bag", properties -> new AlchemicalBag(properties, color));
 	}
 
-	private static ItemRegistryObject<KleinStar> registerKleinStar(EnumKleinTier tier) {
+	private static ItemRegistryObject<KleinStar> registerKleinStar(KleinTier tier) {
 		return ITEMS.registerNoStack("klein_star_" + tier.name, properties -> {
-			if (tier == EnumKleinTier.OMEGA) {
+			if (tier == KleinTier.OMEGA) {
 				properties = properties.rarity(Rarity.EPIC);
 			}
 			return new KleinStar(properties, tier);
@@ -194,7 +194,7 @@ public class PEItems {
 		};
 	}
 
-	public static ItemRegistryObject<KleinStar> getStar(EnumKleinTier tier) {
+	public static ItemRegistryObject<KleinStar> getStar(KleinTier tier) {
 		return switch (tier) {
 			case EIN -> KLEIN_STAR_EIN;
 			case ZWEI -> KLEIN_STAR_ZWEI;

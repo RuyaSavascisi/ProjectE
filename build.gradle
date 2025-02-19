@@ -57,6 +57,19 @@ sourceSets {
         compileClasspath += api.output + main.output
         runtimeClasspath += api.output + main.output
     }
+
+    // These source-sets only exist for the sake of assembling a dependency graph
+    // for IntelliJ. Each of these will become an IntelliJ module when the project is imported,
+    // and will be set as the "main module" for the IntelliJ runs. A compile dependency
+    // on the other source sets is enough, since runtime classpath is managed by MDG anyway.
+    runMain {
+        runtimeClasspath += main.runtimeClasspath + api.runtimeClasspath
+        compileClasspath += main.output + api.output
+    }
+    runData {
+        compileClasspath += runMain.compileClasspath + datagen.compileClasspath
+        runtimeClasspath += runMain.runtimeClasspath + datagen.runtimeClasspath
+    }
 }
 
 configurations { configContainer ->
@@ -164,6 +177,8 @@ neoForge.runs {
         if (javaToolchains.launcherFor(java.toolchain).map { it.metadata.vendor }.getOrElse('').contains('JetBrains')) {
             jvmArguments.addAll('-XX:+IgnoreUnrecognizedVMOptions', '-XX:+AllowEnhancedClassRedefinition')
         }
+
+        sourceSet = sourceSets.runMain
     }
     client {
         client()
@@ -187,6 +202,7 @@ neoForge.runs {
         programArguments.addAll('--all', '--output', project.file('src/datagen/generated/').getAbsolutePath(),
                 '--mod', 'projecte', '--existing', project.file('src/main/resources/').getAbsolutePath())
 
+        sourceSet = sourceSets.runData
         loadedMods = [neoForge.mods.projecte_datagen]
     }
 }

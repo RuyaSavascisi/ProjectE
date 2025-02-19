@@ -3,7 +3,7 @@ package moze_intel.projecte.gameObjs.container.slots.transmutation;
 import moze_intel.projecte.api.proxy.IEMCProxy;
 import moze_intel.projecte.gameObjs.container.inventory.TransmutationInventory;
 import moze_intel.projecte.gameObjs.container.slots.InventoryContainerSlot;
-import moze_intel.projecte.gameObjs.items.Tome;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +18,7 @@ public class SlotUnlearn extends InventoryContainerSlot {
 
 	@Override
 	public boolean mayPlace(@NotNull ItemStack stack) {
-		return !this.hasItem() && (IEMCProxy.INSTANCE.hasValue(stack) || stack.getItem() instanceof Tome);
+		return !this.hasItem() && (IEMCProxy.INSTANCE.hasValue(stack) || stack.is(PEItems.TOME_OF_KNOWLEDGE));
 	}
 
 	@Override

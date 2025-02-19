@@ -6,6 +6,8 @@ import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.client.PEBlockStateProvider;
 import moze_intel.projecte.client.PEItemModelProvider;
 import moze_intel.projecte.client.PESpriteSourceProvider;
+import moze_intel.projecte.client.integration.emi.EmiAliasProvider;
+import moze_intel.projecte.client.integration.emi.ProjectEEmiDefaults;
 import moze_intel.projecte.client.lang.PELangProvider;
 import moze_intel.projecte.client.sound.PESoundProvider;
 import moze_intel.projecte.common.PEAdvancementsGenerator;
@@ -23,6 +25,8 @@ import moze_intel.projecte.common.tag.PEEntityTypeTagsProvider;
 import moze_intel.projecte.common.tag.PEItemTagsProvider;
 import moze_intel.projecte.common.tag.PEPotionsTagsProvider;
 import moze_intel.projecte.emc.EMCMappingHandler;
+import moze_intel.projecte.integration.IntegrationHelper;
+import moze_intel.projecte.integration.recipe_viewer.alias.ProjectEAliasMapping;
 import moze_intel.projecte.utils.text.PELang;
 import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.data.DataGenerator;
@@ -31,6 +35,7 @@ import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.data.loot.LootTableProvider.SubProviderEntry;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.neoforge.common.data.AdvancementProvider;
@@ -71,9 +76,15 @@ public class ProjectEDataGenerator {
 		gen.addProvider(event.includeServer(), new LootTableProvider(output, Collections.emptySet(), List.of(
 				new SubProviderEntry(PEBlockLootTable::new, LootContextParamSets.BLOCK)
 		), lookupProvider));
-		gen.addProvider(event.includeServer(), new PERecipeProvider(output, lookupProvider));
+		gen.addProvider(event.includeServer(), new PERecipeProvider(output, lookupProvider, existingFileHelper));
 		gen.addProvider(event.includeServer(), new PEDataMapsProvider(output, lookupProvider));
 		gen.addProvider(event.includeServer(), new PECustomConversionProvider(output, lookupProvider));
 		gen.addProvider(event.includeServer(), new PEWorldTransmutationProvider(output, lookupProvider));
+
+		//Client side, but needs recipes to exist
+		if (ModList.get().isLoaded(IntegrationHelper.EMI_MODID)) {
+			gen.addProvider(event.includeClient(), new EmiAliasProvider(output, lookupProvider, PECore.MODID, ProjectEAliasMapping::new));
+			gen.addProvider(event.includeClient(), new ProjectEEmiDefaults(output, existingFileHelper, lookupProvider));
+		}//TODO: Do we want to have something like Mekanism's persistent disable-able provider
 	}
 }

@@ -1,7 +1,7 @@
 package moze_intel.projecte.client;
 
 import moze_intel.projecte.PECore;
-import moze_intel.projecte.gameObjs.items.KleinStar.EnumKleinTier;
+import moze_intel.projecte.gameObjs.items.KleinStar.KleinTier;
 import moze_intel.projecte.gameObjs.registration.INamedEntry;
 import moze_intel.projecte.gameObjs.registration.impl.BlockRegistryObject;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
@@ -196,7 +196,7 @@ public class PEItemModelProvider extends ItemModelProvider {
 	}
 
 	private void generateKleinStars() {
-		EnumKleinTier[] tiers = EnumKleinTier.values();
+		KleinTier[] tiers = KleinTier.values();
 		for (int tier = 0; tier < tiers.length; tier++) {
 			generated(PEItems.getStar(tiers[tier]), modLoc("item/stars/klein_star_" + (tier + 1)));
 		}

@@ -5,6 +5,7 @@ import moze_intel.projecte.api.capabilities.IKnowledgeProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.gameObjs.container.TransmutationContainer;
 import moze_intel.projecte.gameObjs.items.rings.ArchangelSmite;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.network.packets.IPEPacket;
 import moze_intel.projecte.network.packets.to_client.NovaExplosionSyncPKT;
 import moze_intel.projecte.network.packets.to_client.SyncEmcPKT;
@@ -62,8 +63,8 @@ public final class PacketHandler {
 		activateArchangel = registrar.playInstanced(PECore.rl("activate_archangel"), (ignored, context) -> {
 			Player player = context.player();
 			ItemStack main = player.getMainHandItem();
-			if (!main.isEmpty() && main.getItem() instanceof ArchangelSmite archangelSmite) {
-				archangelSmite.fireVolley(main, player);
+			if (!main.isEmpty() && main.is(PEItems.ARCHANGEL_SMITE)) {
+				ArchangelSmite.fireVolley(main, player);
 			}
 		});
 		registrar.play(SearchUpdatePKT.TYPE, SearchUpdatePKT.STREAM_CODEC);

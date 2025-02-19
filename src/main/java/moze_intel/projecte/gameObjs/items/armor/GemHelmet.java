@@ -36,13 +36,9 @@ public class GemHelmet extends GemArmorBase {
 	}
 
 	public static void toggleNightVision(ItemStack helm, Player player) {
-		boolean oldValue = helm.getOrDefault(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT);
+		boolean oldValue = hasNightVision(helm);
 		helm.set(PEDataComponentTypes.NIGHT_VISION, !oldValue);
-		if (oldValue) {
-			player.sendSystemMessage(PELang.NIGHT_VISION.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
-		} else {
-			player.sendSystemMessage(PELang.NIGHT_VISION.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
-		}
+		player.sendSystemMessage(getComponent(!oldValue));
 	}
 
 	@Override
@@ -50,11 +46,18 @@ public class GemHelmet extends GemArmorBase {
 		super.appendHoverText(stack, context, tooltip, flags);
 		tooltip.add(PELang.GEM_LORE_HELM.translate());
 		tooltip.add(PELang.NIGHT_VISION_PROMPT.translate(ClientKeyHelper.getKeyName(PEKeybind.HELMET_TOGGLE)));
-		if (stack.getOrDefault(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT)) {
-			tooltip.add(PELang.NIGHT_VISION.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED));
-		} else {
-			tooltip.add(PELang.NIGHT_VISION.translate(ChatFormatting.RED, PELang.GEM_DISABLED));
+		tooltip.add(getComponent(hasNightVision(stack)));
+	}
+
+	private static boolean hasNightVision(ItemStack stack) {
+		return stack.getOrDefault(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT);
+	}
+
+	private static Component getComponent(boolean nightVision) {
+		if (nightVision) {
+			return PELang.NIGHT_VISION.translate(ChatFormatting.GREEN, PELang.GEM_ENABLED);
 		}
+		return PELang.NIGHT_VISION.translate(ChatFormatting.RED, PELang.GEM_DISABLED);
 	}
 
 	@Override
@@ -65,7 +68,7 @@ public class GemHelmet extends GemArmorBase {
 				player.heal(2.0F);
 			}
 
-			if (stack.getOrDefault(PEDataComponentTypes.NIGHT_VISION, NIGHT_VISION_DEFAULT)) {
+			if (hasNightVision(stack)) {
 				player.addEffect(new MobEffectInstance(MobEffects.NIGHT_VISION, 11 * SharedConstants.TICKS_PER_SECOND, 0, true, false));
 			} else {
 				player.removeEffect(MobEffects.NIGHT_VISION);
@@ -73,7 +76,7 @@ public class GemHelmet extends GemArmorBase {
 		}
 	}
 
-	public void doZap(Player player) {
+	public static void doZap(Player player) {
 		if (ProjectEConfig.server.difficulty.offensiveAbilities.get()) {
 			BlockHitResult strikeResult = PlayerHelper.getBlockLookingAt(player, 120.0F);
 			if (strikeResult.getType() != HitResult.Type.MISS) {

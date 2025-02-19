@@ -6,11 +6,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import moze_intel.projecte.gameObjs.items.PhilosophersStone;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.gameObjs.registries.PERecipeSerializers;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
@@ -55,13 +54,12 @@ public class PhiloStoneSmeltingRecipe extends CustomRecipe {
 		List<ItemStack> allItems = new ArrayList<>();
 		for (ItemStack stack : inv.items()) {
 			if (!stack.isEmpty()) {
-				Item item = stack.getItem();
 				allItems.add(stack);
 				if (allItems.size() > 9) {
 					//Exit if we have more than 9 items total (for mods that may add larger crafting tables)
 					return Collections.emptySet();
 				}
-				if (item instanceof PhilosophersStone) {
+				if (stack.is(PEItems.PHILOSOPHERS_STONE)) {
 					philoStones.add(stack);
 				}
 				if (stack.is(ItemTags.COALS)) {

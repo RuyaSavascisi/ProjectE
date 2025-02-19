@@ -209,11 +209,6 @@ public class Arcana extends ItemPE implements IItemMode<ArcanaMode>, IFireProtec
 	}
 
 	@Override
-	public boolean canProtectAgainstFire(ItemStack stack, Player player) {
-		return true;
-	}
-
-	@Override
 	public boolean canPerformAction(@NotNull ItemStack stack, @NotNull ItemAbility action) {
 		if (action == ItemAbilities.FIRESTARTER_LIGHT && getMode(stack) == ArcanaMode.IGNITION) {
 			return true;

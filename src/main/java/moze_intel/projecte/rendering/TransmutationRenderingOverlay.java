@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ReferenceMap;
 import moze_intel.projecte.config.ProjectEConfig;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone;
 import moze_intel.projecte.gameObjs.items.PhilosophersStone.PhilosophersStoneMode;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.Constants;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
@@ -84,11 +85,12 @@ public class TransmutationRenderingOverlay implements LayeredDraw.Layer {
 		if (stack.isEmpty()) {
 			stack = player.getOffhandItem();
 		}
-		if (stack.isEmpty() || !(stack.getItem() instanceof PhilosophersStone philoStone)) {
+		if (stack.isEmpty() || !stack.is(PEItems.PHILOSOPHERS_STONE)) {
 			transmutationResult = null;
 			return;
 		}
 		boolean isSneaking = player.isSecondaryUseActive();
+		PhilosophersStone philoStone = (PhilosophersStone) stack.getItem();
 		//Note: We use the philo stone's ray trace instead of the event's ray trace as we want to make sure that we
 		// can properly take fluid into account/ignore it when needed
 		BlockHitResult rtr = philoStone.getHitBlock(level, player, isSneaking);

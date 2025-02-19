@@ -4,9 +4,8 @@ import java.util.Objects;
 import moze_intel.projecte.api.capabilities.IAlchBagProvider;
 import moze_intel.projecte.api.capabilities.PECapabilities;
 import moze_intel.projecte.gameObjs.container.AlchBagContainer;
-import moze_intel.projecte.gameObjs.items.rings.BlackHoleBand;
-import moze_intel.projecte.gameObjs.items.rings.VoidRing;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
+import moze_intel.projecte.gameObjs.registries.PEItems;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -59,7 +58,7 @@ public class AlchemicalBag extends ItemPE {
 				IItemHandler inv = alchBagProvider.getBag(bag.color);
 				for (int i = 0; i < inv.getSlots(); i++) {
 					ItemStack ring = inv.getStackInSlot(i);
-					if (!ring.isEmpty() && (ring.getItem() instanceof BlackHoleBand || ring.getItem() instanceof VoidRing)) {
+					if (!ring.isEmpty() && (ring.is(PEItems.BLACK_HOLE_BAND) || ring.is(PEItems.VOID_RING))) {
 						if (ring.getOrDefault(PEDataComponentTypes.ACTIVE, false)) {
 							return stack;
 						}
