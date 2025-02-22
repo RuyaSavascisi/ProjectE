@@ -4,7 +4,9 @@ import java.util.concurrent.CompletableFuture;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.registries.PEBlocks;
+import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -16,6 +18,7 @@ import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+@SuppressWarnings("unchecked")
 public class PEBlockTagsProvider extends BlockTagsProvider {
 
 	public PEBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
@@ -25,17 +28,40 @@ public class PEBlockTagsProvider extends BlockTagsProvider {
 	@Override
 	protected void addTags(@NotNull HolderLookup.Provider provider) {
 		tag(PETags.Blocks.FARMING_OVERRIDE).add(Blocks.PINK_PETALS);
-		tag(PETags.Blocks.BLACKLIST_HARVEST).add(
-				Blocks.GRASS_BLOCK,
-				Blocks.CRIMSON_NYLIUM,
+		IntrinsicTagAppender<Block> blacklistHarvest = tag(PETags.Blocks.BLACKLIST_HARVEST);
+		//Add blocks that sometimes return false from isValidBonemealTarget, but that we don't actually want to be broken
+		blacklistHarvest.add(
+				//If there is no neighboring nylium we don't want to cause the netherrack to be broken
 				Blocks.NETHERRACK,
-				Blocks.MELON_STEM,
-				Blocks.PUMPKIN_STEM,
-				Blocks.WARPED_NYLIUM,
-				Blocks.SMALL_DRIPLEAF,
-				Blocks.MOSS_BLOCK,
-				Blocks.ROOTED_DIRT
+				//If it doesn't have air above it
+				Blocks.BAMBOO_SAPLING,
+				//If it doesn't have air below it
+				Blocks.ROOTED_DIRT,
+				//If it has a fluid above it
+				Blocks.AZALEA,
+				Blocks.FLOWERING_AZALEA,
+				//If it doesn't have air
+				Blocks.BIG_DRIPLEAF,
+				Blocks.BIG_DRIPLEAF_STEM
 		);
+		IntrinsicTagAppender<Block> overridePlantable = tag(PETags.Blocks.OVERRIDE_PLANTABLE);
+		overridePlantable.addTags(
+				BlockTags.LEAVES,
+				//Note: All vanilla tall flowers are bonemealable, so will get handled before being used by this tag
+				// but if a mod adds a tall flower that doesn't inherit the class hierarchy, having this could be useful
+				BlockTags.FLOWERS
+		).add(
+				Blocks.MELON,
+				Blocks.PUMPKIN
+		);
+		for (Block block : BuiltInRegistries.BLOCK) {
+			if (WorldHelper.isPlantableImplementation(block)) {
+				overridePlantable.add(block);
+			}
+			if (WorldHelper.isUnharvestableImplementation(block)) {
+				blacklistHarvest.add(block);
+			}
+		}
 		tag(PETags.Blocks.BLACKLIST_TIME_WATCH);
 		//Vanilla/Forge Tags
 		tag(Tags.Blocks.CHESTS).add(

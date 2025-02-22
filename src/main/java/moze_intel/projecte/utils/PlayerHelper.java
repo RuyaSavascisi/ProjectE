@@ -154,7 +154,7 @@ public final class PlayerHelper {
 		return hasEditPermission(player, level, pos) && checkBreakPermission(player, level, pos);
 	}
 
-	static boolean checkBreakPermission(ServerPlayer player, Level level, BlockPos pos) {
+	public static boolean checkBreakPermission(ServerPlayer player, Level level, BlockPos pos) {
 		return !CommonHooks.fireBlockBreak(level, player.gameMode.getGameModeForPlayer(), player, pos, level.getBlockState(pos)).isCanceled();
 	}
 
@@ -177,7 +177,8 @@ public final class PlayerHelper {
 
 	public static void swingItem(Player player, InteractionHand hand) {
 		if (player.level() instanceof ServerLevel level) {
-			level.getChunkSource().broadcastAndSend(player, new ClientboundAnimatePacket(player, hand == InteractionHand.MAIN_HAND ? 0 : 3));
+			int action = hand == InteractionHand.MAIN_HAND ? ClientboundAnimatePacket.SWING_MAIN_HAND : ClientboundAnimatePacket.SWING_OFF_HAND;
+			level.getChunkSource().broadcastAndSend(player, new ClientboundAnimatePacket(player, action));
 		}
 	}
 

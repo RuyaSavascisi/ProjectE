@@ -44,6 +44,11 @@ public class PETags {
 		 * Items in this tag won't be listed by the dump missing emc command even if they are missing emc.
 		 */
 		public static final TagKey<Item> IGNORE_MISSING_EMC = tag("ignore_missing_emc");
+		/**
+		 * Items in this tag will be checked against being a BlockItem, and attempt to be placed by the harvest goddess band.
+		 */
+		public static final TagKey<Item> PLANTABLE_SEEDS = tag("plantable_seeds");
+
 		//Curios tags
 		public static final TagKey<Item> CURIOS_BELT = curiosTag("belt");
 		public static final TagKey<Item> CURIOS_KLEIN_STAR = curiosTag("klein_star");
@@ -74,9 +79,15 @@ public class PETags {
 		}
 
 		/**
-		 * Blocks added here (that are IGrowable) will not be broken by the harvest goddess band when unable to continue growing.
+		 * Blocks added here will not be broken by the harvest goddess band when unable to continue growing.
 		 */
 		public static final TagKey<Block> BLACKLIST_HARVEST = tag("blacklist/harvest");
+		/**
+		 * Blocks added here will be considered plantable and affected by the harvest goddess band.
+		 *
+		 * @apiNote This does not include all blocks that will be affected due to being bonemealable.
+		 */
+		public static final TagKey<Block> OVERRIDE_PLANTABLE = tag("override/plantable");
 		/**
 		 * Blocks added will not receive extra random ticks from the Watch of Flowing Time
 		 */

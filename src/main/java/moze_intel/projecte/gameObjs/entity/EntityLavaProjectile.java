@@ -50,7 +50,7 @@ public class EntityLavaProjectile extends NoGravityThrowableProjectile {
 						if (state.getFluidState().is(FluidTags.WATER)) {
 							pos = pos.immutable();
 							if (PlayerHelper.hasEditPermission(player, level, pos)) {
-								WorldHelper.drainFluid(player, level, pos, state, Fluids.WATER);
+								WorldHelper.drainFluid(player, level, pos, state);
 								level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F,
 										2.6F + (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
 							}

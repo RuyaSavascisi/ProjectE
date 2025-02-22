@@ -107,6 +107,11 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				PEItems.VOID_RING.get(),
 				PEItems.ZERO_RING.get()
 		);
+		tag(PETags.Items.PLANTABLE_SEEDS).addTags(
+				ItemTags.VILLAGER_PLANTABLE_SEEDS,
+				//Note: Try adding any seeds that aren't in the villager plantable ones, in case we are able to plant them
+				Tags.Items.SEEDS
+		);
 		//Vanilla/Forge Tags
 		tag(Tags.Items.TOOLS_SHEAR).add(
 				PEItems.DARK_MATTER_SHEARS.get(),
@@ -140,7 +145,7 @@ public class PEItemTagsProvider extends ItemTagsProvider {
 				Items.STONE_SLAB, Items.COBBLESTONE_SLAB, Items.SMOOTH_STONE_SLAB, Items.STONE_BRICK_SLAB, Items.END_STONE_BRICK_SLAB,
 				Items.GLASS_PANE, Items.CYAN_STAINED_GLASS_PANE, Items.GREEN_STAINED_GLASS_PANE, Items.LIME_STAINED_GLASS_PANE, Items.MAGENTA_STAINED_GLASS_PANE,
 				Items.PINK_STAINED_GLASS_PANE
-		).addTag(Tags.Items.CLUSTERS);
+		).addTags(Tags.Items.CLUSTERS, Tags.Items.HIDDEN_FROM_RECIPE_VIEWERS);
 		for (Item item : BuiltInRegistries.ITEM) {
 			if (item instanceof SpawnEggItem || item instanceof MobBucketItem) {
 				ignoreMissingEMC.add(item);

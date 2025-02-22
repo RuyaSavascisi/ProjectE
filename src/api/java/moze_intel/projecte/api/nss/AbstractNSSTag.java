@@ -1,6 +1,5 @@
 package moze_intel.projecte.api.nss;
 
-import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -40,7 +39,7 @@ public abstract class AbstractNSSTag<TYPE> implements NSSTag {
 	 * @apiNote This method is meant for internal use of adding Tag -> Type and Type -> Tag conversions
 	 */
 	public static Set<NSSTag> getAllCreatedTags() {
-		return ImmutableSet.copyOf(createdTags);
+		return Set.copyOf(createdTags);
 	}
 
 	/**

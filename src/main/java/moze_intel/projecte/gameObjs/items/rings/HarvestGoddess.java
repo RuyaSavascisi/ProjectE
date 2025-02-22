@@ -6,8 +6,8 @@ import java.util.List;
 import moze_intel.projecte.api.block_entity.IDMPedestal;
 import moze_intel.projecte.api.capabilities.item.IPedestalItem;
 import moze_intel.projecte.config.ProjectEConfig;
+import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
-import moze_intel.projecte.utils.ItemHelper;
 import moze_intel.projecte.utils.MathUtils;
 import moze_intel.projecte.utils.WorldHelper;
 import moze_intel.projecte.utils.text.PELang;
@@ -17,11 +17,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.ItemTags;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -33,8 +34,10 @@ import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.common.SpecialPlantable;
-import net.neoforged.neoforge.common.util.TriState;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.event.entity.player.BonemealEvent;
 import org.jetbrains.annotations.NotNull;
 
 public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
@@ -70,19 +73,16 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 		Player player = ctx.getPlayer();
 		BlockPos pos = ctx.getClickedPos();
 		Direction side = ctx.getClickedFace();
-		if (level.isClientSide || player == null || !player.mayUseItemAt(pos, side, ctx.getItemInHand())) {
+		if (player == null || !player.mayUseItemAt(pos, side, ctx.getItemInHand())) {
 			return InteractionResult.FAIL;
 		}
 		if (ctx.isSecondaryUseActive()) {
-			for (int i = 0; i < player.getInventory().items.size(); i++) {
-				ItemStack stack = player.getInventory().items.get(i);
-				if (!stack.isEmpty() && stack.getCount() >= 4 && stack.is(Items.BONE_MEAL)) {
-					if (useBoneMeal(level, pos, side)) {
-						player.getInventory().removeItem(i, 4);
-						player.inventoryMenu.broadcastChanges();
-						return InteractionResult.CONSUME;
+			for (ItemStack stack : player.getInventory().items) {
+				if (stack.is(Items.BONE_MEAL)) {
+					InteractionResult result = useBoneMeal(level, pos, side, player, stack);
+					if (result != InteractionResult.PASS) {
+						return result;
 					}
-					break;
 				}
 			}
 		} else if (plantSeeds(level, player, pos)) {
@@ -91,101 +91,129 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 		return InteractionResult.FAIL;
 	}
 
-	private boolean useBoneMeal(Level level, BlockPos pos, Direction side) {
-		if (level instanceof ServerLevel serverLevel) {
-			boolean result = false;
-			for (BlockPos currentPos : WorldHelper.horizontalPositionsAround(pos, 15)) {
-				currentPos = currentPos.immutable();
-				BlockState state = serverLevel.getBlockState(currentPos);
-				if (state.getBlock() instanceof BonemealableBlock growable && growable.isValidBonemealTarget(serverLevel, currentPos, state) &&
-					growable.isBonemealSuccess(serverLevel, serverLevel.random, currentPos, state)) {
-					growable.performBonemeal(serverLevel, serverLevel.random, currentPos, state);
-					level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, currentPos, 0);
-					result = true;
-				} else if (WorldHelper.growWaterPlant(serverLevel, currentPos, state, side)) {
-					level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, currentPos, 0);
-					result = true;
+	private InteractionResult useBoneMeal(Level level, BlockPos pos, Direction side, Player player, ItemStack stack) {
+		int count = stack.getCount();
+		if (count < 4) {
+			return InteractionResult.PASS;
+		}
+		int successfulTargets = 0;
+		for (BlockPos currentPos : WorldHelper.horizontalPositionsAround(pos, 15)) {
+			boolean wasSuccessful = false;
+			BlockState state = level.getBlockState(currentPos);
+			//TODO: Do we want to fire this with a different stack if we have already used the four that we accounted?
+			BonemealEvent event = EventHooks.fireBonemealEvent(player, level, currentPos, state, stack);
+			if (event.isCanceled()) {
+				wasSuccessful = event.isSuccessful();
+			} else if (event.isValidBonemealTarget()) {
+				wasSuccessful = true;
+				if (level instanceof ServerLevel serverLevel) {
+					//Note: We mirror vanilla only checking isBonemealSuccess on the server side
+					BonemealableBlock growable = (BonemealableBlock) state.getBlock();
+					if (growable.isBonemealSuccess(level, level.random, currentPos, state)) {
+						growable.performBonemeal(serverLevel, level.random, currentPos, state);
+						player.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+						level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, currentPos, 0);
+					}
 				}
 			}
-			return result;
+			if (wasSuccessful) {
+				successfulTargets++;
+			} else {
+				BlockPos posAgainst = currentPos.relative(side.getOpposite());
+				if (level.getBlockState(posAgainst).isFaceSturdy(level, posAgainst, side) && BoneMealItem.growWaterPlant(ItemStack.EMPTY, level, currentPos, side)) {
+					successfulTargets++;
+					if (level.isClientSide) {
+						break;
+					}
+					player.gameEvent(GameEvent.ITEM_INTERACT_FINISH);
+					level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, currentPos, 0);
+				}
+			}
 		}
-		return false;
+		if (!level.isClientSide) {
+			int alreadyRemoved = count - stack.getCount();
+			if (alreadyRemoved >= 0 && alreadyRemoved <= 4) {
+				//Note: We do this before checking successful targets is greater than zero so that we can sync changes that might have been made from the event
+				// as shrinking by zero will just do nothing
+				stack.shrink(Math.min(4 - alreadyRemoved, successfulTargets));
+			}
+			if (stack.getCount() != count) {
+				player.inventoryMenu.broadcastChanges();
+			}
+		}
+		return successfulTargets == 0 ? InteractionResult.FAIL : InteractionResult.CONSUME;
 	}
 
 	private boolean plantSeeds(Level level, Player player, BlockPos pos) {
-		List<StackWithSlot> seeds = getAllSeeds(player.getInventory().items);
+		List<ItemStack> seeds = getAllSeeds(player.getInventory().items);
 		if (seeds.isEmpty()) {
 			return false;
 		}
-		boolean result = false;
+		boolean hasPlantedAny = false;
 		for (BlockPos currentPos : WorldHelper.horizontalPositionsAround(pos, 8)) {
 			BlockState state = level.getBlockState(currentPos);
 			if (state.isAir()) {
 				continue;
 			}
-			//Ensure we are immutable so that changing blocks doesn't act weird
-			currentPos = currentPos.immutable();
 			BlockPos plantPos = currentPos.above();
-			for (Iterator<StackWithSlot> iterator = seeds.iterator(); iterator.hasNext(); ) {
-				StackWithSlot s = iterator.next();
-				//TODO - 1.21: Figure this out
-				ItemStack stack = player.getInventory().getItem(s.slot);
-				if (stack.isEmpty()) {
-					iterator.remove();
-					continue;
-				}
+			BlockPlaceContext placeContext = null;
+			for (Iterator<ItemStack> iterator = seeds.iterator(); iterator.hasNext(); ) {
+				ItemStack stack = iterator.next();
 				boolean planted = false;
-				if (stack.getItem() instanceof SpecialPlantable plantable && plantable.canPlacePlantAtPosition(stack, level, plantPos, Direction.DOWN)) {
-					plantable.spawnPlantAtPosition(stack, level, plantPos, Direction.DOWN);
-					planted = true;
-				} else if (!stack.isEmpty() && stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS) && stack.getItem() instanceof BlockItem && level.isEmptyBlock(plantPos)) {
-					//TODO - 1.21: Which way should we get the state for placement
-					BlockPlaceContext context = null;/*new BlockPlaceContext(new UseOnContext(player, InteractionHand.MAIN_HAND,
-							new BlockHitResult(Vec3.ZERO, Direction.UP, pos, false)));*/
-					BlockState plantState = ItemHelper.stackToState(stack, context);
-					if (plantState == null) {
-						continue;
-					}
-					TriState canSustain = state.canSustainPlant(level, currentPos, Direction.UP, plantState);
-					//TODO - 1.21: Support the case when canSustain is default
-					if (canSustain.isTrue()) {
-						level.setBlockAndUpdate(plantPos, plantState);
-						level.gameEvent(GameEvent.BLOCK_PLACE, plantPos, GameEvent.Context.of(player, plantState));
+				//Note: Unlike the patched in check in HarvestFarmland, we check special plantable before falling back to the item as a block item
+				if (stack.getItem() instanceof SpecialPlantable plantable) {
+					if (plantable.canPlacePlantAtPosition(stack, level, plantPos, Direction.DOWN)) {
+						plantable.spawnPlantAtPosition(stack, level, plantPos, Direction.DOWN);
 						planted = true;
+					}
+				} else if (stack.is(PETags.Items.PLANTABLE_SEEDS) && stack.getItem() instanceof BlockItem blockItem) {
+					if (placeContext == null) {
+						placeContext = new BlockPlaceContext(level, player, InteractionHand.MAIN_HAND, stack, new BlockHitResult(
+								currentPos.getCenter().relative(Direction.UP, 0.5), Direction.UP, currentPos, false
+						));
+						//Note: We don't want to replace the block we are trying to place against
+						placeContext.replaceClicked = false;
+					}
+					//Effectively does the checks from BlockItem#getPlacementState
+					if (placeContext.canPlace()) {
+						//Note: Unlike villagers, we try to get the state for placement based on the stack that is being used
+						// and have to validate if it can survive at the given position
+						//Note: BlockItem#getPlacementState returns null if the state can't survive at the given position
+						BlockState plantState = blockItem.getPlacementState(placeContext);
+						if (plantState != null) {
+							//If the plant will be able to survive at the position, go ahead and actually place it
+							level.setBlockAndUpdate(plantPos, plantState);
+							level.gameEvent(GameEvent.BLOCK_PLACE, plantPos, GameEvent.Context.of(player, plantState));
+							planted = true;
+						}
 					}
 				}
 				if (planted) {
-					player.getInventory().removeItem(s.slot, 1);
+					hasPlantedAny = true;
+					stack.shrink(1);
 					player.inventoryMenu.broadcastChanges();
-					if (--s.count == 0) {
+					if (stack.isEmpty()) {
 						iterator.remove();
 						if (seeds.isEmpty()) {
 							//If we are out of seeds, hard exit the method
-							return true;
+							return hasPlantedAny;
 						}
-					}
-					if (!result) {
-						result = true;
 					}
 					//Once we set a seed in that position, break out of trying to place other seeds in that position
 					break;
 				}
 			}
 		}
-		return result;
+		return hasPlantedAny;
 	}
 
-	private List<StackWithSlot> getAllSeeds(NonNullList<ItemStack> inv) {
-		List<StackWithSlot> result = new ArrayList<>();
-		for (int i = 0; i < inv.size(); i++) {
-			ItemStack stack = inv.get(i);
+	private List<ItemStack> getAllSeeds(NonNullList<ItemStack> inv) {
+		List<ItemStack> result = new ArrayList<>();
+		for (ItemStack stack : inv) {
 			if (!stack.isEmpty()) {
 				Item item = stack.getItem();
-				if (item instanceof SpecialPlantable) {
-					result.add(new StackWithSlot(stack, i));
-				} else if (item instanceof BlockItem && stack.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
-					//TODO - 1.21: Re-evaluate how we want to handle this check. Do we want a wider tag than just villager plantable seeds?
-					result.add(new StackWithSlot(stack, i));
+				if (item instanceof SpecialPlantable || stack.is(PETags.Items.PLANTABLE_SEEDS) && item instanceof BlockItem) {
+					result.add(stack);
 				}
 			}
 		}
@@ -216,16 +244,5 @@ public class HarvestGoddess extends PEToggleItem implements IPedestalItem {
 			list.add(PELang.PEDESTAL_HARVEST_GODDESS_3.translateColored(ChatFormatting.BLUE, MathUtils.tickToSecFormatted(ProjectEConfig.server.cooldown.pedestal.harvest.get(), tickRate)));
 		}
 		return list;
-	}
-
-	private static class StackWithSlot {
-
-		public final int slot;
-		public int count;
-
-		public StackWithSlot(ItemStack stack, int slot) {
-			this.slot = slot;
-			this.count = stack.getCount();
-		}
 	}
 }

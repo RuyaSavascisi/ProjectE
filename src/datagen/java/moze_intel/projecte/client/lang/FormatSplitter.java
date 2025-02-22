@@ -1,6 +1,5 @@
 package moze_intel.projecte.client.lang;
 
-import com.google.common.collect.ImmutableList;
 import java.text.ChoiceFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -47,11 +46,11 @@ public class FormatSplitter {
 				components.add(new TextComponent(text.substring(start)));
 			}
 		}
-		return ImmutableList.copyOf(components);
+		return List.copyOf(components);
 	}
 
 	public static List<Component> splitMessageFormat(String text) {
-		return ImmutableList.copyOf(splitMessageFormatInternal(text));
+		return List.copyOf(splitMessageFormatInternal(text));
 	}
 
 	/**

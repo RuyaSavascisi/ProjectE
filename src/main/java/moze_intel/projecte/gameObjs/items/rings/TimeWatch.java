@@ -40,13 +40,12 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunk.BoundTickingBlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk.RebindableTickingBlockEntityWrapper;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 
@@ -182,13 +181,15 @@ public class TimeWatch extends PEToggleItem implements IPedestalItem, IItemCharg
 		for (BlockPos pos : WorldHelper.getPositionsInBox(effectBounds)) {
 			if (WorldHelper.isBlockLoaded(level, pos)) {
 				BlockState state = level.getBlockState(pos);
-				Block block = state.getBlock();
-				if (state.isRandomlyTicking() && !state.is(Blocks.BLACKLIST_TIME_WATCH)
-					&& !(block instanceof LiquidBlock) // Don't speed non-source fluid blocks - dupe issues
-					&& !WorldHelper.isCrop(state)) {// All plants should be sped using Harvest Goddess
-					pos = pos.immutable();
-					for (int i = 0; i < bonusTicks; i++) {
-						state.randomTick(serverLevel, pos, level.random);
+				if (state.isRandomlyTicking() && !state.is(Blocks.BLACKLIST_TIME_WATCH)) {
+					FluidState fluidState = state.getFluidState();
+					if (fluidState.isEmpty() || fluidState.isSource()) {// Don't speed non-source fluid blocks - dupe issues
+						if (!WorldHelper.isCrop(state)) {// All plants should be sped using Harvest Goddess
+							pos = pos.immutable();
+							for (int i = 0; i < bonusTicks; i++) {
+								state.randomTick(serverLevel, pos, level.random);
+							}
+						}
 					}
 				}
 			}

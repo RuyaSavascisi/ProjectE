@@ -37,6 +37,7 @@
     "minecraft:magenta_stained_glass_pane",
     "minecraft:pink_stained_glass_pane",
     "#c:clusters",
+    "#c:hidden_from_recipe_viewers",
     "minecraft:infested_stone",
     "minecraft:infested_cobblestone",
     "minecraft:infested_stone_bricks",

@@ -1,6 +1,5 @@
 package moze_intel.projecte.impl.capability;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -300,7 +299,7 @@ public class KnowledgeImpl implements IKnowledgeProvider {
 
 		private static final int LOCK_SLOTS = 9;
 
-		private static final Codec<Set<ItemInfo>> MUTABLE_KNOWLEDGE_CODEC = ItemInfo.CODEC.listOf().xmap(HashSet::new, ImmutableList::copyOf);
+		private static final Codec<Set<ItemInfo>> MUTABLE_KNOWLEDGE_CODEC = ItemInfo.CODEC.listOf().xmap(HashSet::new, List::copyOf);
 		public static final Codec<KnowledgeAttachment> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 				MUTABLE_KNOWLEDGE_CODEC.fieldOf("knowledge").forGetter(attachment -> attachment.knowledge),
 				PECodecHelper.MUTABLE_HANDLER_CODEC.fieldOf("input_locks").forGetter(attachment -> attachment.inputLocks),

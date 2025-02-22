@@ -1,4 +1,4 @@
-// 1.21.1	2025-01-28T13:59:03.1688853	Tags for minecraft:block mod id projecte
+// 1.21.1	2025-02-22T11:12:06.647224	Tags for minecraft:block mod id projecte
 b1526b0ba3ea9a6445822180462b59f848cbf363 data/c/tags/block/chests.json
 35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/c/tags/block/mineable/hammer.json
 35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/c/tags/block/mineable/katar.json
@@ -17,7 +17,7 @@ bcd85ff68afa9b32aacf78bed536235b6fc9bccb data/minecraft/tags/block/incorrect_for
 ed04a4e069248f6aa21db30539ef3ff23a835670 data/minecraft/tags/block/mineable/pickaxe.json
 1f18749008a9b10f3ef3d1e859d8a2ae600174fc data/minecraft/tags/block/wall_post_override.json
 39f15f2a1d9e3801a3b07cf3f27b055129ed5164 data/minecraft/tags/block/wither_immune.json
-f727cd35e5b65198c6adffd4ab4dddae51bf6c05 data/projecte/tags/block/blacklist/harvest.json
+21addf7dda163430df6fed55844821f0fc01d699 data/projecte/tags/block/blacklist/harvest.json
 35133e95f1c8fdd7a1c21afcc231fc0bffefb9a8 data/projecte/tags/block/blacklist/time_watch.json
 f549715bfd65ed54ca643077696fcff45e31cb72 data/projecte/tags/block/farming_override.json
 668cfd13b86f3973c1311a431229fb786c57a313 data/projecte/tags/block/incorrect_for_dark_matter_tool.json
@@ -29,3 +29,4 @@ e7a8c631b3ba3bd9a98d2bb83f927b25fe348d37 data/projecte/tags/block/mineable/shear
 e7a8c631b3ba3bd9a98d2bb83f927b25fe348d37 data/projecte/tags/block/mineable/sword.json
 a9eb6aef4429122627692f08698f74e0f501f970 data/projecte/tags/block/needs_dark_matter_tool.json
 f229860ac0cfd87e67fb747643b9e36fdb97fc40 data/projecte/tags/block/needs_red_matter_tool.json
+6911de3486419c7e98abdca1b996775ec5fc8f64 data/projecte/tags/block/override/plantable.json

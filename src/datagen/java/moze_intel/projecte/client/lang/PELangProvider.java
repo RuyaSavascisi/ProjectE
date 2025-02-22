@@ -265,6 +265,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PETags.Items.DATA_COMPONENT_WHITELIST, "Data Component Whitelist");
 		add(PETags.Items.COVALENCE_DUST, "Covalence Dusts");
 		add(PETags.Items.IGNORE_MISSING_EMC, "Ignore Missing EMC");
+		add(PETags.Items.PLANTABLE_SEEDS, "Plantable Seeds");
 		add(PETags.Items.KLEIN_STARS, "Klein Stars");
 		add(PETags.Items.COLLECTORS, "Energy Collectors");
 		add(PETags.Items.RELAYS, "Anti-Matter Relays");
@@ -274,6 +275,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PETags.Items.TOOLS_MORNING_STARS, "Morning Stars");
 		
 		add(PETags.Blocks.BLACKLIST_HARVEST, "Harvest Band Blacklist");
+		add(PETags.Blocks.OVERRIDE_PLANTABLE, "Harvest Band Plantable Override");
 		add(PETags.Blocks.BLACKLIST_TIME_WATCH, "Time Watch Blacklist");
 		add(PETags.Blocks.FARMING_OVERRIDE, "Farming Override");
 		add(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, "Needs Dark Matter Tools");

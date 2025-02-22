@@ -62,7 +62,7 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 							}
 						} else {
 							//Otherwise if it is lava logged, "void" the lava as we can't place a block in that spot
-							WorldHelper.drainFluid(player, level, pos, state, Fluids.LAVA);
+							WorldHelper.drainFluid(player, level, pos, state);
 						}
 						playSound(SoundEvents.GENERIC_BURN, 0.5F, 2.6F + (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
 					}

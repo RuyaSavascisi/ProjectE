@@ -95,8 +95,8 @@ public enum PEConfigTranslations implements IConfigTranslation {
 	SERVER_ITEMS_PICKAXE_AOE_VEIN_MINING("server.items.pickaxe_aoe_vein_mining", "Pickaxe AOE Vein Mining",
 			"Instead of vein mining the ore you right click with your Dark/Red Matter Pick/Star it vein mines all ores in an AOE around you "
 			+ "like it did in ProjectE before version 1.4.4."),
-	SERVER_ITEMS_HARVEST_BAND_GRASS("server.items.harvest_band_grass", "Harvest Band Grass",
-			"Allows the Harvest Goddess Band to passively grow tall grass, flowers, etc, on top of grass blocks."),
+	SERVER_ITEMS_HARVEST_BAND_INDIRECT("server.items.harvest_band_indirect", "Harvest Band Indirect",
+			"Allows the Harvest Goddess Band to passively grow things like tall grass, flowers, etc, on top of grass blocks and nylium. Also allows it to make moss spread."),
 	SERVER_ITEMS_DISABLE_ALL_RADIUS_MINING("server.items.disable_all_radius_mining", "Disable All Radius Mining",
 			"If set to true, disables all radius-based mining functionality (right click of tools)."),
 	SERVER_ITEMS_TIME_WATCH("server.items.time_watch", "Watch of Flowing Time", "Enables the Watch of Flowing Time."),

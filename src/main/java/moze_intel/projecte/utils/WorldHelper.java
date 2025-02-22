@@ -1,11 +1,11 @@
 package moze_intel.projecte.utils;
 
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -17,21 +17,16 @@ import moze_intel.projecte.gameObjs.registries.PESoundEvents;
 import moze_intel.projecte.network.packets.to_client.NovaExplosionSyncPKT;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet.Named;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -39,6 +34,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
@@ -48,31 +44,35 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.Biomes;
-import net.minecraft.world.level.block.BaseCoralWallFanBlock;
+import net.minecraft.world.level.block.AttachedStemBlock;
+import net.minecraft.world.level.block.BambooStalkBlock;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BonemealableBlock;
 import net.minecraft.world.level.block.BucketPickup;
-import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.world.level.block.FlowerBlock;
+import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.CactusBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.GlowLichenBlock;
 import net.minecraft.world.level.block.GrassBlock;
-import net.minecraft.world.level.block.HangingRootsBlock;
+import net.minecraft.world.level.block.GrowingPlantBlock;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.MossBlock;
-import net.minecraft.world.level.block.NetherSproutsBlock;
-import net.minecraft.world.level.block.NetherWartBlock;
-import net.minecraft.world.level.block.NetherrackBlock;
 import net.minecraft.world.level.block.NyliumBlock;
-import net.minecraft.world.level.block.RootsBlock;
 import net.minecraft.world.level.block.SnowLayerBlock;
+import net.minecraft.world.level.block.StemBlock;
+import net.minecraft.world.level.block.SugarCaneBlock;
 import net.minecraft.world.level.block.TntBlock;
+import net.minecraft.world.level.block.VineBlock;
+import net.minecraft.world.level.block.WaterlilyBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FlowingFluid;
@@ -80,7 +80,6 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.common.IShearable;
 import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.util.ItemStackMap;
 import net.neoforged.neoforge.event.EventHooks;
@@ -96,6 +95,11 @@ import org.jetbrains.annotations.Nullable;
 public final class WorldHelper {
 
 	private static final Predicate<Entity> SWRG_REPEL_PREDICATE = entity -> validRepelEntity(entity, PETags.Entities.BLACKLIST_SWRG);
+	private static final Map<Block, IntegerProperty> AGE_PROPERTIES = new Reference2ObjectOpenHashMap<>();
+
+	public static void clearCachedAgeProperties() {
+		AGE_PROPERTIES.clear();
+	}
 
 	/**
 	 * Drops all the items in the list at the given location compacting as much as possible.
@@ -183,7 +187,7 @@ public final class WorldHelper {
 		}
 	}
 
-	public static void drainFluid(@Nullable Player player, Level level, BlockPos pos, BlockState state, Fluid toMatch) {
+	public static void drainFluid(@Nullable Player player, Level level, BlockPos pos, BlockState state) {
 		Block block = state.getBlock();
 		if (block instanceof BucketPickup bucketPickup) {
 			//If it is a bucket pickup handler (so may be a fluid logged block) "pick it up"
@@ -230,7 +234,7 @@ public final class WorldHelper {
 
 				if (stateUp.isAir() && (!random || level.random.nextInt(128) == 0)) {
 					newState = Blocks.SNOW.defaultBlockState();
-				} else if (stateUp.is(Blocks.SNOW) && stateUp.getValue(SnowLayerBlock.LAYERS) < 8 && level.random.nextInt(512) == 0) {
+				} else if (stateUp.is(Blocks.SNOW) && stateUp.getValue(SnowLayerBlock.LAYERS) < SnowLayerBlock.MAX_HEIGHT && level.random.nextInt(Block.UPDATE_LIMIT) == 0) {
 					newState = stateUp.setValue(SnowLayerBlock.LAYERS, stateUp.getValue(SnowLayerBlock.LAYERS) + 1);
 				}
 				if (newState != null) {
@@ -357,7 +361,7 @@ public final class WorldHelper {
 	 * Note that this is inclusive of all positions in the AABB (except those that start on the edge)! This is different from vanilla's method which contains blocks on
 	 * the edge.
 	 */
-	public static Iterable<BlockPos> getPositionsInBox(AABB box) {
+	public static Iterable<BlockPos> getPositionsInBox(AABB box) {//TODO: Re-evaluate all our BlockPos#immutable calls, as some may no longer be necessary
 		float epsilon = com.mojang.math.Constants.EPSILON;
 		//Similar to as if we did box = box.deflate(epsilon), but without creating the extra intermediary AABB
 		return BlockPos.betweenClosed(
@@ -420,148 +424,149 @@ public final class WorldHelper {
 		int chance = harvest ? 16 : 32;
 		for (BlockPos currentPos : getPositionsInBox(box)) {
 			currentPos = currentPos.immutable();
-			BlockState state = serverLevel.getBlockState(currentPos);
-			Block crop = state.getBlock();
-
-			// Vines, leaves, tallgrass, deadbush, doubleplants
-			if (crop instanceof IShearable || crop instanceof FlowerBlock || crop instanceof DoublePlantBlock ||
-				crop instanceof RootsBlock || crop instanceof NetherSproutsBlock || crop instanceof HangingRootsBlock) {
-				if (harvest) {
-					harvestBlock(serverLevel, currentPos, player);
-				}
-			}
-			// Carrot, cocoa, wheat, grass (creates flowers and tall grass in vicinity),
-			// Mushroom, potato, sapling, stems, tallgrass
-			else if (crop instanceof BonemealableBlock growable) {
-				if (!growable.isValidBonemealTarget(serverLevel, currentPos, state)) {
-					if (harvest && !state.is(PETags.Blocks.BLACKLIST_HARVEST)) {
-						if (!leaveBottomBlock(state) || serverLevel.getBlockState(currentPos.below()).is(crop)) {
-							//Don't harvest the bottom of kelp but otherwise allow harvesting them
-							harvestBlock(serverLevel, currentPos, player);
+			BlockState state = level.getBlockState(currentPos);
+			if (state.getBlock() instanceof BonemealableBlock growable) {
+				//Note: We intentionally don't fire the bone meal used event, as we aren't actually applying bone meal to the target
+				if (growable.isValidBonemealTarget(level, currentPos, state)) {
+					if (ProjectEConfig.server.items.harvBandIndirect.get() || !onlyAffectsOtherBlocks(state.getBlock())) {
+						//Based on our chance, apply bonemeal if the subchance for that growable also passes
+						if (level.random.nextInt(chance) == 0 && growable.isBonemealSuccess(level, level.random, currentPos, state)) {
+							growable.performBonemeal(serverLevel, level.random, currentPos, state);
+							level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, currentPos, 0);
 						}
 					}
-				} else if (ProjectEConfig.server.items.harvBandGrass.get() || !isGrassLikeBlock(crop)) {
-					if (serverLevel.random.nextInt(chance) == 0) {
-						growable.performBonemeal(serverLevel, serverLevel.random, currentPos, state);
-						level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, currentPos, 0);
-					}
+				} else {
+					//Fully grown block, try to harvest it
+					tryHarvest(level, currentPos, state, player, harvest);
 				}
-			}
-			// All modded
-			// Cactus, Reeds, Netherwart, Flower
-			else if (isPlantable(state)) {
-				if (serverLevel.random.nextInt(chance / 4) == 0) {
-					for (int i = 0; i < (harvest ? 8 : 4); i++) {
-						state.randomTick(serverLevel, currentPos, serverLevel.random);
-					}
-				}
-				if (harvest) {
-					if (state.is(Blocks.SUGAR_CANE) || state.is(Blocks.CACTUS)) {
-						if (serverLevel.getBlockState(currentPos.above()).is(crop) && serverLevel.getBlockState(currentPos.above(2)).is(crop)) {
-							for (int i = state.is(Blocks.SUGAR_CANE) ? 1 : 0; i < 3; i++) {
-								harvestBlock(serverLevel, currentPos.above(i), player);
-							}
-						}
-					} else if (state.is(Blocks.NETHER_WART)) {
-						if (state.getValue(NetherWartBlock.AGE) == 3) {
-							harvestBlock(serverLevel, currentPos, player);
+			} else if (isPlantable(state)) {
+				//Any modded or vanilla plants that are not bonemealable
+				//Note: While things like mangroves leaves do return true for isPlantable, they won't be handled by this branch as they are bonemealable
+				// and thus will be handled by the corresponding above check
+				if (state.isRandomlyTicking() && level.random.nextInt(chance / 4) == 0) {
+					//If the block accepts random ticks, apply a chance to give it said extra random tick.
+					// This includes things like vanilla flowers (modded flowers might have random ticks, or they might not)
+					Block initialType = state.getBlock();
+					for (int i = 0, ticks = harvest ? 8 : 4; i < ticks; i++) {
+						state.randomTick(serverLevel, currentPos, level.random);
+						state = level.getBlockState(currentPos);
+						if (!state.is(initialType)) {
+							//If the state changed blocks (not just states) we are in a state we aren't quite sure how to handle
+							break;
 						}
 					}
+					if (!state.is(initialType)) {
+						//If the type got changed on us, continue to the next position
+						continue;
+					}
 				}
+				tryHarvest(level, currentPos, state, player, harvest);
 			}
 			// Generic water plants
-			else if (!grewWater && serverLevel.random.nextInt(512) == 0 && growWaterPlant(serverLevel, currentPos, state, null)) {
+			else if (!grewWater && level.random.nextInt(Block.UPDATE_LIMIT) == 0 && BoneMealItem.growWaterPlant(ItemStack.EMPTY, level, currentPos, null)) {
 				level.levelEvent(LevelEvent.PARTICLES_AND_SOUND_PLANT_GROWTH, currentPos, 0);
 				grewWater = true;
 			}
 		}
 	}
 
-	//TODO - 1.21: Re-evaluate how we do this and other modded and maybe vanilla plants
-	//TODO - 1.21: This used to include flowers? And maybe other things
-	private static boolean isPlantable(BlockState state) {
-		return state.is(Blocks.SUGAR_CANE) || state.is(Blocks.CACTUS) || state.is(Blocks.NETHER_WART);
-	}
-
-	public static boolean isCrop(BlockState state) {
-		Block block = state.getBlock();
-		return block instanceof BonemealableBlock || isPlantable(state);
-	}
-
-	private static boolean leaveBottomBlock(BlockState crop) {
-		return crop.is(Blocks.KELP_PLANT) || crop.is(Blocks.BAMBOO);
-	}
-
-	private static boolean isGrassLikeBlock(Block crop) {
-		//Note: We count netherrack like a grass like block as it propagates growing to neighboring nylium blocks
-		// and its can grow methods behave like one
-		return crop instanceof GrassBlock || crop instanceof NyliumBlock || crop instanceof NetherrackBlock || crop instanceof MossBlock;
-	}
-
 	/**
-	 * Breaks and "harvests" a block if the player has permission to break it or there is no player
+	 * Checks if a block should be harvested, and if it should it tries to break and "harvests" the block if the player has permission to break it or there is no player
 	 */
-	private static void harvestBlock(Level level, BlockPos pos, @Nullable Player player) {
-		if (!(player instanceof ServerPlayer serverPlayer) || PlayerHelper.hasBreakPermission(serverPlayer, level, pos)) {
-			level.destroyBlock(pos, true, player);
-		}
-	}
-
-	//[VanillaCopy] slightly modified version of BoneMealItem#growWaterPlant
-	public static boolean growWaterPlant(ServerLevel level, BlockPos pos, BlockState state, @Nullable Direction side) {
-		boolean success = false;
-		if (state.is(Blocks.WATER) && state.getFluidState().getAmount() == 8) {
-			RandomSource random = level.getRandom();
-			label76:
-			for (int i = 0; i < 128; ++i) {
-				BlockPos blockpos = pos;
-				for (int j = 0; j < i / 16; ++j) {
-					blockpos = blockpos.offset(random.nextInt(3) - 1, (random.nextInt(3) - 1) * random.nextInt(3) / 2,
-							random.nextInt(3) - 1);
-					if (level.getBlockState(blockpos).isCollisionShapeFullBlock(level, blockpos)) {
-						continue label76;
-					}
-				}
-				BlockState newState = Blocks.SEAGRASS.defaultBlockState();
-				Holder<Biome> biome = level.getBiome(blockpos);
-				if (biome.is(Biomes.WARM_OCEAN)) {
-					if (i == 0 && side != null && side.getAxis().isHorizontal()) {
-						newState = getRandomState(BlockTags.WALL_CORALS, random, newState);
-						if (newState.hasProperty(BaseCoralWallFanBlock.FACING)) {
-							newState = newState.setValue(BaseCoralWallFanBlock.FACING, side);
-						}
-					} else if (random.nextInt(4) == 0) {
-						newState = getRandomState(BlockTags.UNDERWATER_BONEMEALS, random, newState);
-					}
-				}
-				if (newState.is(BlockTags.WALL_CORALS, s -> s.hasProperty(BaseCoralWallFanBlock.FACING))) {
-					for (int k = 0; !newState.canSurvive(level, blockpos) && k < 4; ++k) {
-						newState = newState.setValue(BaseCoralWallFanBlock.FACING, Direction.Plane.HORIZONTAL.getRandomDirection(random));
-					}
-				}
-				if (newState.canSurvive(level, blockpos)) {
-					BlockState stateToReplace = level.getBlockState(blockpos);
-					if (stateToReplace.is(Blocks.WATER) && stateToReplace.getFluidState().getAmount() == 8) {
-						level.setBlockAndUpdate(blockpos, newState);
-						success = true;
-					} else if (stateToReplace.is(Blocks.SEAGRASS) && random.nextInt(Constants.TICKS_PER_HALF_SECOND) == 0) {
-						((BonemealableBlock) Blocks.SEAGRASS).performBonemeal(level, random, blockpos, stateToReplace);
-						success = true;
-					}
+	private static void tryHarvest(Level level, BlockPos pos, BlockState state, @Nullable Player player, boolean harvest) {
+		if (harvest && shouldHarvest(level, pos, state)) {
+			if (player == null || PlayerHelper.hasEditPermission(player, level, pos)) {
+				if (!(player instanceof ServerPlayer serverPlayer) || PlayerHelper.checkBreakPermission(serverPlayer, level, pos)) {
+					level.destroyBlock(pos, true, player);
 				}
 			}
 		}
-		return success;
 	}
 
-	private static BlockState getRandomState(TagKey<Block> key, RandomSource random, BlockState fallback) {
-		Optional<Named<Block>> optionalTag = BuiltInRegistries.BLOCK.getTag(key);
-		if (optionalTag.isPresent()) {
-			return optionalTag.get().getRandomElement(random)
-					.map(holder -> holder.value().defaultBlockState())
-					.orElse(fallback);
+	private static boolean shouldHarvest(Level level, BlockPos pos, BlockState state) {
+		Block block = state.getBlock();
+		if (state.is(PETags.Blocks.BLACKLIST_HARVEST) || isUnharvestableImplementation(block)) {
+			return false;
+		} else if (block instanceof BambooStalkBlock || block instanceof SugarCaneBlock) {
+			//Don't harvest the bottom of sugar cane or bamboo plants so that they will be able to keep growing
+			return level.getBlockState(pos.below()).is(block);
+		} else if (block instanceof CactusBlock) {
+			//Only harvest cactus if it is the bottom block and there is no cactus under it. This makes it so that it doesn't get destroyed when breaking
+			return !level.getBlockState(pos.below()).is(block) && level.getBlockState(pos.above()).is(block);
+		} else if (block instanceof GrowingPlantBlock growingPlantBlock) {
+			//Don't harvest the base block of plants that grow vertically (be it ones that grow down, or ones that grow up)
+			return level.getBlockState(pos.relative(growingPlantBlock.growthDirection, -1)).is(growingPlantBlock.getBodyBlock());
+		} else if (block instanceof LeavesBlock leavesBlock) {
+			//Only harvest leaves if they would be decaying
+			return leavesBlock.decaying(state);
+		} else if (block instanceof VineBlock) {
+			//Allow harvesting vines if they have another vine block above them
+			return level.getBlockState(pos.above()).is(block);
+		} else if (block instanceof GlowLichenBlock) {
+			//TODO: Eventually we might want to implement better handling for this to try and not break the top/source block
 		}
-		return fallback;
+		if (block instanceof CropBlock cropBlock) {
+			return cropBlock.isMaxAge(state);
+		}
+		//Fallback handling for any states that have an age declared, but are not at the max age
+		// Things like sugar cane that are partially grown, get handled above, so won't be prevented from being harvested by this
+		// but things like nether wart, will be handled by this
+		IntegerProperty ageProperty = null;
+		//Note: We can't use computeIfAbsent, as we explicitly want to not compute if there is a stored value equal to null
+		if (AGE_PROPERTIES.containsKey(block)) {
+			//If we have a cached value, grab it
+			ageProperty = AGE_PROPERTIES.get(block);
+		} else {
+			//Figure out what age property this block uses
+			for (Map.Entry<Property<?>, Comparable<?>> entry : state.getValues().entrySet()) {
+				if (entry.getKey().getName().equals("age")) {
+					if (entry.getValue() instanceof IntegerProperty intProperty) {
+						//It is a type of property we understand how to handle
+						ageProperty = intProperty;
+					}
+					break;
+				}
+			}
+			AGE_PROPERTIES.put(block, ageProperty);
+		}
+		//If the block doesn't have an age property, or it is at the max age. Allow harvesting
+		return ageProperty == null || state.getValue(ageProperty) == ageProperty.max;
+	}
+
+	/**
+	 * The instances this method checks exist to do our best to support modded versions out of the box, as there aren't vanilla or neo tags for these types.
+	 */
+	public static boolean isUnharvestableImplementation(Block block) {
+		//Instance check for blocks that get handled because of being plantable from the instanceof BushBlock check
+		//Note: We can't just include these by default in the blacklist harvest tag, as then we might harvest modded ones that we don't want to
+		return block instanceof StemBlock || block instanceof AttachedStemBlock || block instanceof WaterlilyBlock || onlyAffectsOtherBlocks(block);
+	}
+
+	/**
+	 * Non-bonemealable plants. Contains all vanilla, and best effort attempt at modded plants.
+	 */
+	private static boolean isPlantable(BlockState state) {
+		return state.is(PETags.Blocks.OVERRIDE_PLANTABLE) || isPlantableImplementation(state.getBlock());
+	}
+
+	/**
+	 * The instances this method checks exist to do our best to support modded versions out of the box, as there aren't vanilla or neo tags for these types.
+	 */
+	public static boolean isPlantableImplementation(Block block) {
+		return block instanceof CactusBlock || block instanceof SugarCaneBlock || block instanceof VineBlock || block instanceof BushBlock;
+	}
+
+	public static boolean isCrop(BlockState state) {
+		if (state.getBlock() instanceof BonemealableBlock) {
+			return ProjectEConfig.server.items.harvBandIndirect.get() || !onlyAffectsOtherBlocks(state.getBlock());
+		}
+		return isPlantable(state);
+	}
+
+	private static boolean onlyAffectsOtherBlocks(Block block) {
+		//We don't want these to be broken as the bonemeal affects a different block than the one in their position,
+		// and either doesn't or has a chance of not changing whether bonemeal can be applied
+		return block instanceof GrassBlock || block instanceof NyliumBlock || block instanceof MossBlock;
 	}
 
 	private static <DATA> boolean validState(DATA data, BiPredicate<BlockState, DATA> stateChecker, BlockState state, Level level, BlockPos pos, Player player) {
