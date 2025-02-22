@@ -61,11 +61,10 @@ public class DecoratedPotMapper extends SpecialRecipeMapper<DecoratedPotRecipe> 
 						NSSItem nssDecorated = createDecoratedPotItem(decorations);
 						//Batch known inputs into a single calculation pass by using a fake group
 						Object2IntMap<NormalizedSimpleStack> nssIngredients = getIngredients(back.nss(), left.nss(), right.nss(), front.nss());
-						FakeGroupData group = fakeGroupManager.getOrCreateFakeGroupDirect(nssIngredients);
+						FakeGroupData group = fakeGroupManager.getOrCreateFakeGroupDirect(nssIngredients, false);
 						mapper.addConversion(1, nssDecorated, EMCHelper.intMapOf(group.dummy(), 1));
 						recipeCount++;
 						if (group.created()) {
-							mapper.addConversion(1, group.dummy(), nssIngredients);
 							uniqueInputs++;
 						}
 					}

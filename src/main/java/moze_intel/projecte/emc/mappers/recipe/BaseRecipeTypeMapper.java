@@ -6,9 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager;
@@ -93,13 +91,13 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 					return true;
 				}
 			} else {
-				Set<NormalizedSimpleStack> rawNSSMatches = new HashSet<>(matches.length);
+				Object2IntMap<NormalizedSimpleStack> rawNSSMatches = new Object2IntOpenHashMap<>(matches.length);
 				List<ItemStack> stacks = new ArrayList<>(matches.length);
 				for (ItemStack match : matches) {
 					if (!match.isEmpty() && !representsEmptyTag(match)) {
 						//Validate it is not an empty stack in case mods do weird things in custom ingredients
 						// Note: We don't have to worry about duplicates, as Ingredient#getItems, returns a distinct set of items
-						rawNSSMatches.add(NSSItem.createItem(match));
+						rawNSSMatches.put(NSSItem.createItem(match), 1);
 						stacks.add(match);
 					}
 				}
@@ -110,7 +108,7 @@ public abstract class BaseRecipeTypeMapper implements IRecipeTypeMapper {
 					return true;
 				} else if (count > 1) {
 					//Handle this ingredient as the representation of all the stacks it supports
-					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroupDirect(rawNSSMatches);
+					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroupDirect(rawNSSMatches, true, true);
 					NormalizedSimpleStack dummy = group.dummy();
 					ingredientMap.mergeInt(dummy, 1, Constants.INT_SUM);
 					if (group.created()) {

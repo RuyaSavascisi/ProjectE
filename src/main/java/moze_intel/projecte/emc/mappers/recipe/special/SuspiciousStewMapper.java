@@ -1,14 +1,13 @@
 package moze_intel.projecte.emc.mappers.recipe.special;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import moze_intel.projecte.PECore;
 import moze_intel.projecte.api.mapper.collector.IMappingCollector;
 import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager;
-import moze_intel.projecte.api.mapper.recipe.INSSFakeGroupManager.FakeGroupData;
 import moze_intel.projecte.api.mapper.recipe.RecipeTypeMapper;
 import moze_intel.projecte.api.nss.NSSItem;
 import moze_intel.projecte.api.nss.NormalizedSimpleStack;
@@ -47,28 +46,22 @@ public class SuspiciousStewMapper extends SpecialRecipeMapper<SuspiciousStewReci
 			NSSItem nssBowl = NSSItem.createItem(Items.BOWL);
 			NSSItem nssRedMushroom = NSSItem.createItem(Items.RED_MUSHROOM);
 			NSSItem nssBrownMushroom = NSSItem.createItem(Items.BROWN_MUSHROOM);
-			Map<@Nullable SuspiciousStewEffects, Set<NormalizedSimpleStack>> knownEffects = new HashMap<>(flowersTag.size());
+			Map<@Nullable SuspiciousStewEffects, Object2IntMap<NormalizedSimpleStack>> knownEffects = new HashMap<>(flowersTag.size());
 			for (Holder<Item> flower : flowersTag) {
 				SuspiciousEffectHolder effectHolder = SuspiciousEffectHolder.tryGet(flower.value());
-				knownEffects.computeIfAbsent(effectHolder == null ? null : effectHolder.getSuspiciousEffects(), k -> new HashSet<>())
-						.add(NSSItem.createItem(flower));
+				knownEffects.computeIfAbsent(effectHolder == null ? null : effectHolder.getSuspiciousEffects(), k -> new Object2IntOpenHashMap<>())
+						.put(NSSItem.createItem(flower), 1);
 			}
-			for (Map.Entry<@Nullable SuspiciousStewEffects, Set<NormalizedSimpleStack>> entry : knownEffects.entrySet()) {
-				Set<NormalizedSimpleStack> flowers = entry.getValue();
+			for (Map.Entry<@Nullable SuspiciousStewEffects, Object2IntMap<NormalizedSimpleStack>> entry : knownEffects.entrySet()) {
+				Object2IntMap<NormalizedSimpleStack> flowers = entry.getValue();
 				NSSItem nssStew = createStew(entry.getKey());
 				NormalizedSimpleStack nssFlower;
 				if (flowers.size() == 1) {
-					nssFlower = flowers.iterator().next();
+					nssFlower = flowers.keySet().iterator().next();
 				} else {
 					//Create a recipe using dummy ingredients for any stew recipes that share an effect
 					// Note: We use a fake group in case any recipes just happen to use only these flowers in them
-					FakeGroupData group = fakeGroupManager.getOrCreateFakeGroupDirect(flowers);
-					nssFlower = group.dummy();
-					if (group.created()) {
-						for (NormalizedSimpleStack flower : flowers) {
-							mapper.addConversion(1, nssFlower, EMCHelper.intMapOf(flower, 1));
-						}
-					}
+					nssFlower = fakeGroupManager.getOrCreateFakeGroupDirect(flowers, true).dummy();
 				}
 				mapper.addConversion(1, nssStew, EMCHelper.intMapOf(
 						nssBowl, 1,
