@@ -9,6 +9,7 @@ plugins {
     id('java')
     id('eclipse')
     id('idea')
+    id('maven-publish')
     id('com.gradleup.shadow') version('8.3.6')
     // https://projects.neoforged.net/neoforged/ModDevGradle
     id('net.neoforged.moddev') version('2.0.78')
@@ -78,6 +79,9 @@ configurations { configContainer ->
     extendConfigurations(implementation, apiImplementation, testImplementation, datagenImplementation)
     extendConfigurations(compileOnly, apiCompileOnly, testCompileOnly, datagenCompileOnly)
     extendConfigurations(runtimeOnly, apiRuntimeOnly, datagenRuntimeOnly)
+    extendConfigurations(localRuntime, apiLocalRuntime)
+    sourceSets.main.runtimeClasspath += localRuntime
+    sourceSets.api.runtimeClasspath += apiLocalRuntime
 }
 
 static void extendConfigurations(Configuration base, Configuration... configurations) {
@@ -118,7 +122,7 @@ def replaceResources = tasks.register("replaceResources", Copy) {
 }
 
 version = "${projecte_version}"
-group = "java.moze_intel"
+group = "moze_intel.projecte"
 project.base.archivesName = "projecte"
 
 java {
@@ -244,7 +248,7 @@ dependencies {
 
     compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
     if (recipe_viewer == 'jei' || recipe_viewer == 'hybrid') {
-        runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
+        localRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
     }
 
     compileOnly("dev.emi:emi-neoforge:${emi_version}+${minecraft_version}:api")
@@ -253,7 +257,7 @@ dependencies {
     //Compile against full emi in datagen
     datagenCompileOnly(emi)
     if (recipe_viewer == 'emi' || recipe_viewer == 'hybrid') {
-        runtimeOnly(emi)
+        localRuntime(emi)
     } else {
         //We still need it to load in datagen regardless of if we are using emi or a different viewer so that we can access EMI related objects
         datagenRuntimeOnly(emi)
@@ -261,20 +265,22 @@ dependencies {
 
 
     compileOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}:api")
-    runtimeOnly("top.theillusivec4.curios:curios-neoforge:${curios_version}")
+    localRuntime("top.theillusivec4.curios:curios-neoforge:${curios_version}")
 
     //TODO: Remove having to specify these as non transitive once https://github.com/McJtyMods/TheOneProbe/issues/548 is fixed
     compileOnly("mcjty.theoneprobe:theoneprobe:${top_version}:api") {
         transitive = false
     }
-    runtimeOnly("mcjty.theoneprobe:theoneprobe:${top_version}") {
+    localRuntime("mcjty.theoneprobe:theoneprobe:${top_version}") {
         transitive = false
     }
     compileOnly("curse.maven:jade-api-324717:${jade_api_id}")
-    runtimeOnly("curse.maven:jade-324717:${jade_id}")
+    localRuntime("curse.maven:jade-324717:${jade_id}")
     compileOnly("mcp.mobius.waila:wthit-api:forge-${wthit_version}")
 
-    implementation("com.blamejared.crafttweaker:CraftTweaker-neoforge-${minecraft_version}:${crafttweaker_version}")
+    def crt = "com.blamejared.crafttweaker:CraftTweaker-neoforge-${minecraft_version}:${crafttweaker_version}"
+    compileOnly(crt)
+    localRuntime(crt)
 
     additionalRuntimeClasspath(implementation(shadow(group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1')))
 }
@@ -366,4 +372,33 @@ tasks.withType(Javadoc).configureEach({
 artifacts {
     archives(apiJar)
     archives(shadowJar)
+}
+
+publishing {
+    publications { PublicationContainer publicationContainer ->
+        publicationContainer.register('maven', MavenPublication) { MavenPublication publication ->
+            publication.from((SoftwareComponent) components.java)
+            publication.groupId = project.group
+            publication.version = project.version
+            publication.artifactId = 'ProjectE'
+            publication.artifacts = [apiJar, jar, sourcesJar]
+            publication.pom {
+                name.set('ProjectE')
+                packaging = 'jar'
+                scm {
+                    url.set('https://github.com/sinkillerj/ProjectE.git')
+                }
+                issueManagement {
+                    system.set('github')
+                    url.set('https://github.com/sinkillerj/ProjectE/issues')
+                }
+                licenses {
+                    license {
+                        name.set('MIT')
+                        distribution.set('repo')
+                    }
+                }
+            }
+        }
+    }
 }
