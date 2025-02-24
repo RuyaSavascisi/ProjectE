@@ -342,6 +342,7 @@ def shadowJar = tasks.named('shadowJar', ShadowJar) {
     // plugin anyways
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     archiveClassifier.set('') // Replace the default JAR
+    from([sourceSets.api.output, sourceSets.main.output])
 
     configurations = [project.configurations.shadow]
     exclude('assets/org/**')
@@ -372,16 +373,17 @@ tasks.withType(Javadoc).configureEach({
 artifacts {
     archives(apiJar)
     archives(shadowJar)
+    archives(sourcesJar)
 }
 
 publishing {
     publications { PublicationContainer publicationContainer ->
-        publicationContainer.register('maven', MavenPublication) { MavenPublication publication ->
-            publication.from((SoftwareComponent) components.java)
+        shadow(MavenPublication) { MavenPublication publication ->
+            publication.from((SoftwareComponent) components.shadow)
             publication.groupId = project.group
             publication.version = project.version
             publication.artifactId = 'ProjectE'
-            publication.artifacts = [apiJar, jar, sourcesJar]
+            publication.artifacts = [apiJar, shadowJar, sourcesJar]
             publication.pom {
                 name.set('ProjectE')
                 packaging = 'jar'
