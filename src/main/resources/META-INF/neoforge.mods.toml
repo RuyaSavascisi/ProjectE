@@ -24,3 +24,10 @@ license="MIT"
   type="required"
   versionRange="${neo_version}"
   side="BOTH"
+
+[[dependencies.projecte]]
+modId="mekanism"
+type="incompatible"
+reason="Requires an update to support changes to recipe mappers"
+versionRange="[,10.7.8]"
+side="BOTH"
