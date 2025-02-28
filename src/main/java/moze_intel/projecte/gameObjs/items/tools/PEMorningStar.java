@@ -24,7 +24,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.GrassBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ItemAbilities;
@@ -79,7 +78,7 @@ public class PEMorningStar extends PETool implements IItemMode<PickaxeMode>, IHa
 		return ToolHelper.performActions(context, blockState, ToolHelper.flattenAOE(context, blockState, 0),
 				ToolHelper::dowseCampfire,
 				(ctx, state) -> {
-					if (state.is(Tags.Blocks.GRAVELS) || state.is(Blocks.CLAY)) {
+					if (state.is(PETags.Blocks.VEIN_SHOVEL)) {
 						if (ProjectEConfig.server.items.pickaxeAoeVeinMining.get()) {
 							return ToolHelper.digAOE(ctx.getLevel(), ctx.getPlayer(), ctx.getHand(), ctx.getItemInHand(), ctx.getClickedPos(), ctx.getClickedFace(), false, 0);
 						}

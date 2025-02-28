@@ -63,6 +63,9 @@ public class PEBlockTagsProvider extends BlockTagsProvider {
 			}
 		}
 		tag(PETags.Blocks.BLACKLIST_TIME_WATCH);
+		tag(PETags.Blocks.VEIN_SHOVEL)
+				.add(Blocks.CLAY)
+				.addTag(Tags.Blocks.GRAVELS);
 		//Vanilla/Forge Tags
 		tag(Tags.Blocks.CHESTS).add(
 				PEBlocks.ALCHEMICAL_CHEST.getBlock()

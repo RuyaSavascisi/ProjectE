@@ -92,6 +92,10 @@ public class PETags {
 		 * Blocks added will not receive extra random ticks from the Watch of Flowing Time
 		 */
 		public static final TagKey<Block> BLACKLIST_TIME_WATCH = tag("blacklist/time_watch");
+		/**
+		 * Blocks added will be valid veins for matter shovels
+		 */
+		public static final TagKey<Block> VEIN_SHOVEL = tag("vein/shovel");
 
 		public static final TagKey<Block> FARMING_OVERRIDE = tag("farming_override");
 

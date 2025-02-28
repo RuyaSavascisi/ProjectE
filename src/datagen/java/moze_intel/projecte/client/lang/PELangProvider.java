@@ -277,6 +277,7 @@ public class PELangProvider extends BaseLanguageProvider {
 		add(PETags.Blocks.BLACKLIST_HARVEST, "Harvest Band Blacklist");
 		add(PETags.Blocks.OVERRIDE_PLANTABLE, "Harvest Band Plantable Override");
 		add(PETags.Blocks.BLACKLIST_TIME_WATCH, "Time Watch Blacklist");
+		add(PETags.Blocks.VEIN_SHOVEL, "Valid Matter Shovel Vein");
 		add(PETags.Blocks.FARMING_OVERRIDE, "Farming Override");
 		add(PETags.Blocks.NEEDS_DARK_MATTER_TOOL, "Needs Dark Matter Tools");
 		add(PETags.Blocks.NEEDS_RED_MATTER_TOOL, "Needs Red Matter Tools");

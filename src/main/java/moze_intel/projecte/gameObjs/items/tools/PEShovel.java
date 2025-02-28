@@ -3,6 +3,7 @@ package moze_intel.projecte.gameObjs.items.tools;
 import java.util.function.Consumer;
 import moze_intel.projecte.api.capabilities.item.IItemCharge;
 import moze_intel.projecte.gameObjs.IMatterType;
+import moze_intel.projecte.gameObjs.PETags;
 import moze_intel.projecte.gameObjs.items.IBarHelper;
 import moze_intel.projecte.gameObjs.registries.PEDataComponentTypes;
 import moze_intel.projecte.utils.ToolHelper;
@@ -17,9 +18,7 @@ import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.Tags;
 import org.jetbrains.annotations.NotNull;
 
 public class PEShovel extends ShovelItem implements IItemCharge, IBarHelper {
@@ -104,7 +103,7 @@ public class PEShovel extends ShovelItem implements IItemCharge, IBarHelper {
 		return ToolHelper.performActions(context, blockState, ToolHelper.flattenAOE(context, blockState, 0),
 				ToolHelper::dowseCampfire,
 				(ctx, state) -> {
-					if (state.is(Tags.Blocks.GRAVELS) || state.is(Blocks.CLAY)) {
+					if (state.is(PETags.Blocks.VEIN_SHOVEL)) {
 						return ToolHelper.tryVeinMine(ctx.getPlayer(), ctx.getItemInHand(), ctx.getClickedPos(), ctx.getClickedFace());
 					}
 					return InteractionResult.PASS;
