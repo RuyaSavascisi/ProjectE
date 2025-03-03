@@ -76,12 +76,18 @@ public final class ItemInfo {
 	/**
 	 * Creates an {@link ItemInfo} object from a given {@link Holder} with an optional {@link DataComponentPatch} attached.
 	 *
-	 * @throws IllegalArgumentException if the holder is a Direct Holder
+	 * @throws IllegalArgumentException if the holder is a Direct Holder that can't be resolved as a reference holder from the item registry.
 	 * @apiNote While it is not required that the holder does not represent air, it is expected to check yourself to make sure it is not air.
 	 */
 	public static ItemInfo fromItem(@NotNull Holder<Item> holder, @NotNull DataComponentPatch componentsPatch) {
 		if (holder.kind() == Holder.Kind.DIRECT) {
-			throw new IllegalArgumentException("ItemInfo does not support direct holders.");
+			if (!holder.isBound()) {//This should always be true, unless someone made a custom direct holder for some reason
+				throw new IllegalArgumentException("ItemInfo does not support unbound direct holders.");
+			}
+			holder = BuiltInRegistries.ITEM.wrapAsHolder(holder.value());
+			if (holder.kind() == Holder.Kind.DIRECT) {
+				throw new IllegalArgumentException("ItemInfo does not support direct holders for unregistered items.");
+			}
 		}
 		return new ItemInfo(holder, componentsPatch);
 	}
