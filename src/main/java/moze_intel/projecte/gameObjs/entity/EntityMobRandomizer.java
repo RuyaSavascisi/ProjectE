@@ -4,8 +4,8 @@ import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.utils.EMCHelper;
 import moze_intel.projecte.utils.EntityRandomizerHelper;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -14,10 +14,8 @@ import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.animal.Rabbit.RabbitGroupData;
 import net.minecraft.world.entity.animal.Rabbit.Variant;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.event.EventHooks;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,28 +30,12 @@ public class EntityMobRandomizer extends NoGravityThrowableProjectile {
 	}
 
 	@Override
-	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
-	}
-
-	@Override
-	public void tick() {
-		super.tick();
-		if (!this.level().isClientSide && isAlive() && isInWater()) {
-			this.discard();
-		}
-	}
-
-	@Override
-	protected void onHit(@NotNull HitResult result) {
-		if (level().isClientSide) {
-			for (int i = 0; i < 4; ++i) {
+	public void handleEntityEvent(byte id) {
+		if (id == EntityEvent.DEATH) {
+			for (int i = 0; i < 8; i++) {
 				level().addParticle(ParticleTypes.PORTAL, getX(), getY() + random.nextDouble() * 2.0D, getZ(), random.nextGaussian(), 0.0D, random.nextGaussian());
 			}
 		}
-		if (!isInWater()) {
-			super.onHit(result);
-		}
-		discard();
 	}
 
 	@Override
@@ -83,10 +65,5 @@ public class EntityMobRandomizer extends NoGravityThrowableProjectile {
 				}
 			}
 		}
-	}
-
-	@Override
-	public boolean ignoreExplosion(@NotNull Explosion explosion) {
-		return true;
 	}
 }

@@ -1,6 +1,7 @@
 package moze_intel.projecte.rendering;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.PoseStack.Pose;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.UUID;
@@ -14,7 +15,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix4f;
 
 public class LayerYue extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
 
@@ -46,11 +46,11 @@ public class LayerYue extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
 			matrix.scale(3, 3, 3);
 			matrix.translate(-0.5, yShift, -0.5);
 			VertexConsumer builder = renderer.getBuffer(PERenderType.YEU_RENDERER.apply(getTextureLocation(player)));
-			Matrix4f matrix4f = matrix.last().pose();
-			builder.addVertex(matrix4f, 0, 0, 0).setUv(0, 0).setColor(0, 255, 0, 255);
-			builder.addVertex(matrix4f, 0, 0, 1).setUv(0, 1).setColor(0, 255, 0, 255);
-			builder.addVertex(matrix4f, 1, 0, 1).setUv(1, 1).setColor(0, 255, 0, 255);
-			builder.addVertex(matrix4f, 1, 0, 0).setUv(1, 0).setColor(0, 255, 0, 255);
+			Pose pose = matrix.last();
+			builder.addVertex(pose, 0, 0, 0).setUv(0, 0).setColor(0, 255, 0, 255);
+			builder.addVertex(pose, 0, 0, 1).setUv(0, 1).setColor(0, 255, 0, 255);
+			builder.addVertex(pose, 1, 0, 1).setUv(1, 1).setColor(0, 255, 0, 255);
+			builder.addVertex(pose, 1, 0, 0).setUv(1, 0).setColor(0, 255, 0, 255);
 			matrix.popPose();
 		}
 	}

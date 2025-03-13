@@ -6,19 +6,16 @@ import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.PlayerHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 
 public class EntitySWRGProjectile extends NoGravityThrowableProjectile {
@@ -35,10 +32,6 @@ public class EntitySWRGProjectile extends NoGravityThrowableProjectile {
 	}
 
 	@Override
-	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
-	}
-
-	@Override
 	public void tick() {
 		super.tick();
 		if (isAlive()) {
@@ -52,12 +45,6 @@ public class EntitySWRGProjectile extends NoGravityThrowableProjectile {
 				discard();
 			}
 		}
-	}
-
-	@Override
-	protected void onHit(@NotNull HitResult result) {
-		super.onHit(result);
-		discard();
 	}
 
 	@Override
@@ -117,10 +104,5 @@ public class EntitySWRGProjectile extends NoGravityThrowableProjectile {
 	public void addAdditionalSaveData(@NotNull CompoundTag compound) {
 		super.addAdditionalSaveData(compound);
 		compound.putBoolean("fromArcana", fromArcana);
-	}
-
-	@Override
-	public boolean ignoreExplosion(@NotNull Explosion explosion) {
-		return true;
 	}
 }

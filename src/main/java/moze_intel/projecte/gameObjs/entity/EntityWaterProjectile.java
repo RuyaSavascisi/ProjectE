@@ -5,13 +5,11 @@ import moze_intel.projecte.gameObjs.registries.PEEntityTypes;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -22,7 +20,6 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +35,10 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 	}
 
 	@Override
-	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
+	protected void onInsideBlock(@NotNull BlockState state) {
+		if (!level().isClientSide && state.getFluidState().is(FluidTags.WATER)) {
+			discard();
+		}
 	}
 
 	@Override
@@ -68,21 +68,12 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 					}
 				}
 			}
-			if (isInWater()) {
-				discard();
-			}
 			if (getY() > level.getMaxBuildHeight()) {
 				LevelData worldInfo = level.getLevelData();
 				worldInfo.setRaining(true);
 				discard();
 			}
 		}
-	}
-
-	@Override
-	protected void onHit(@NotNull HitResult result) {
-		super.onHit(result);
-		discard();
 	}
 
 	@Override
@@ -103,10 +94,5 @@ public class EntityWaterProjectile extends NoGravityThrowableProjectile {
 			}
 			ent.push(getDeltaMovement().scale(2));
 		}
-	}
-
-	@Override
-	public boolean ignoreExplosion(@NotNull Explosion explosion) {
-		return true;
 	}
 }

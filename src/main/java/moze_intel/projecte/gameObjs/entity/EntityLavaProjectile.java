@@ -6,7 +6,6 @@ import moze_intel.projecte.gameObjs.registries.PEItems;
 import moze_intel.projecte.utils.PlayerHelper;
 import moze_intel.projecte.utils.WorldHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
@@ -14,14 +13,12 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 
 public class EntityLavaProjectile extends NoGravityThrowableProjectile {
@@ -35,7 +32,10 @@ public class EntityLavaProjectile extends NoGravityThrowableProjectile {
 	}
 
 	@Override
-	protected void defineSynchedData(@NotNull SynchedEntityData.Builder builder) {
+	protected void onInsideBlock(@NotNull BlockState state) {
+		if (!level().isClientSide && state.getFluidState().is(FluidTags.LAVA)) {
+			discard();
+		}
 	}
 
 	@Override
@@ -67,12 +67,6 @@ public class EntityLavaProjectile extends NoGravityThrowableProjectile {
 	}
 
 	@Override
-	protected void onHit(@NotNull HitResult result) {
-		super.onHit(result);
-		discard();
-	}
-
-	@Override
 	protected void onHitBlock(@NotNull BlockHitResult result) {
 		super.onHitBlock(result);
 		if (!level().isClientSide && getOwner() instanceof Player player) {
@@ -90,14 +84,10 @@ public class EntityLavaProjectile extends NoGravityThrowableProjectile {
 			ItemStack found = PlayerHelper.findFirstItem(player, PEItems.VOLCANITE_AMULET);
 			if (!found.isEmpty() && ItemPE.consumeFuel(player, found, 32, true)) {
 				Entity ent = result.getEntity();
-				ent.igniteForSeconds(5);
-				ent.hurt(level().damageSources().inFire(), 5);
+				if (ent.hurt(level().damageSources().inFire(), 5)) {
+					ent.igniteForSeconds(5);
+				}
 			}
 		}
-	}
-
-	@Override
-	public boolean ignoreExplosion(@NotNull Explosion explosion) {
-		return true;
 	}
 }

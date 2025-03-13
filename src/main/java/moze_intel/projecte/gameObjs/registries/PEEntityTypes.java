@@ -12,22 +12,25 @@ import moze_intel.projecte.gameObjs.entity.EntitySWRGProjectile;
 import moze_intel.projecte.gameObjs.entity.EntityWaterProjectile;
 import moze_intel.projecte.gameObjs.registration.impl.EntityTypeDeferredRegister;
 import moze_intel.projecte.gameObjs.registration.impl.EntityTypeRegistryObject;
-import moze_intel.projecte.utils.Constants;
 import net.minecraft.SharedConstants;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 
 public class PEEntityTypes {
 
 	public static final EntityTypeDeferredRegister ENTITY_TYPES = new EntityTypeDeferredRegister(PECore.MODID);
 
-	public static final EntityTypeRegistryObject<EntityFireProjectile> FIRE_PROJECTILE = ENTITY_TYPES.register("fire_projectile", EntityType.Builder.<EntityFireProjectile>of(EntityFireProjectile::new, MobCategory.MISC).setTrackingRange(256).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
-	public static final EntityTypeRegistryObject<EntityHomingArrow> HOMING_ARROW = ENTITY_TYPES.register("homing_arrow", EntityType.Builder.<EntityHomingArrow>of(EntityHomingArrow::new, MobCategory.MISC).setTrackingRange(5).setUpdateInterval(SharedConstants.TICKS_PER_SECOND).setShouldReceiveVelocityUpdates(true));
-	public static final EntityTypeRegistryObject<EntityLavaProjectile> LAVA_PROJECTILE = ENTITY_TYPES.register("lava_projectile", EntityType.Builder.<EntityLavaProjectile>of(EntityLavaProjectile::new, MobCategory.MISC).setTrackingRange(256).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
-	public static final EntityTypeRegistryObject<EntityLensProjectile> LENS_PROJECTILE = ENTITY_TYPES.register("lens_projectile", EntityType.Builder.<EntityLensProjectile>of(EntityLensProjectile::new, MobCategory.MISC).setTrackingRange(256).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
-	public static final EntityTypeRegistryObject<EntityMobRandomizer> MOB_RANDOMIZER = ENTITY_TYPES.register("mob_randomizer", EntityType.Builder.<EntityMobRandomizer>of(EntityMobRandomizer::new, MobCategory.MISC).setTrackingRange(256).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
-	public static final EntityTypeRegistryObject<EntityNovaCatalystPrimed> NOVA_CATALYST_PRIMED = ENTITY_TYPES.register("nova_catalyst_primed", EntityType.Builder.<EntityNovaCatalystPrimed>of(EntityNovaCatalystPrimed::new, MobCategory.MISC).setTrackingRange(10).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
-	public static final EntityTypeRegistryObject<EntityNovaCataclysmPrimed> NOVA_CATACLYSM_PRIMED = ENTITY_TYPES.register("nova_cataclysm_primed", EntityType.Builder.<EntityNovaCataclysmPrimed>of(EntityNovaCataclysmPrimed::new, MobCategory.MISC).setTrackingRange(10).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
-	public static final EntityTypeRegistryObject<EntitySWRGProjectile> SWRG_PROJECTILE = ENTITY_TYPES.register("swrg_projectile", EntityType.Builder.<EntitySWRGProjectile>of(EntitySWRGProjectile::new, MobCategory.MISC).setTrackingRange(256).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
-	public static final EntityTypeRegistryObject<EntityWaterProjectile> WATER_PROJECTILE = ENTITY_TYPES.register("water_projectile", EntityType.Builder.<EntityWaterProjectile>of(EntityWaterProjectile::new, MobCategory.MISC).setTrackingRange(256).setUpdateInterval(Constants.TICKS_PER_HALF_SECOND));
+	public static final EntityTypeRegistryObject<EntityFireProjectile> FIRE_PROJECTILE = ENTITY_TYPES.registerNoGravThrowable("fire_projectile", EntityFireProjectile::new);
+	public static final EntityTypeRegistryObject<EntityHomingArrow> HOMING_ARROW = ENTITY_TYPES.registerMisc("homing_arrow", EntityHomingArrow::new, builder -> builder
+			//[VanillaCopy] from EntityType.ARROW
+			.sized(0.5F, 0.5F)
+			.eyeHeight(0.13F)
+			.clientTrackingRange(4)
+			.updateInterval(SharedConstants.TICKS_PER_SECOND)
+	);
+	public static final EntityTypeRegistryObject<EntityLavaProjectile> LAVA_PROJECTILE = ENTITY_TYPES.registerNoGravThrowable("lava_projectile", EntityLavaProjectile::new);
+	public static final EntityTypeRegistryObject<EntityLensProjectile> LENS_PROJECTILE = ENTITY_TYPES.registerNoGravThrowable("lens_projectile", EntityLensProjectile::new);
+	public static final EntityTypeRegistryObject<EntityMobRandomizer> MOB_RANDOMIZER = ENTITY_TYPES.registerNoGravThrowable("mob_randomizer", EntityMobRandomizer::new);
+	public static final EntityTypeRegistryObject<EntityNovaCatalystPrimed> NOVA_CATALYST_PRIMED = ENTITY_TYPES.registerTnt("nova_catalyst_primed", EntityNovaCatalystPrimed::new);
+	public static final EntityTypeRegistryObject<EntityNovaCataclysmPrimed> NOVA_CATACLYSM_PRIMED = ENTITY_TYPES.registerTnt("nova_cataclysm_primed", EntityNovaCataclysmPrimed::new);
+	public static final EntityTypeRegistryObject<EntitySWRGProjectile> SWRG_PROJECTILE = ENTITY_TYPES.registerNoGravThrowable("swrg_projectile", EntitySWRGProjectile::new);
+	public static final EntityTypeRegistryObject<EntityWaterProjectile> WATER_PROJECTILE = ENTITY_TYPES.registerNoGravThrowable("water_projectile", EntityWaterProjectile::new);
 }
