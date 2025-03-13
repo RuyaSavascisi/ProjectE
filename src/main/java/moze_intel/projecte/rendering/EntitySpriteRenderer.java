@@ -28,14 +28,14 @@ public class EntitySpriteRenderer<ENTITY extends Entity> extends EntityRenderer<
 	@Override
 	public void render(@NotNull ENTITY entity, float entityYaw, float partialTick, @NotNull PoseStack matrix, @NotNull MultiBufferSource renderer, int light) {
 		matrix.pushPose();
-		matrix.mulPose(entityRenderDispatcher.cameraOrientation());
 		matrix.scale(0.5F, 0.5F, 0.5F);
+		matrix.mulPose(entityRenderDispatcher.cameraOrientation());
 		VertexConsumer builder = renderer.getBuffer(PERenderType.SPRITE_RENDERER.apply(getTextureLocation(entity)));
 		Matrix4f matrix4f = matrix.last().pose();
-		builder.addVertex(matrix4f, -1, -1, 0).setUv(1, 1);
-		builder.addVertex(matrix4f, -1, 1, 0).setUv(1, 0);
-		builder.addVertex(matrix4f, 1, 1, 0).setUv(0, 0);
 		builder.addVertex(matrix4f, 1, -1, 0).setUv(0, 1);
+		builder.addVertex(matrix4f, 1, 1, 0).setUv(0, 0);
+		builder.addVertex(matrix4f, -1, 1, 0).setUv(1, 0);
+		builder.addVertex(matrix4f, -1, -1, 0).setUv(1, 1);
 		matrix.popPose();
 	}
 }
